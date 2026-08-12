@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head> ملزمة الحب والأحلام - المبرمج يوسف الجوكر
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ملحمة حب مريم - المبرمج يوسف الجوكر</title>
+    <title>ملحمة حب مريم الكبرى - المبرمج يوسف الجوكر</title>
     <style>
         :root {
             --bg-deep: #030509;
@@ -30,7 +30,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 15px;
             overflow-x: hidden;
             position: relative;
         }
@@ -39,24 +39,24 @@
         .floating-heart {
             position: absolute;
             color: rgba(236, 72, 153, 0.18);
-            font-size: 24px;
+            font-size: 26px;
             animation: floatUp 6s linear infinite;
             pointer-events: none;
             z-index: 0;
         }
 
         @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            0% { transform: translateY(105vh) scale(0.5); opacity: 0; }
             50% { opacity: 0.8; }
-            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-10vh) scale(1.6); opacity: 0; }
         }
 
         .main-wrapper {
             width: 100%;
-            max-width: 520px;
+            max-width: 580px;
             background: var(--panel-bg);
-            border-radius: 35px;
-            box-shadow: 0 0 60px rgba(236, 72, 153, 0.4);
+            border-radius: 40px;
+            box-shadow: 0 0 70px rgba(236, 72, 153, 0.45);
             overflow: hidden;
             border: 2px solid rgba(236, 72, 153, 0.6);
             position: relative;
@@ -66,45 +66,45 @@
         /* الهيدر الفاخر */
         .header-banner {
             background: linear-gradient(135deg, #18181b, #27272a, #831843);
-            padding: 22px;
+            padding: 26px;
             text-align: center;
             border-bottom: 2px solid var(--accent-pink);
         }
 
         .header-banner h1 {
-            font-size: 22px;
+            font-size: 24px;
             color: #fff;
-            margin-bottom: 4px;
-            text-shadow: 0 0 10px rgba(236,72,153,0.5);
+            margin-bottom: 6px;
+            text-shadow: 0 0 12px rgba(236,72,153,0.6);
         }
 
         .writer-tag {
-            font-size: 13px;
+            font-size: 14px;
             color: var(--accent-gold);
             font-weight: bold;
             letter-spacing: 1px;
         }
 
-        /* قسم الصور المتجاورة (صورة 50 وصورة 51 وفي المنتصف قلب) */
+        /* قسم الصور الكبيرة والمتجاورة */
         .dual-images-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.55);
             border-bottom: 2px solid rgba(255, 255, 255, 0.08);
             position: relative;
         }
 
         .image-card-box {
-            width: 41%;
-            height: 170px;
+            width: 42%;
+            height: 220px;
             background: var(--card-bg);
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
             position: relative;
             border: 2px solid rgba(236, 72, 153, 0.5);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
         }
 
         .image-card-box img {
@@ -120,82 +120,69 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 12px;
             text-align: center;
             pointer-events: none;
             width: 90%;
+            line-height: 1.4;
         }
 
-        /* القلب المنتصف المتحرك بين الصور */
         .center-heart-badge {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.9);
+            font-size: 28px;
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.95);
             animation: heartBeatPulse 1.4s infinite;
             z-index: 5;
         }
 
         @keyframes heartBeatPulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.18); }
+            50% { transform: scale(1.2); }
         }
 
-        /* منطقة القصيدة الضخمة (توزيع إبداعي يمين ويسار) */
+        /* منطقة القصيدة الضخمة جداً وطويلة (أكثر من 20 بيت) */
         .poem-container-huge {
-            padding: 20px;
-            max-height: 380px;
+            padding: 25px;
+            max-height: 480px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        /* تنسيق الأبيات المتناوبة (يمين ويسار بشكل احترافي) */
         .poem-verse-right {
             text-align: right;
             background: rgba(236, 72, 153, 0.08);
             border-right: 4px solid var(--accent-pink);
-            padding: 10px 14px;
-            border-radius: 10px 4px 4px 10px;
+            padding: 11px 15px;
+            border-radius: 12px 4px 4px 12px;
             font-size: 14px;
             color: #fce7f3;
             font-weight: bold;
-            opacity: 0;
-            transform: translateX(30px);
-            animation: slideInRight 0.6s forwards;
+            line-height: 1.6;
         }
 
         .poem-verse-left {
             text-align: left;
             background: rgba(168, 85, 247, 0.08);
             border-left: 4px solid var(--accent-purple);
-            padding: 10px 14px;
-            border-radius: 4px 10px 10px 4px;
+            padding: 11px 15px;
+            border-radius: 4px 12px 12px 4px;
             font-size: 14px;
             color: #e9d5ff;
             font-weight: bold;
-            opacity: 0;
-            transform: translateX(-30px);
-            animation: slideInLeft 0.6s forwards;
+            line-height: 1.6;
         }
 
-        @keyframes slideInRight {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes slideInLeft {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* لوحة التحكم الصوتية */
+        /* لوحة التحكم والتحفيز */
         .controls-section {
-            padding: 15px 20px 20px 20px;
+            padding: 18px 25px 25px 25px;
             background: var(--card-bg);
             border-top: 1px solid rgba(255,255,255,0.08);
             text-align: center;
@@ -203,16 +190,16 @@
 
         .btn-action {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             color: white;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
             transition: 0.2s;
-            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.5);
+            box-shadow: 0 5px 22px rgba(236, 72, 153, 0.5);
             margin-bottom: 8px;
         }
 
@@ -222,7 +209,7 @@
         }
 
         #statusLog {
-            font-size: 11px;
+            font-size: 12px;
             color: var(--text-muted);
         }
     </style>
@@ -236,39 +223,51 @@
 
     <div class="main-wrapper">
         <div class="header-banner">
-            <h1>ملحمة حب مريم</h1>
+            <h1>ملحمة حب مريم الكبرى</h1>
             <div class="writer-tag">✍️ الكاتب المبرمج يوسف الجوكر</div>
         </div>
 
         <div class="dual-images-section">
             <div class="image-card-box">
                 <img src="50.jpg" alt="صورة 50" onerror="this.style.display='none';">
-                <div class="placeholder-text">🖼️ صورة 50<br>(ضع ملف 50.jpg)</div>
+                <div class="placeholder-text">🖼️ صورة 50 الكبيرة<br>(ضع ملف 50.jpg هنا)</div>
             </div>
 
             <div class="center-heart-badge">💖</div>
 
             <div class="image-card-box">
                 <img src="51.jpg" alt="صورة 51" onerror="this.style.display='none';">
-                <div class="placeholder-text">🖼️ صورة 51<br>(ضع ملف 51.jpg)</div>
+                <div class="placeholder-text">🖼️ صورة 51 الكبيرة<br>(ضع ملف 51.jpg هنا)</div>
             </div>
         </div>
 
         <div class="poem-container-huge" id="poemContainer">
-            <div class="poem-verse-right" style="animation-delay: 0.2s;">مريم يا قمرًا يضيء عتمة لياليّ الطويلة..</div>
-            <div class="poem-verse-left" style="animation-delay: 0.4s;">أنتِ النبض الذي يحيي في قلبي كل أمل جميل..</div>
-            <div class="poem-verse-right" style="animation-delay: 0.6s;">بقلمي وابتكاري.. يوسف الجوكر أهديها لروحك الطاهرة..</div>
-            <div class="poem-verse-left" style="animation-delay: 0.8s;">رسمت اسمك في أعماق الروؤس والسطور بماء الذهب..</div>
-            <div class="poem-verse-right" style="animation-delay: 1.0s;">كلما نظرتُ إلى عينيكِ رأيتُ مستقبلًا مشرقاً وبراقة..</div>
-            <div class="poem-verse-left" style="animation-delay: 1.2s;">أنتِ الحلم الذي سعيتُ لأجله وتحقق أمامي بابتسامة..</div>
-            <div class="poem-verse-right" style="animation-delay: 1.4s;">تغنت الأطيار باسمكِ في كل مكان أحلُ فيه وأرتحل..</div>
-            <div class="poem-verse-left" style="animation-delay: 1.6s;">سأظل أكتب الشعر في حبكِ حتى ينتهي الزمان..</div>
-            <div class="poem-verse-right" style="animation-delay: 1.8s;">مريم.. أنتِ البداية والنهاية وكل تفاصيل السعادة..</div>
-            <div class="poem-verse-left" style="animation-delay: 2.0s;">دمتِ لي حباً أبدياً لا يعوضه شيء في الكون.. 👑💖</div>
+            <div class="poem-verse-right">1. مريم يا أجمل حكاية خطها القدر في كتاب عمري..</div>
+            <div class="poem-verse-left">2. أنتِ النور الذي ينير عتمة أيامي ويهدي خطواتي..</div>
+            <div class="poem-verse-right">3. بقلمي وابتكاري وإبداعي.. يوسف الجوكر أهديها لروحك..</div>
+            <div class="poem-verse-left">4. رسمت اسمك في أعماق الروح والقلب بماء الذهب الخالص..</div>
+            <div class="poem-verse-right">5. كلما مر طيفكِ أمامي أشرقت شمس الأمل والسعادة في صدري..</div>
+            <div class="poem-verse-left">6. أنتِ الحلم الأبدي الذي سعيتُ لأجله حتى ملكتُ الدنيا بابتسامتكِ..</div>
+            <div class="poem-verse-right">7. تغنت الأطيار باسمكِ الجميل في كل مكان أحلُ فيه وأرتحل..</div>
+            <div class="poem-verse-left">8. سأظل أكتب الأشعار وأعزف ألحان الحب لأجل عينيكِ وحدكِ..</div>
+            <div class="poem-verse-right">9. تتطاير القلوب شوقاً وتتعالى النبضات كلما ذكرت اسمكِ الراقي..</div>
+            <div class="poem-verse-left">10. أنتِ البداية لكل فرحة وأنتِ النهاية لكل حزن والم في حياتي..</div>
+            <div class="poem-verse-right">11. مهما واجهنا من صعاب، سأبقى السند والدرع الواقي لخطواتكِ..</div>
+            <div class="poem-verse-left">12. دمتِ لي نبضاً لا يتوقف، وعشْقاً أبدياً لا يزول بمرور الأيام..</div>
+            <div class="poem-verse-right">13. عيناكِ هما الميناء الذي ترسو عليه سفن أملي وضياعي..</div>
+            <div class="poem-verse-left">14. وضحكتكِ هي البلسم الشافي لكل جرح في قلبي الحزين..</div>
+            <div class="poem-verse-right">15. لو كتبتُ بحوراً من الكلمات فلن أوفيكِ حقكِ وقدركِ العظيم..</div>
+            <div class="poem-verse-left">16. فاسمكِ محفور بداخل الروح نقشاً لا تمحوه رياح الزمن..</div>
+            <div class="poem-verse-right">17. تشرقين في حياتي كل صباح كأنكِ شمس لا تعرف الغروب..</div>
+            <div class="poem-verse-left">18. وتأوين إلى قلبي كل مساء كأنكِ السكن والوطن والملجأ..</div>
+            <div class="poem-verse-right">19. عاهدتُ نفسي أن أبقى مخلصاً لاسمكِ وذكرياتكِ إلى الأبد..</div>
+            <div class="poem-verse-left">20. فاستمري في التألق والنجاح يا مريم، فأنتم أسياد القمة دائماً..</div>
+            <div class="poem-verse-right">21. يوسف الجوكر يعدكِ بأن يبقى سندكِ ودعمكِ الأبدي دون قيود..</div>
+            <div class="poem-verse-left">22. مريم.. أنتِ ملكة هذا الزمان وكل أزمان العشق الجميلة! 👑💖</div>
         </div>
 
         <div class="controls-section">
-            <button class="btn-action" onclick="readPoemVoice()">🎙️ قراءة القصيدة الضخمة بصوت عالي</button>
+            <button class="btn-action" onclick="readPoemVoice()">🎙️ قراءة القصيدة الكبرى بصوت عالي</button>
             <div id="statusLog">الموسيقى والمؤثرات مستعدة أوتوماتيكياً...</div>
         </div>
     </div>
@@ -285,7 +284,7 @@
                 utter.rate = 0.95;
                 window.speechSynthesis.speak(utter);
                 log.style.color = "var(--accent-pink)";
-                log.innerText = "🎶 جاري قراءة القصيدة الكبيرة بصوت عالي وبكل إتقان...";
+                log.innerText = "🎶 جاري قراءة القصيدة الطويلة بصوت عالي وبكل إتقان...";
             } else {
                 log.style.color = "red";
                 log.innerText = "عذراً، متصفحك لا يدعم خاصية الصوت.";
