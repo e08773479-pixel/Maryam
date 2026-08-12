@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head> ملزمة الحب والأحلام - المبرمج يوسف الجوكر
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملحمة حب مريم - المبرمج يوسف الجوكر</title>
+    <style>
+        :root {
+            --bg-deep: #030509;
+            --panel-bg: #0b1120;
+            --card-bg: #151e36;
+            --accent-pink: #ec4899;
+            --accent-purple: #a855f7;
+            --accent-gold: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* قلوب متحركة للخلفية */
+        .floating-heart {
+            position: absolute;
+            color: rgba(236, 72, 153, 0.18);
+            font-size: 24px;
+            animation: floatUp 6s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 520px;
+            background: var(--panel-bg);
+            border-radius: 35px;
+            box-shadow: 0 0 60px rgba(236, 72, 153, 0.4);
+            overflow: hidden;
+            border: 2px solid rgba(236, 72, 153, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* الهيدر الفاخر */
+        .header-banner {
+            background: linear-gradient(135deg, #18181b, #27272a, #831843);
+            padding: 22px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent-pink);
+        }
+
+        .header-banner h1 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 4px;
+            text-shadow: 0 0 10px rgba(236,72,153,0.5);
+        }
+
+        .writer-tag {
+            font-size: 13px;
+            color: var(--accent-gold);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* قسم الصور المتجاورة (صورة 50 وصورة 51 وفي المنتصف قلب) */
+        .dual-images-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .image-card-box {
+            width: 41%;
+            height: 170px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            border: 2px solid rgba(236, 72, 153, 0.5);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+        }
+
+        .image-card-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-muted);
+            font-size: 11px;
+            text-align: center;
+            pointer-events: none;
+            width: 90%;
+        }
+
+        /* القلب المنتصف المتحرك بين الصور */
+        .center-heart-badge {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.9);
+            animation: heartBeatPulse 1.4s infinite;
+            z-index: 5;
+        }
+
+        @keyframes heartBeatPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.18); }
+        }
+
+        /* منطقة القصيدة الضخمة (توزيع إبداعي يمين ويسار) */
+        .poem-container-huge {
+            padding: 20px;
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* تنسيق الأبيات المتناوبة (يمين ويسار بشكل احترافي) */
+        .poem-verse-right {
+            text-align: right;
+            background: rgba(236, 72, 153, 0.08);
+            border-right: 4px solid var(--accent-pink);
+            padding: 10px 14px;
+            border-radius: 10px 4px 4px 10px;
+            font-size: 14px;
+            color: #fce7f3;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(30px);
+            animation: slideInRight 0.6s forwards;
+        }
+
+        .poem-verse-left {
+            text-align: left;
+            background: rgba(168, 85, 247, 0.08);
+            border-left: 4px solid var(--accent-purple);
+            padding: 10px 14px;
+            border-radius: 4px 10px 10px 4px;
+            font-size: 14px;
+            color: #e9d5ff;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(-30px);
+            animation: slideInLeft 0.6s forwards;
+        }
+
+        @keyframes slideInRight {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes slideInLeft {
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* لوحة التحكم الصوتية */
+        .controls-section {
+            padding: 15px 20px 20px 20px;
+            background: var(--card-bg);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.5);
+            margin-bottom: 8px;
+        }
+
+        .btn-action:hover {
+            opacity: 0.92;
+            transform: scale(1.02);
+        }
+
+        #statusLog {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="floating-heart" style="left: 10%; animation-delay: 0s;">💖</div>
+    <div class="floating-heart" style="left: 30%; animation-delay: 2s;">❤️</div>
+    <div class="floating-heart" style="left: 60%; animation-delay: 1s;">🌹</div>
+    <div class="floating-heart" style="left: 85%; animation-delay: 3s;">✨</div>
+
+    <div class="main-wrapper">
+        <div class="header-banner">
+            <h1>ملحمة حب مريم</h1>
+            <div class="writer-tag">✍️ الكاتب المبرمج يوسف الجوكر</div>
+        </div>
+
+        <div class="dual-images-section">
+            <div class="image-card-box">
+                <img src="50.jpg" alt="صورة 50" onerror="this.style.display='none';">
+                <div class="placeholder-text">🖼️ صورة 50<br>(ضع ملف 50.jpg)</div>
+            </div>
+
+            <div class="center-heart-badge">💖</div>
+
+            <div class="image-card-box">
+                <img src="51.jpg" alt="صورة 51" onerror="this.style.display='none';">
+                <div class="placeholder-text">🖼️ صورة 51<br>(ضع ملف 51.jpg)</div>
+            </div>
+        </div>
+
+        <div class="poem-container-huge" id="poemContainer">
+            <div class="poem-verse-right" style="animation-delay: 0.2s;">مريم يا قمرًا يضيء عتمة لياليّ الطويلة..</div>
+            <div class="poem-verse-left" style="animation-delay: 0.4s;">أنتِ النبض الذي يحيي في قلبي كل أمل جميل..</div>
+            <div class="poem-verse-right" style="animation-delay: 0.6s;">بقلمي وابتكاري.. يوسف الجوكر أهديها لروحك الطاهرة..</div>
+            <div class="poem-verse-left" style="animation-delay: 0.8s;">رسمت اسمك في أعماق الروؤس والسطور بماء الذهب..</div>
+            <div class="poem-verse-right" style="animation-delay: 1.0s;">كلما نظرتُ إلى عينيكِ رأيتُ مستقبلًا مشرقاً وبراقة..</div>
+            <div class="poem-verse-left" style="animation-delay: 1.2s;">أنتِ الحلم الذي سعيتُ لأجله وتحقق أمامي بابتسامة..</div>
+            <div class="poem-verse-right" style="animation-delay: 1.4s;">تغنت الأطيار باسمكِ في كل مكان أحلُ فيه وأرتحل..</div>
+            <div class="poem-verse-left" style="animation-delay: 1.6s;">سأظل أكتب الشعر في حبكِ حتى ينتهي الزمان..</div>
+            <div class="poem-verse-right" style="animation-delay: 1.8s;">مريم.. أنتِ البداية والنهاية وكل تفاصيل السعادة..</div>
+            <div class="poem-verse-left" style="animation-delay: 2.0s;">دمتِ لي حباً أبدياً لا يعوضه شيء في الكون.. 👑💖</div>
+        </div>
+
+        <div class="controls-section">
+            <button class="btn-action" onclick="readPoemVoice()">🎙️ قراءة القصيدة الضخمة بصوت عالي</button>
+            <div id="statusLog">الموسيقى والمؤثرات مستعدة أوتوماتيكياً...</div>
+        </div>
+    </div>
+
+    <script>
+        function readPoemVoice() {
+            let fullText = document.getElementById('poemContainer').innerText;
+            let log = document.getElementById('statusLog');
+
+            if ('speechSynthesis' in window) {
+                let utter = new SpeechSynthesisUtterance(fullText);
+                utter.lang = 'ar';
+                utter.pitch = 1;
+                utter.rate = 0.95;
+                window.speechSynthesis.speak(utter);
+                log.style.color = "var(--accent-pink)";
+                log.innerText = "🎶 جاري قراءة القصيدة الكبيرة بصوت عالي وبكل إتقان...";
+            } else {
+                log.style.color = "red";
+                log.innerText = "عذراً، متصفحك لا يدعم خاصية الصوت.";
+            }
+        }
+    </script>
+
+</body>
+</html>
