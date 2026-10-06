@@ -8,104 +8,1544 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
   >
 
-  <meta name="theme-color" content="#071112">
+  <meta name="theme-color" content="#06110f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <meta
     name="description"
-    content="NOVA — منصة مراسلة وتواصل حديثة وآمنة"
+    content="NOVA — منصة مراسلة وتواصل حديثة للمحادثات والمكالمات والمجموعات والمجتمعات."
   >
 
   <title>NOVA — نوفا</title>
 
+  <!-- =========================================================
+       NOVA
+       Phase 1 — Main Application
+       ========================================================= -->
+
   <link rel="manifest" href="manifest.json">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!--
+    مهم:
+    التصميم الأساسي موجود في nova.css.
+    لكن الـLoader لديه CSS احتياطي هنا أيضًا،
+    حتى لا تظل الشاشة معلقة إذا فشل تحميل CSS الخارجي.
+  -->
+  <style>
+    :root {
+      --nova-bg: #030807;
+      --nova-surface: #071311;
+      --nova-surface-2: #0b1917;
+      --nova-border: rgba(255,255,255,.08);
+      --nova-text: #f4faf8;
+      --nova-muted: #8fa4a0;
+      --nova-accent: #39dec4;
+      --nova-accent-2: #20bba5;
+    }
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  >
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      overflow: hidden;
+      background: var(--nova-bg);
+      color: var(--nova-text);
+      font-family:
+        "Cairo",
+        "IBM Plex Sans Arabic",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       LOADER — مستقل عن nova.js
+       ========================================================= */
+
+    #nova-loader {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      background:
+        radial-gradient(
+          circle at 80% 12%,
+          rgba(38, 207, 182, .13),
+          transparent 32%
+        ),
+        radial-gradient(
+          circle at 15% 85%,
+          rgba(19, 128, 116, .10),
+          transparent 30%
+        ),
+        linear-gradient(
+          145deg,
+          #020605 0%,
+          #03100e 48%,
+          #020706 100%
+        );
+
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity .65s ease,
+        visibility .65s ease;
+    }
+
+    #nova-loader.loader-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-noise {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: .08;
+
+      background-image:
+        linear-gradient(
+          rgba(255,255,255,.03) 1px,
+          transparent 1px
+        ),
+        linear-gradient(
+          90deg,
+          rgba(255,255,255,.03) 1px,
+          transparent 1px
+        );
+
+      background-size: 42px 42px;
+      mask-image: linear-gradient(
+        to bottom,
+        black,
+        transparent 90%
+      );
+    }
+
+    .loader-glow {
+      position: absolute;
+      width: 430px;
+      height: 430px;
+      border-radius: 50%;
+
+      background:
+        radial-gradient(
+          circle,
+          rgba(51, 224, 196, .13),
+          transparent 68%
+        );
+
+      filter: blur(5px);
+      animation: loaderGlow 4s ease-in-out infinite;
+    }
+
+    @keyframes loaderGlow {
+      0%,
+      100% {
+        transform: scale(.9);
+        opacity: .65;
+      }
+
+      50% {
+        transform: scale(1.12);
+        opacity: 1;
+      }
+    }
+
+    .loader-content {
+      position: relative;
+      z-index: 2;
+
+      width: min(88vw, 430px);
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      text-align: center;
+    }
+
+    .nova-logo-loader {
+      position: relative;
+
+      width: 92px;
+      height: 92px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 30px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #43ead1,
+          #1bbca8
+        );
+
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.08),
+        0 18px 55px rgba(40, 220, 190, .25),
+        inset 0 1px 0 rgba(255,255,255,.4);
+
+      transform: translateY(0);
+      animation: logoFloat 2.7s ease-in-out infinite;
+    }
+
+    .nova-logo-loader::after {
+      content: "";
+
+      position: absolute;
+
+      right: 9px;
+      bottom: -13px;
+
+      width: 0;
+      height: 0;
+
+      border-top: 19px solid #1bbca8;
+      border-left: 18px solid transparent;
+    }
+
+    .nova-logo-letter {
+      color: #03100d;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      font-size: 43px;
+      font-weight: 900;
+      letter-spacing: -5px;
+
+      transform: translateX(-2px);
+    }
+
+    @keyframes logoFloat {
+      0%,
+      100% {
+        transform: translateY(0) scale(1);
+      }
+
+      50% {
+        transform: translateY(-8px) scale(1.025);
+      }
+    }
+
+    .loader-brand {
+      margin-top: 27px;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      font-size: 31px;
+      font-weight: 800;
+      letter-spacing: 8px;
+
+      color: #f6fffd;
+    }
+
+    .loader-arabic {
+      margin-top: 3px;
+
+      color: #78918c;
+      font-size: 15px;
+    }
+
+    .loader-welcome {
+      margin-top: 53px;
+
+      color: #f4faf8;
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .loader-subtitle {
+      margin-top: 7px;
+
+      color: #718985;
+      font-size: 14px;
+    }
+
+    .loader-progress-wrap {
+      width: min(360px, 78vw);
+
+      margin-top: 48px;
+    }
+
+    .loader-progress {
+      position: relative;
+
+      width: 100%;
+      height: 4px;
+
+      overflow: hidden;
+
+      border-radius: 99px;
+
+      background: rgba(255,255,255,.07);
+    }
+
+    .loader-progress-bar {
+      width: 0%;
+      height: 100%;
+
+      border-radius: inherit;
+
+      background:
+        linear-gradient(
+          90deg,
+          #1bbca8,
+          #54f0d8
+        );
+
+      box-shadow:
+        0 0 16px rgba(62, 230, 204, .5);
+
+      transition: width .25s ease;
+    }
+
+    .loader-status {
+      margin-top: 14px;
+
+      color: #6f8783;
+      font-size: 12px;
+
+      min-height: 20px;
+    }
+
+    .loader-version {
+      position: absolute;
+      bottom: 27px;
+
+      color: rgba(255,255,255,.28);
+      font-size: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* =========================================================
+       APPLICATION SHELL
+       ========================================================= */
+
+    #nova-app {
+      position: fixed;
+      inset: 0;
+
+      display: flex;
+
+      background:
+        radial-gradient(
+          circle at 100% 0%,
+          rgba(25, 161, 143, .08),
+          transparent 34%
+        ),
+        #030807;
+
+      opacity: 0;
+      visibility: hidden;
+
+      transition:
+        opacity .55s ease,
+        visibility .55s ease;
+    }
+
+    #nova-app.app-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .app-shell {
+      position: relative;
+
+      width: 100%;
+      height: 100%;
+
+      display: grid;
+
+      grid-template-columns:
+        72px
+        360px
+        minmax(0, 1fr);
+
+      overflow: hidden;
+    }
+
+    /* =========================================================
+       LEFT NAVIGATION
+       ========================================================= */
+
+    .nova-sidebar {
+      position: relative;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      padding: 18px 10px;
+
+      background:
+        linear-gradient(
+          180deg,
+          #071310,
+          #04100e
+        );
+
+      border-left: 1px solid var(--nova-border);
+      border-right: 1px solid var(--nova-border);
+    }
+
+    .sidebar-brand {
+      width: 46px;
+      height: 46px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 15px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #40e4cb,
+          #169f8d
+        );
+
+      color: #03100d;
+
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+
+      box-shadow:
+        0 12px 35px rgba(31, 201, 174, .18);
+    }
+
+    .sidebar-nav {
+      width: 100%;
+
+      margin-top: 35px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .nav-button {
+      position: relative;
+
+      width: 48px;
+      height: 48px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 15px;
+
+      color: #78908c;
+      background: transparent;
+
+      transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
+    }
+
+    .nav-button:hover {
+      color: #eafff9;
+      background: rgba(255,255,255,.05);
+      transform: translateY(-1px);
+    }
+
+    .nav-button.active {
+      color: #48e1ca;
+
+      background:
+        rgba(48, 214, 190, .11);
+
+      box-shadow:
+        inset 0 0 0 1px rgba(56, 225, 201, .08);
+    }
+
+    .nav-icon {
+      width: 21px;
+      height: 21px;
+
+      display: block;
+    }
+
+    .nav-badge {
+      position: absolute;
+
+      top: 3px;
+      right: 2px;
+
+      min-width: 17px;
+      height: 17px;
+
+      padding: 0 4px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 99px;
+
+      background: #e65367;
+      color: #fff;
+
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    /* =========================================================
+       LIST PANEL
+       ========================================================= */
+
+    .nova-list-panel {
+      min-width: 0;
+      height: 100%;
+
+      display: flex;
+      flex-direction: column;
+
+      background:
+        linear-gradient(
+          180deg,
+          #071310,
+          #06110f
+        );
+
+      border-left: 1px solid var(--nova-border);
+    }
+
+    .list-header {
+      padding: 22px 20px 14px;
+    }
+
+    .list-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 15px;
+    }
+
+    .list-title {
+      margin: 0;
+
+      color: #f4faf8;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .list-actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    .icon-button {
+      width: 39px;
+      height: 39px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 12px;
+
+      color: #9bb0ac;
+      background: rgba(255,255,255,.045);
+
+      transition: .2s ease;
+    }
+
+    .icon-button:hover {
+      color: #fff;
+      background: rgba(255,255,255,.08);
+    }
+
+    .search-box {
+      margin-top: 17px;
+
+      height: 45px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 10px;
+
+      padding: 0 13px;
+
+      border: 1px solid rgba(255,255,255,.055);
+      border-radius: 14px;
+
+      background: rgba(255,255,255,.045);
+    }
+
+    .search-box svg {
+      flex: 0 0 auto;
+
+      width: 18px;
+      height: 18px;
+
+      color: #6e8581;
+    }
+
+    .search-box input {
+      width: 100%;
+
+      border: 0;
+      outline: 0;
+
+      color: #f4faf8;
+      background: transparent;
+
+      font-size: 13px;
+    }
+
+    .search-box input::placeholder {
+      color: #607571;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 7px;
+
+      padding: 14px 20px 8px;
+
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .filter-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-tab {
+      flex: 0 0 auto;
+
+      height: 32px;
+
+      padding: 0 13px;
+
+      border: 1px solid rgba(255,255,255,.05);
+      border-radius: 99px;
+
+      color: #718783;
+      background: rgba(255,255,255,.025);
+
+      font-size: 11px;
+    }
+
+    .filter-tab.active {
+      color: #3fe0c7;
+      background: rgba(47,215,190,.09);
+      border-color: rgba(47,215,190,.12);
+    }
+
+    .list-content {
+      flex: 1;
+
+      min-height: 0;
+
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .list-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .list-content::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.08);
+      border-radius: 99px;
+    }
+
+    .empty-state-small {
+      min-height: 330px;
+
+      padding: 35px 25px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 66px;
+      height: 66px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 22px;
+
+      color: #45d9c2;
+      background: rgba(49,215,190,.08);
+      border: 1px solid rgba(49,215,190,.09);
+    }
+
+    .empty-title {
+      margin-top: 18px;
+
+      color: #dce9e6;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .empty-description {
+      max-width: 250px;
+
+      margin-top: 7px;
+
+      color: #627773;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    /* =========================================================
+       MAIN CONTENT
+       ========================================================= */
+
+    .nova-main {
+      position: relative;
+
+      min-width: 0;
+      min-height: 0;
+
+      overflow: hidden;
+
+      background:
+        radial-gradient(
+          circle at 50% 10%,
+          rgba(25, 170, 150, .055),
+          transparent 40%
+        ),
+        #030807;
+    }
+
+    .main-view {
+      width: 100%;
+      height: 100%;
+    }
+
+    .welcome-view {
+      height: 100%;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      padding: 30px;
+
+      text-align: center;
+    }
+
+    .welcome-symbol {
+      width: 94px;
+      height: 94px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 30px;
+
+      color: #071310;
+
+      background:
+        linear-gradient(
+          145deg,
+          #42e6cd,
+          #169d8b
+        );
+
+      font-family: Arial, sans-serif;
+      font-size: 37px;
+      font-weight: 900;
+
+      box-shadow:
+        0 25px 80px rgba(38, 218, 190, .12);
+    }
+
+    .welcome-view h1 {
+      margin: 25px 0 0;
+
+      color: #f4faf8;
+
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    .welcome-view p {
+      max-width: 470px;
+
+      margin: 10px 0 0;
+
+      color: #687f7b;
+
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .welcome-security {
+      margin-top: 28px;
+
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 9px 14px;
+
+      border-radius: 99px;
+
+      color: #71908a;
+      background: rgba(255,255,255,.035);
+
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       CONVERSATION
+       ========================================================= */
+
+    .conversation-view {
+      position: absolute;
+      inset: 0;
+
+      display: none;
+      flex-direction: column;
+
+      background:
+        radial-gradient(
+          circle at 20% 15%,
+          rgba(42, 180, 160, .05),
+          transparent 32%
+        ),
+        #06100e;
+    }
+
+    .conversation-view.open {
+      display: flex;
+    }
+
+    .conversation-header {
+      min-height: 70px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 11px;
+
+      padding: 10px 18px;
+
+      border-bottom: 1px solid rgba(255,255,255,.055);
+
+      background:
+        rgba(5, 14, 12, .92);
+
+      backdrop-filter: blur(18px);
+    }
+
+    .conversation-user {
+      min-width: 0;
+
+      flex: 1;
+
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .avatar {
+      position: relative;
+
+      width: 44px;
+      height: 44px;
+
+      flex: 0 0 auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      border-radius: 15px;
+
+      background:
+        linear-gradient(
+          145deg,
+          #1a3e38,
+          #0d211e
+        );
+
+      color: #72dcca;
+
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .avatar.large {
+      width: 84px;
+      height: 84px;
+
+      border-radius: 26px;
+
+      font-size: 25px;
+    }
+
+    .online-dot {
+      position: absolute;
+
+      right: -1px;
+      bottom: -1px;
+
+      width: 12px;
+      height: 12px;
+
+      border: 3px solid #071310;
+      border-radius: 50%;
+
+      background: #40d7a5;
+    }
+
+    .conversation-user-info {
+      min-width: 0;
+    }
+
+    .conversation-name {
+      overflow: hidden;
+
+      color: #edf8f5;
+
+      font-size: 14px;
+      font-weight: 800;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .conversation-status {
+      margin-top: 2px;
+
+      color: #718985;
+
+      font-size: 10px;
+    }
+
+    .conversation-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .messages-area {
+      position: relative;
+
+      flex: 1;
+
+      min-height: 0;
+
+      overflow-y: auto;
+
+      padding: 25px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .conversation-empty {
+      max-width: 430px;
+
+      text-align: center;
+    }
+
+    .conversation-empty-icon {
+      width: 62px;
+      height: 62px;
+
+      margin: 0 auto 17px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 21px;
+
+      color: #43ddc5;
+      background: rgba(54,220,195,.07);
+    }
+
+    .conversation-empty h3 {
+      margin: 0;
+
+      color: #dce9e6;
+
+      font-size: 16px;
+    }
+
+    .conversation-empty p {
+      margin: 8px 0 0;
+
+      color: #647b76;
+
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+
+      gap: 8px;
+
+      padding: 12px 15px;
+
+      border-top: 1px solid rgba(255,255,255,.05);
+
+      background: rgba(5,14,12,.95);
+    }
+
+    .composer-input-wrap {
+      min-width: 0;
+      flex: 1;
+
+      min-height: 44px;
+
+      display: flex;
+      align-items: flex-end;
+
+      gap: 8px;
+
+      padding: 7px 11px;
+
+      border-radius: 15px;
+
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.045);
+    }
+
+    .composer textarea {
+      flex: 1;
+
+      min-width: 0;
+      max-height: 110px;
+
+      resize: none;
+
+      border: 0;
+      outline: 0;
+
+      color: #edf8f5;
+      background: transparent;
+
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .composer textarea::placeholder {
+      color: #627873;
+    }
+
+    .composer-icon {
+      width: 31px;
+      height: 31px;
+
+      flex: 0 0 auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      color: #77908b;
+      background: transparent;
+
+      border-radius: 10px;
+    }
+
+    .send-button {
+      width: 45px;
+      height: 45px;
+
+      flex: 0 0 auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 15px;
+
+      color: #03100d;
+
+      background:
+        linear-gradient(
+          145deg,
+          #47e5ce,
+          #1bb49f
+        );
+
+      box-shadow:
+        0 9px 30px rgba(39,213,187,.15);
+    }
+
+    /* =========================================================
+       MOBILE BOTTOM NAV
+       ========================================================= */
+
+    .mobile-nav {
+      display: none;
+    }
+
+    /* =========================================================
+       MODAL ROOT
+       ========================================================= */
+
+    #nova-modal-root {
+      position: fixed;
+      inset: 0;
+
+      z-index: 50000;
+
+      pointer-events: none;
+    }
+
+    .nova-overlay {
+      position: absolute;
+      inset: 0;
+
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+
+      padding: 18px;
+
+      background: rgba(0,0,0,.62);
+
+      backdrop-filter: blur(8px);
+
+      opacity: 0;
+      visibility: hidden;
+
+      transition: .25s ease;
+    }
+
+    .nova-overlay.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .nova-sheet {
+      width: min(100%, 570px);
+      max-height: min(82vh, 720px);
+
+      overflow: auto;
+
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 24px;
+
+      background:
+        linear-gradient(
+          180deg,
+          #0a1815,
+          #06110f
+        );
+
+      box-shadow:
+        0 35px 100px rgba(0,0,0,.5);
+
+      transform: translateY(20px);
+
+      transition: .3s ease;
+    }
+
+    .nova-overlay.open .nova-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 42px;
+      height: 4px;
+
+      margin: 10px auto 4px;
+
+      border-radius: 99px;
+
+      background: rgba(255,255,255,.12);
+    }
+
+    .sheet-header {
+      padding: 18px 20px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      border-bottom: 1px solid rgba(255,255,255,.055);
+    }
+
+    .sheet-title {
+      color: #eef8f5;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .sheet-body {
+      padding: 17px;
+    }
+
+    .sheet-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 9px;
+    }
+
+    .sheet-action {
+      min-height: 92px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      gap: 9px;
+
+      border-radius: 17px;
+
+      color: #9db2ae;
+      background: rgba(255,255,255,.035);
+
+      border: 1px solid rgba(255,255,255,.04);
+
+      transition: .2s ease;
+    }
+
+    .sheet-action:hover {
+      color: #fff;
+      background: rgba(255,255,255,.065);
+      border-color: rgba(65,220,197,.13);
+    }
+
+    .sheet-action svg {
+      width: 24px;
+      height: 24px;
+
+      color: #42dac2;
+    }
+
+    .sheet-action span {
+      font-size: 11px;
+    }
+
+    /* =========================================================
+       TOAST
+       ========================================================= */
+
+    #nova-toast-root {
+      position: fixed;
+
+      z-index: 100000;
+
+      left: 50%;
+      bottom: 25px;
+
+      transform: translate(-50%, 20px);
+
+      opacity: 0;
+      visibility: hidden;
+
+      pointer-events: none;
+
+      padding: 11px 17px;
+
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 99px;
+
+      color: #e9f7f4;
+
+      background: rgba(11,25,22,.94);
+
+      box-shadow:
+        0 15px 45px rgba(0,0,0,.35);
+
+      backdrop-filter: blur(16px);
+
+      font-size: 11px;
+
+      transition: .3s ease;
+    }
+
+    #nova-toast-root.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+    }
+
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
+    @media (max-width: 900px) {
+
+      .app-shell {
+        display: block;
+      }
+
+      .nova-sidebar {
+        display: none;
+      }
+
+      .nova-list-panel {
+        width: 100%;
+        height: 100%;
+
+        border: 0;
+      }
+
+      .nova-main {
+        position: fixed;
+        inset: 0;
+
+        z-index: 20;
+
+        transform: translateX(100%);
+
+        transition: transform .3s ease;
+      }
+
+      .nova-main.mobile-open {
+        transform: translateX(0);
+      }
+
+      .mobile-nav {
+        position: fixed;
+
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+
+        z-index: 100;
+
+        height: 64px;
+
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+
+        padding: 6px;
+
+        border: 1px solid rgba(255,255,255,.07);
+        border-radius: 21px;
+
+        background:
+          rgba(5, 16, 14, .94);
+
+        backdrop-filter: blur(20px);
+
+        box-shadow:
+          0 15px 50px rgba(0,0,0,.4);
+      }
+
+      .mobile-nav button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        gap: 3px;
+
+        border-radius: 15px;
+
+        color: #637a75;
+        background: transparent;
+
+        font-size: 9px;
+      }
+
+      .mobile-nav button.active {
+        color: #46ddc6;
+        background: rgba(54,218,195,.08);
+      }
+
+      .mobile-nav svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .list-header {
+        padding-top: calc(
+          18px + env(safe-area-inset-top)
+        );
+      }
+
+      .conversation-header {
+        padding-top: calc(
+          10px + env(safe-area-inset-top)
+        );
+      }
+
+      .composer {
+        padding-bottom: calc(
+          10px + env(safe-area-inset-bottom)
+        );
+      }
+
+      .messages-area {
+        padding: 18px;
+      }
+
+      .welcome-view {
+        padding:
+          30px
+          25px
+          110px;
+      }
+    }
+
+    @media (max-width: 480px) {
+
+      .list-title {
+        font-size: 22px;
+      }
+
+      .sheet-grid {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .conversation-actions .optional-action {
+        display: none;
+      }
+
+      .welcome-symbol {
+        width: 82px;
+        height: 82px;
+
+        border-radius: 27px;
+      }
+
+      .welcome-view h1 {
+        font-size: 23px;
+      }
+
+      .welcome-view p {
+        font-size: 12px;
+      }
+    }
+  </style>
+
+  <!-- التصميم الكامل -->
   <link rel="stylesheet" href="nova.css">
 </head>
 
 <body>
 
-<!-- =========================================================
-     APP ROOT
-========================================================= -->
+  <!-- =========================================================
+       NOVA LOADER
+       مهم جدًا:
+       هذا الجزء مستقل تمامًا عن nova.js.
+       ========================================================= -->
 
-<div id="nova-app" class="nova-app">
+  <section id="nova-loader" aria-label="جاري تشغيل NOVA">
 
-  <!-- =======================================================
-       SPLASH
-  ======================================================== -->
+    <div class="loader-noise"></div>
+    <div class="loader-glow"></div>
 
-  <section id="splash-screen" class="screen splash-screen">
+    <div class="loader-content">
 
-    <div class="splash-background">
-      <div class="splash-orb splash-orb-one"></div>
-      <div class="splash-orb splash-orb-two"></div>
-      <div class="splash-grid"></div>
-    </div>
+      <div class="nova-logo-loader" aria-hidden="true">
+        <span class="nova-logo-letter">N</span>
+      </div>
 
-    <div class="splash-content">
+      <div class="loader-brand">NOVA</div>
 
-      <div class="nova-brand-large">
+      <div class="loader-arabic">
+        نوفا
+      </div>
 
-        <div class="nova-logo nova-logo-large" aria-label="NOVA">
+      <div class="loader-welcome">
+        مرحبًا بك في NOVA ✦
+      </div>
 
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <defs>
-              <linearGradient id="novaLogoGradient"
-                x1="0"
-                y1="0"
-                x2="1"
-                y2="1">
-                <stop offset="0%" stop-color="#65f5df"/>
-                <stop offset="100%" stop-color="#18bfae"/>
-              </linearGradient>
-            </defs>
+      <div class="loader-subtitle">
+        تواصل • تحدث • شارك
+      </div>
 
-            <path
-              d="M50 8
-                 C27 8 10 25 10 47
-                 C10 68 25 83 45 86
-                 L45 94
-                 L61 84
-                 C83 80 90 65 90 47
-                 C90 25 73 8 50 8Z"
-              fill="url(#novaLogoGradient)"
-            />
+      <div class="loader-progress-wrap">
 
-            <path
-              d="M28 61V35L36 35L51 54V35H61V65H53L38 46V65Z"
-              fill="#061012"
-            />
-
-            <path
-              d="M67 35H76L76 65H67Z"
-              fill="#061012"
-            />
-          </svg>
-
+        <div class="loader-progress">
+          <div
+            id="nova-loader-progress"
+            class="loader-progress-bar"
+          ></div>
         </div>
 
-        <div class="brand-wordmark">NOVA</div>
-        <div class="brand-arabic">نــوفــا</div>
+        <div
+          id="nova-loader-status"
+          class="loader-status"
+        >
+          جاري تشغيل نوفا...
+        </div>
 
       </div>
 
-      <div class="splash-message">
-        <strong>مرحبًا بك في NOVA</strong>
-        <span>تواصل. تحدث. شارك.</span>
-      </div>
-
-      <div class="splash-loader">
-        <div class="splash-loader-track">
-          <div id="splash-progress" class="splash-loader-progress"></div>
-        </div>
-        <span id="splash-status">جاري تجهيز نوفا...</span>
+      <div class="loader-version">
+        NOVA 1.0.0
       </div>
 
     </div>
@@ -113,2116 +1553,752 @@
   </section>
 
 
-  <!-- =======================================================
-       AUTH
-  ======================================================== -->
+  <!-- =========================================================
+       APPLICATION
+       ========================================================= -->
 
-  <section id="auth-screen" class="screen auth-screen hidden">
+  <main id="nova-app">
 
-    <div class="auth-background">
-      <div class="auth-glow auth-glow-one"></div>
-      <div class="auth-glow auth-glow-two"></div>
-    </div>
+    <div class="app-shell">
 
-    <div class="auth-card">
+      <!-- =====================================================
+           SIDEBAR
+           ===================================================== -->
 
-      <div class="auth-brand">
+      <aside class="nova-sidebar">
 
-        <div class="nova-logo nova-logo-medium">
-          <svg viewBox="0 0 100 100">
-            <path
-              d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-              fill="#39d8c2"
-            />
-            <path
-              d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-              fill="#061012"
-            />
-            <path
-              d="M67 35H76V65H67Z"
-              fill="#061012"
-            />
-          </svg>
-        </div>
+        <button
+          class="sidebar-brand"
+          type="button"
+          aria-label="NOVA"
+          data-action="home"
+        >
+          N
+        </button>
 
-        <h1>NOVA</h1>
-        <p>منصة التواصل الخاصة بك</p>
-
-      </div>
-
-
-      <!-- LOGIN -->
-
-      <form id="login-form" class="auth-form">
-
-        <div class="auth-heading">
-          <h2>تسجيل الدخول</h2>
-          <p>ادخل إلى حسابك في نوفا</p>
-        </div>
-
-        <label class="field">
-          <span>البريد الإلكتروني أو رقم الهاتف</span>
-          <input
-            id="login-identifier"
-            name="identifier"
-            type="text"
-            autocomplete="username"
-            placeholder="example@email.com"
-            required
-          >
-        </label>
-
-        <label class="field">
-          <span>كلمة المرور</span>
-
-          <div class="password-field">
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="••••••••"
-              required
-            >
-
-            <button
-              type="button"
-              class="icon-button password-toggle"
-              data-password-target="login-password"
-              aria-label="إظهار كلمة المرور"
-            >
-              <span>◉</span>
-            </button>
-          </div>
-        </label>
-
-        <div class="auth-row">
-
-          <label class="checkbox-label">
-            <input type="checkbox">
-            <span>تذكرني</span>
-          </label>
+        <nav class="sidebar-nav">
 
           <button
+            class="nav-button active"
             type="button"
-            class="text-button"
-            data-action="forgot-password"
+            data-section="chats"
+            title="المحادثات"
           >
-            نسيت كلمة المرور؟
-          </button>
-
-        </div>
-
-        <button class="primary-button auth-submit" type="submit">
-          <span>تسجيل الدخول</span>
-          <span class="button-arrow">←</span>
-        </button>
-
-        <div class="auth-divider">
-          <span>أو</span>
-        </div>
-
-        <button
-          type="button"
-          class="secondary-button"
-          data-action="google-login"
-        >
-          <span class="google-mark">G</span>
-          <span>المتابعة باستخدام Google</span>
-        </button>
-
-        <p class="auth-switch">
-          ليس لديك حساب؟
-          <button type="button" data-action="show-register">
-            إنشاء حساب
-          </button>
-        </p>
-
-      </form>
-
-
-      <!-- REGISTER -->
-
-      <form id="register-form" class="auth-form hidden">
-
-        <div class="auth-heading">
-          <h2>إنشاء حساب</h2>
-          <p>أنشئ حساب NOVA جديدًا</p>
-        </div>
-
-        <label class="field">
-          <span>الاسم</span>
-          <input
-            name="name"
-            type="text"
-            autocomplete="name"
-            placeholder="اسمك"
-            required
-          >
-        </label>
-
-        <label class="field">
-          <span>اسم المستخدم</span>
-          <input
-            name="username"
-            type="text"
-            autocomplete="username"
-            placeholder="@username"
-            required
-          >
-        </label>
-
-        <label class="field">
-          <span>البريد الإلكتروني</span>
-          <input
-            name="email"
-            type="email"
-            autocomplete="email"
-            placeholder="example@email.com"
-            required
-          >
-        </label>
-
-        <label class="field">
-          <span>كلمة المرور</span>
-          <input
-            name="password"
-            type="password"
-            autocomplete="new-password"
-            placeholder="أنشئ كلمة مرور قوية"
-            required
-          >
-        </label>
-
-        <label class="checkbox-label terms-check">
-          <input type="checkbox" required>
-          <span>أوافق على شروط استخدام NOVA وسياسة الخصوصية.</span>
-        </label>
-
-        <button class="primary-button auth-submit" type="submit">
-          <span>إنشاء الحساب</span>
-          <span>←</span>
-        </button>
-
-        <p class="auth-switch">
-          لديك حساب بالفعل؟
-          <button type="button" data-action="show-login">
-            تسجيل الدخول
-          </button>
-        </p>
-
-      </form>
-
-
-      <!-- FORGOT PASSWORD -->
-
-      <form id="forgot-form" class="auth-form hidden">
-
-        <div class="auth-heading">
-          <h2>استعادة الحساب</h2>
-          <p>سنساعدك على استعادة الوصول إلى حسابك.</p>
-        </div>
-
-        <label class="field">
-          <span>البريد الإلكتروني أو الهاتف</span>
-          <input
-            type="text"
-            name="identifier"
-            placeholder="بيانات الحساب"
-            required
-          >
-        </label>
-
-        <button class="primary-button" type="submit">
-          إرسال طلب الاستعادة
-        </button>
-
-        <button
-          type="button"
-          class="text-button centered-button"
-          data-action="show-login"
-        >
-          العودة لتسجيل الدخول
-        </button>
-
-      </form>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       MAIN APPLICATION
-  ======================================================== -->
-
-  <section id="main-screen" class="screen main-screen hidden">
-
-    <!-- =====================================================
-         DESKTOP SIDEBAR
-    ====================================================== -->
-
-    <aside class="main-sidebar">
-
-      <div class="sidebar-top">
-
-        <button
-          class="brand-mini-button"
-          data-view="chats"
-          aria-label="NOVA"
-        >
-
-          <div class="nova-logo nova-logo-small">
-            <svg viewBox="0 0 100 100">
-              <path
-                d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-                fill="#39d8c2"
-              />
-              <path
-                d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-                fill="#061012"
-              />
-              <path
-                d="M67 35H76V65H67Z"
-                fill="#061012"
-              />
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
             </svg>
-          </div>
-
-          <strong>NOVA</strong>
-
-        </button>
-
-
-        <nav class="sidebar-navigation">
-
-          <button class="sidebar-nav-item active" data-view="chats">
-            <span class="nav-icon">▣</span>
-            <span>المحادثات</span>
-            <span class="nav-badge hidden">0</span>
           </button>
 
-          <button class="sidebar-nav-item" data-view="status">
-            <span class="nav-icon">◌</span>
-            <span>الحالة</span>
+          <button
+            class="nav-button"
+            type="button"
+            data-section="status"
+            title="الحالات"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="8.5"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
           </button>
 
-          <button class="sidebar-nav-item" data-view="calls">
-            <span class="nav-icon">⌕</span>
-            <span>المكالمات</span>
+          <button
+            class="nav-button"
+            type="button"
+            data-section="calls"
+            title="المكالمات"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
+            </svg>
           </button>
 
-          <button class="sidebar-nav-item" data-view="communities">
-            <span class="nav-icon">◎</span>
-            <span>المجتمعات</span>
-          </button>
-
-          <button class="sidebar-nav-item" data-view="contacts">
-            <span class="nav-icon">♙</span>
-            <span>جهات الاتصال</span>
+          <button
+            class="nav-button"
+            type="button"
+            data-section="communities"
+            title="المجتمعات"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect x="4" y="4" width="16" height="16" rx="4"/>
+              <path d="M8 9h8M8 12h8M8 15h5"/>
+            </svg>
           </button>
 
         </nav>
 
-      </div>
+        <div class="sidebar-bottom">
 
+          <button
+            class="nav-button"
+            type="button"
+            data-action="notifications"
+            title="الإشعارات"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+              <path d="M10 21h4"/>
+            </svg>
+            <span class="nav-badge" hidden>0</span>
+          </button>
 
-      <div class="sidebar-bottom">
+          <button
+            class="nav-button"
+            type="button"
+            data-action="settings"
+            title="الإعدادات"
+          >
+            <svg
+              class="nav-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.8 1.8-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V20h-2.55v-.1a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.8-1.8.06-.06A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.56-1.04h-.1v-2.55h.1A1.7 1.7 0 0 0 8.1 10.4a1.7 1.7 0 0 0-.34-1.88L7.7 8.46l1.8-1.8.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.04-1.56V5h2.55v.1a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.8 1.8-.06.06A1.7 1.7 0 0 0 19.4 10.4a1.7 1.7 0 0 0 1.56 1.04h.1v2.55h-.1A1.7 1.7 0 0 0 19.4 15Z"/>
+            </svg>
+          </button>
 
-        <button class="sidebar-nav-item" data-view="profile">
-          <span class="nav-icon">◉</span>
-          <span>الملف الشخصي</span>
-        </button>
-
-        <button class="sidebar-nav-item" data-view="settings">
-          <span class="nav-icon">⚙</span>
-          <span>الإعدادات</span>
-        </button>
-
-        <button
-          class="sidebar-nav-item danger"
-          data-action="logout"
-        >
-          <span class="nav-icon">↪</span>
-          <span>تسجيل الخروج</span>
-        </button>
-
-      </div>
-
-    </aside>
-
-
-    <!-- =====================================================
-         MOBILE TOP BAR
-    ====================================================== -->
-
-    <header class="mobile-topbar">
-
-      <button
-        class="mobile-brand"
-        data-view="chats"
-      >
-
-        <div class="nova-logo nova-logo-tiny">
-          <svg viewBox="0 0 100 100">
-            <path
-              d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-              fill="#39d8c2"
-            />
-            <path
-              d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-              fill="#061012"
-            />
-            <path
-              d="M67 35H76V65H67Z"
-              fill="#061012"
-            />
-          </svg>
         </div>
 
-        <strong>NOVA</strong>
-
-      </button>
-
-      <div class="mobile-top-actions">
-
-        <button
-          class="icon-button"
-          data-action="global-search"
-          aria-label="بحث"
-        >
-          ⌕
-        </button>
-
-        <button
-          class="icon-button"
-          data-action="main-menu"
-          aria-label="القائمة"
-        >
-          ⋮
-        </button>
-
-      </div>
-
-    </header>
+      </aside>
 
 
-    <!-- =====================================================
-         CONTENT
-    ====================================================== -->
+      <!-- =====================================================
+           LIST PANEL
+           ===================================================== -->
 
-    <main class="main-content">
+      <section class="nova-list-panel">
 
+        <header class="list-header">
 
-      <!-- ===================================================
-           CHAT LIST PANEL
-      ==================================================== -->
+          <div class="list-header-top">
 
-      <section id="chat-list-panel" class="panel chat-list-panel">
+            <h1
+              class="list-title"
+              id="nova-list-title"
+            >
+              المحادثات
+            </h1>
 
-        <header class="panel-header">
+            <div class="list-actions">
 
-          <div>
-            <span class="eyebrow">NOVA</span>
-            <h1>المحادثات</h1>
+              <button
+                class="icon-button"
+                type="button"
+                title="محادثة جديدة"
+                data-action="new-chat"
+              >
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+
+              <button
+                class="icon-button"
+                type="button"
+                title="القائمة"
+                data-action="main-menu"
+              >
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <circle cx="5" cy="12" r="1"/>
+                  <circle cx="12" cy="12" r="1"/>
+                  <circle cx="19" cy="12" r="1"/>
+                </svg>
+              </button>
+
+            </div>
+
           </div>
 
-          <div class="header-actions">
 
-            <button
-              class="icon-button"
-              data-action="global-search"
+          <label class="search-box">
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="11" cy="11" r="7"/>
+              <path d="m20 20-4-4"/>
+            </svg>
+
+            <input
+              id="nova-global-search"
+              type="search"
+              autocomplete="off"
+              placeholder="بحث في NOVA"
               aria-label="بحث"
             >
-              ⌕
-            </button>
 
-            <button
-              class="icon-button"
-              data-action="new-chat"
-              aria-label="محادثة جديدة"
-            >
-              ＋
-            </button>
-
-          </div>
+          </label>
 
         </header>
 
 
-        <div class="chat-filters">
+        <div class="filter-tabs">
 
-          <button class="filter-chip active" data-chat-filter="all">
+          <button
+            class="filter-tab active"
+            type="button"
+            data-chat-filter="all"
+          >
             الكل
           </button>
 
-          <button class="filter-chip" data-chat-filter="unread">
+          <button
+            class="filter-tab"
+            type="button"
+            data-chat-filter="unread"
+          >
             غير مقروءة
           </button>
 
-          <button class="filter-chip" data-chat-filter="favorites">
+          <button
+            class="filter-tab"
+            type="button"
+            data-chat-filter="favorites"
+          >
             المفضلة
           </button>
 
-          <button class="filter-chip" data-chat-filter="groups">
+          <button
+            class="filter-tab"
+            type="button"
+            data-chat-filter="groups"
+          >
             المجموعات
           </button>
 
         </div>
 
 
-        <div class="search-box">
-
-          <span>⌕</span>
-
-          <input
-            id="chat-search"
-            type="search"
-            placeholder="بحث في المحادثات"
-            autocomplete="off"
-          >
-
-          <button
-            class="clear-search hidden"
-            data-action="clear-chat-search"
-          >
-            ×
-          </button>
-
-        </div>
-
-
         <div
-          id="conversation-list"
-          class="conversation-list"
-          aria-live="polite"
+          class="list-content"
+          id="nova-list-content"
         >
 
-          <div class="empty-state">
+          <!--
+            لا توجد بيانات تجريبية هنا.
+            عندما يتصل الـBackend الحقيقي سيتم ملء القائمة.
+          -->
+
+          <div class="empty-state-small">
+
+            <div class="empty-icon">
+
+              <svg
+                width="29"
+                height="29"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+              >
+                <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+              </svg>
 
-            <div class="empty-icon">▣</div>
-
-            <h2>لا توجد محادثات</h2>
-
-            <p>
-              عندما تبدأ محادثة جديدة ستظهر هنا.
-            </p>
-
-            <button
-              class="primary-button compact"
-              data-action="new-chat"
-            >
-              بدء محادثة
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           STATUS PANEL
-      ==================================================== -->
-
-      <section
-        id="status-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">NOVA STATUS</span>
-            <h1>الحالة</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="status-menu"
-          >
-            ⋮
-          </button>
-
-        </header>
-
-
-        <div class="status-own-card">
-
-          <div class="status-avatar">
-            <span>+</span>
-          </div>
-
-          <div class="status-own-info">
-            <strong>حالتي</strong>
-            <span>أضف تحديثًا جديدًا</span>
-          </div>
-
-          <button
-            class="round-add-button"
-            data-action="add-status"
-          >
-            +
-          </button>
-
-        </div>
-
-
-        <div class="section-title">
-          التحديثات الأخيرة
-        </div>
-
-        <div class="status-list">
-
-          <div class="empty-state compact-empty">
-
-            <div class="empty-icon">◌</div>
-
-            <h2>لا توجد تحديثات</h2>
-
-            <p>
-              تحديثات جهات اتصالك ستظهر هنا.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div class="section-title">
-          تمّت مشاهدتها
-        </div>
-
-        <div class="status-list">
-
-          <div class="empty-state compact-empty">
-            <p>لا توجد حالات تمت مشاهدتها.</p>
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           CALLS PANEL
-      ==================================================== -->
-
-      <section
-        id="calls-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">NOVA CALLS</span>
-            <h1>المكالمات</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="new-call"
-          >
-            ＋
-          </button>
-
-        </header>
-
-
-        <div class="chat-filters">
-
-          <button class="filter-chip active">
-            الكل
-          </button>
-
-          <button class="filter-chip">
-            فائتة
-          </button>
-
-          <button class="filter-chip">
-            واردة
-          </button>
-
-          <button class="filter-chip">
-            صادرة
-          </button>
-
-        </div>
-
-
-        <div class="calls-list">
-
-          <div class="empty-state">
-
-            <div class="empty-icon">⌕</div>
-
-            <h2>لا توجد مكالمات</h2>
-
-            <p>
-              سجل المكالمات سيظهر هنا عندما تبدأ مكالمة.
-            </p>
-
-            <button
-              class="primary-button compact"
-              data-action="new-call"
-            >
-              بدء مكالمة
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           COMMUNITIES
-      ==================================================== -->
-
-      <section
-        id="communities-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">NOVA COMMUNITY</span>
-            <h1>المجتمعات</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="create-community"
-          >
-            ＋
-          </button>
-
-        </header>
-
-
-        <div class="community-hero">
-
-          <div class="community-hero-icon">◎</div>
-
-          <div>
-            <strong>مجتمعات NOVA</strong>
-            <span>
-              اجمع المجموعات والمواضيع في مكان واحد.
-            </span>
-          </div>
-
-        </div>
-
-
-        <div class="empty-state">
-
-          <div class="empty-icon">◎</div>
-
-          <h2>لا توجد مجتمعات</h2>
-
-          <p>
-            أنشئ أول مجتمع لك أو انضم إلى مجتمع عندما تتوفر البيانات.
-          </p>
-
-          <button
-            class="primary-button compact"
-            data-action="create-community"
-          >
-            إنشاء مجتمع
-          </button>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           CONTACTS
-      ==================================================== -->
-
-      <section
-        id="contacts-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">CONTACTS</span>
-            <h1>جهات الاتصال</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="refresh-contacts"
-          >
-            ↻
-          </button>
-
-        </header>
-
-
-        <div class="contact-tools">
-
-          <button
-            class="action-card"
-            data-action="invite-contact"
-          >
-            <span class="action-card-icon">＋</span>
-            <span>
-              <strong>دعوة صديق</strong>
-              <small>شارك NOVA</small>
-            </span>
-          </button>
-
-          <button
-            class="action-card"
-            data-action="new-contact"
-          >
-            <span class="action-card-icon">♙</span>
-            <span>
-              <strong>إضافة جهة اتصال</strong>
-              <small>حفظ جهة اتصال</small>
-            </span>
-          </button>
-
-        </div>
-
-
-        <div class="empty-state">
-
-          <div class="empty-icon">♙</div>
-
-          <h2>لا توجد جهات اتصال</h2>
-
-          <p>
-            سيتم عرض جهات الاتصال المتاحة بعد ربط الحساب.
-          </p>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           PROFILE
-      ==================================================== -->
-
-      <section
-        id="profile-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">ACCOUNT</span>
-            <h1>الملف الشخصي</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="edit-profile"
-          >
-            ✎
-          </button>
-
-        </header>
-
-
-        <div class="profile-header-card">
-
-          <div class="profile-avatar-large">
-            <span>+</span>
-          </div>
-
-          <div class="profile-identity">
-            <h2>حساب NOVA</h2>
-            <span>@username</span>
-            <p>لم تتم إضافة نبذة بعد.</p>
-          </div>
-
-        </div>
-
-
-        <div class="profile-sections">
-
-          <button class="settings-row">
-            <span class="row-icon">▣</span>
-            <span>
-              <strong>الوسائط والروابط</strong>
-              <small>الصور والفيديوهات والروابط</small>
-            </span>
-            <b>›</b>
-          </button>
-
-          <button class="settings-row">
-            <span class="row-icon">♙</span>
-            <span>
-              <strong>المجموعات</strong>
-              <small>المجموعات المشتركة</small>
-            </span>
-            <b>›</b>
-          </button>
-
-          <button class="settings-row">
-            <span class="row-icon">⌕</span>
-            <span>
-              <strong>الإشعارات</strong>
-              <small>إعدادات إشعارات الحساب</small>
-            </span>
-            <b>›</b>
-          </button>
-
-          <button class="settings-row">
-            <span class="row-icon">◇</span>
-            <span>
-              <strong>الخصوصية</strong>
-              <small>إدارة إعدادات الخصوصية</small>
-            </span>
-            <b>›</b>
-          </button>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           SETTINGS
-      ==================================================== -->
-
-      <section
-        id="settings-panel"
-        class="panel generic-panel hidden"
-      >
-
-        <header class="panel-header">
-
-          <div>
-            <span class="eyebrow">NOVA</span>
-            <h1>الإعدادات</h1>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="settings-search"
-          >
-            ⌕
-          </button>
-
-        </header>
-
-
-        <div class="settings-account-card">
-
-          <div class="settings-avatar">
-            <span>+</span>
-          </div>
-
-          <div>
-            <strong>حساب NOVA</strong>
-            <span>لم يتم تسجيل حساب حالي</span>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="edit-profile"
-          >
-            ✎
-          </button>
-
-        </div>
-
-
-        <div class="settings-list">
-
-          <button
-            class="settings-row"
-            data-settings-page="account"
-          >
-            <span class="row-icon">♙</span>
-            <span>
-              <strong>الحساب</strong>
-              <small>البيانات الشخصية وتغيير الرقم</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="privacy"
-          >
-            <span class="row-icon">◇</span>
-            <span>
-              <strong>الخصوصية</strong>
-              <small>آخر ظهور، الحالة، المجموعات والحظر</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="security"
-          >
-            <span class="row-icon">◆</span>
-            <span>
-              <strong>الأمان</strong>
-              <small>التشفير والتحقق بخطوتين</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="chats"
-          >
-            <span class="row-icon">▣</span>
-            <span>
-              <strong>المحادثات</strong>
-              <small>المظهر والخلفيات وحجم الخط</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="notifications"
-          >
-            <span class="row-icon">♢</span>
-            <span>
-              <strong>الإشعارات</strong>
-              <small>الرسائل والمجموعات والمكالمات</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="storage"
-          >
-            <span class="row-icon">▤</span>
-            <span>
-              <strong>التخزين والبيانات</strong>
-              <small>إدارة التخزين والتنزيل التلقائي</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="help"
-          >
-            <span class="row-icon">?</span>
-            <span>
-              <strong>المساعدة</strong>
-              <small>الأسئلة الشائعة والتواصل مع NOVA</small>
-            </span>
-            <b>›</b>
-          </button>
-
-
-          <button
-            class="settings-row"
-            data-settings-page="about"
-          >
-            <span class="row-icon">N</span>
-            <span>
-              <strong>حول NOVA</strong>
-              <small>الإصدار ومعلومات التطبيق</small>
-            </span>
-            <b>›</b>
-          </button>
-
-        </div>
-
-      </section>
-
-
-      <!-- ===================================================
-           CHAT VIEW
-      ==================================================== -->
-
-      <section
-        id="conversation-panel"
-        class="conversation-panel hidden"
-      >
-
-        <header class="conversation-header">
-
-          <button
-            class="conversation-back icon-button"
-            data-action="close-conversation"
-          >
-            →
-          </button>
-
-          <button
-            class="conversation-person"
-            data-action="open-chat-profile"
-          >
-
-            <div class="avatar avatar-medium">
-              <span>+</span>
             </div>
 
-            <div class="conversation-person-info">
-              <strong id="conversation-title">المحادثة</strong>
-              <span id="conversation-status">
-                لا توجد محادثة محددة
+            <div class="empty-title">
+              لا توجد محادثات بعد
+            </div>
+
+            <div class="empty-description">
+              عندما تبدأ أول محادثة حقيقية ستظهر هنا.
+              NOVA لا يعرض مستخدمين أو رسائل وهمية.
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           MAIN
+           ===================================================== -->
+
+      <section class="nova-main" id="nova-main">
+
+        <div class="main-view">
+
+          <!-- ================================================
+               WELCOME
+               ================================================ -->
+
+          <section
+            class="welcome-view"
+            id="nova-welcome-view"
+          >
+
+            <div class="welcome-symbol">
+              N
+            </div>
+
+            <h1>
+              أهلاً بك في NOVA
+            </h1>
+
+            <p>
+              مكان واحد لمحادثاتك ومكالماتك ومجموعاتك
+              ومجتمعاتك، بتجربة حديثة وسريعة وآمنة.
+            </p>
+
+            <div class="welcome-security">
+
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+              >
+                <rect
+                  x="5"
+                  y="10"
+                  width="14"
+                  height="10"
+                  rx="2"
+                />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+              </svg>
+
+              <span>
+                خصوصيتك جزء أساسي من تصميم NOVA
               </span>
+
             </div>
 
-          </button>
+          </section>
 
 
-          <div class="conversation-actions">
+          <!-- ================================================
+               CONVERSATION
+               ================================================ -->
 
-            <button
-              class="icon-button"
-              data-action="start-voice-call"
-              aria-label="مكالمة صوتية"
-            >
-              ☎
-            </button>
+          <section
+            class="conversation-view"
+            id="nova-conversation"
+          >
 
-            <button
-              class="icon-button"
-              data-action="start-video-call"
-              aria-label="مكالمة فيديو"
-            >
-              ▣
-            </button>
+            <header class="conversation-header">
 
-            <button
-              class="icon-button"
-              data-action="chat-menu"
-              aria-label="المزيد"
-            >
-              ⋮
-            </button>
-
-          </div>
-
-        </header>
-
-
-        <div
-          id="conversation-body"
-          class="conversation-body"
-        >
-
-          <div class="conversation-welcome">
-
-            <div class="conversation-welcome-icon">
-              <div class="nova-logo nova-logo-medium">
-                <svg viewBox="0 0 100 100">
-                  <path
-                    d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-                    fill="#39d8c2"
-                  />
-                  <path
-                    d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-                    fill="#061012"
-                  />
-                  <path
-                    d="M67 35H76V65H67Z"
-                    fill="#061012"
-                  />
+              <button
+                class="icon-button mobile-back"
+                type="button"
+                data-action="close-conversation"
+                aria-label="رجوع"
+              >
+                <svg
+                  width="19"
+                  height="19"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="m15 18-6-6 6-6"/>
                 </svg>
+              </button>
+
+
+              <div class="conversation-user">
+
+                <div class="avatar">
+
+                  N
+
+                  <span class="online-dot"></span>
+
+                </div>
+
+                <div class="conversation-user-info">
+
+                  <div class="conversation-name">
+                    محادثة جديدة
+                  </div>
+
+                  <div class="conversation-status">
+                    اختر محادثة لبدء التواصل
+                  </div>
+
+                </div>
+
               </div>
+
+
+              <div class="conversation-actions">
+
+                <button
+                  class="icon-button optional-action"
+                  type="button"
+                  data-action="voice-call"
+                  title="مكالمة صوتية"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
+                  </svg>
+                </button>
+
+                <button
+                  class="icon-button optional-action"
+                  type="button"
+                  data-action="video-call"
+                  title="مكالمة فيديو"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <rect
+                      x="3"
+                      y="6"
+                      width="13"
+                      height="12"
+                      rx="2"
+                    />
+                    <path d="m16 10 5-3v10l-5-3"/>
+                  </svg>
+                </button>
+
+                <button
+                  class="icon-button"
+                  type="button"
+                  data-action="chat-search"
+                  title="بحث في المحادثة"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <circle cx="11" cy="11" r="6.5"/>
+                    <path d="m16 16 4 4"/>
+                  </svg>
+                </button>
+
+                <button
+                  class="icon-button"
+                  type="button"
+                  data-action="chat-menu"
+                  title="المزيد"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <circle cx="5" cy="12" r="1"/>
+                    <circle cx="12" cy="12" r="1"/>
+                    <circle cx="19" cy="12" r="1"/>
+                  </svg>
+                </button>
+
+              </div>
+
+            </header>
+
+
+            <div class="messages-area">
+
+              <div class="conversation-empty">
+
+                <div class="conversation-empty-icon">
+
+                  <svg
+                    width="27"
+                    height="27"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                  >
+                    <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+                  </svg>
+
+                </div>
+
+                <h3>
+                  لا توجد رسائل
+                </h3>
+
+                <p>
+                  هذه المساحة ستعرض الرسائل الحقيقية
+                  بعد اتصال الحساب بخدمة NOVA.
+                </p>
+
+              </div>
+
             </div>
 
-            <h2>ابدأ محادثة جديدة</h2>
 
-            <p>
-              اختر محادثة من القائمة أو ابدأ محادثة جديدة.
-            </p>
+            <form
+              class="composer"
+              id="nova-composer"
+            >
 
-          </div>
+              <button
+                class="composer-icon"
+                type="button"
+                data-action="emoji"
+                title="إيموجي"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                >
+                  <circle cx="12" cy="12" r="8.5"/>
+                  <path d="M8.5 14.2c.9 1.1 2.1 1.7 3.5 1.7s2.6-.6 3.5-1.7"/>
+                  <path d="M9 9.5h.01M15 9.5h.01"/>
+                </svg>
+              </button>
+
+
+              <div class="composer-input-wrap">
+
+                <textarea
+                  id="nova-message-input"
+                  rows="1"
+                  placeholder="اكتب رسالة..."
+                  autocomplete="off"
+                ></textarea>
+
+                <button
+                  class="composer-icon"
+                  type="button"
+                  data-action="attachments"
+                  title="إرفاق"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                  >
+                    <path d="m20.5 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l9-9a3.5 3.5 0 0 1 5 5l-8.7 8.7a2 2 0 0 1-2.8-2.8l7.7-7.7"/>
+                  </svg>
+                </button>
+
+              </div>
+
+
+              <button
+                class="send-button"
+                id="nova-send-button"
+                type="submit"
+                title="إرسال"
+              >
+
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 3 10 14"/>
+                  <path d="m21 3-7 18-4-7-7-4 18-7Z"/>
+                </svg>
+
+              </button>
+
+            </form>
+
+          </section>
 
         </div>
-
-
-        <!-- REPLY BAR -->
-
-        <div
-          id="reply-bar"
-          class="reply-bar hidden"
-        >
-
-          <div>
-            <strong id="reply-label">الرد على رسالة</strong>
-            <span id="reply-preview"></span>
-          </div>
-
-          <button
-            class="icon-button"
-            data-action="cancel-reply"
-          >
-            ×
-          </button>
-
-        </div>
-
-
-        <!-- COMPOSER -->
-
-        <form
-          id="message-composer"
-          class="message-composer"
-        >
-
-          <button
-            type="button"
-            class="composer-button"
-            data-action="emoji-picker"
-            aria-label="Emoji"
-          >
-            ☺
-          </button>
-
-          <input
-            id="message-input"
-            type="text"
-            autocomplete="off"
-            placeholder="اكتب رسالة"
-            disabled
-          >
-
-          <button
-            type="button"
-            class="composer-button"
-            data-action="attachment"
-            aria-label="مرفقات"
-          >
-            ＋
-          </button>
-
-          <button
-            type="button"
-            id="voice-message-button"
-            class="composer-button voice-button"
-            data-action="voice-message"
-            aria-label="رسالة صوتية"
-          >
-            ●
-          </button>
-
-          <button
-            type="submit"
-            id="send-message-button"
-            class="send-button"
-            disabled
-            aria-label="إرسال"
-          >
-            ↑
-          </button>
-
-        </form>
 
       </section>
 
+    </div>
 
-    </main>
 
+    <!-- =======================================================
+         MOBILE NAV
+         ======================================================= -->
 
-    <!-- =====================================================
-         MOBILE NAVIGATION
-    ====================================================== -->
-
-    <nav class="mobile-bottom-nav">
+    <nav class="mobile-nav">
 
       <button
-        class="mobile-nav-item active"
-        data-view="chats"
+        class="active"
+        type="button"
+        data-section="chats"
       >
-        <span>▣</span>
-        <small>المحادثات</small>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+        </svg>
+        <span>الدردشات</span>
       </button>
 
       <button
-        class="mobile-nav-item"
-        data-view="status"
+        type="button"
+        data-section="status"
       >
-        <span>◌</span>
-        <small>الحالة</small>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="12" cy="12" r="8.5"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <span>الحالات</span>
       </button>
 
       <button
-        class="mobile-nav-add"
-        data-action="new-chat"
+        type="button"
+        data-section="calls"
       >
-        +
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
+        </svg>
+        <span>المكالمات</span>
       </button>
 
       <button
-        class="mobile-nav-item"
-        data-view="calls"
+        type="button"
+        data-action="settings"
       >
-        <span>⌕</span>
-        <small>المكالمات</small>
-      </button>
-
-      <button
-        class="mobile-nav-item"
-        data-view="settings"
-      >
-        <span>⚙</span>
-        <small>الإعدادات</small>
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.8 1.8-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V20h-2.55v-.1a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.8-1.8.06-.06A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.56-1.04h-.1v-2.55h.1A1.7 1.7 0 0 0 8.1 10.4a1.7 1.7 0 0 0-.34-1.88L7.7 8.46l1.8-1.8.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.04-1.56V5h2.55v.1a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.8 1.8-.06.06A1.7 1.7 0 0 0 19.4 10.4a1.7 1.7 0 0 0 1.56 1.04h.1v2.55h-.1A1.7 1.7 0 0 0 19.4 15Z"/>
+        </svg>
+        <span>الإعدادات</span>
       </button>
 
     </nav>
 
-  </section>
+  </main>
 
 
-  <!-- =======================================================
-       CHAT PROFILE DRAWER
-  ======================================================== -->
+  <!-- =========================================================
+       MODAL ROOT
+       ========================================================= -->
 
-  <aside
-    id="chat-profile-drawer"
-    class="drawer hidden"
-  >
+  <div id="nova-modal-root">
 
-    <header class="drawer-header">
-
-      <button
-        class="icon-button"
-        data-action="close-drawer"
-      >
-        ×
-      </button>
-
-      <h2>معلومات المحادثة</h2>
-
-    </header>
-
-    <div class="drawer-content">
-
-      <div class="drawer-profile">
-
-        <div class="profile-avatar-xl">
-          <span>+</span>
-        </div>
-
-        <h2 id="drawer-contact-name">المستخدم</h2>
-        <span id="drawer-contact-username">@username</span>
-
-      </div>
-
-
-      <div class="drawer-actions">
-
-        <button>
-          <span>☎</span>
-          <small>صوت</small>
-        </button>
-
-        <button>
-          <span>▣</span>
-          <small>فيديو</small>
-        </button>
-
-        <button>
-          <span>⌕</span>
-          <small>بحث</small>
-        </button>
-
-      </div>
-
-
-      <div class="drawer-section">
-
-        <button class="settings-row">
-          <span class="row-icon">▤</span>
-          <span>
-            <strong>الوسائط والروابط</strong>
-            <small>0 عنصر</small>
-          </span>
-          <b>›</b>
-        </button>
-
-        <button class="settings-row">
-          <span class="row-icon">★</span>
-          <span>
-            <strong>الرسائل المميزة</strong>
-            <small>0 رسالة</small>
-          </span>
-          <b>›</b>
-        </button>
-
-        <button class="settings-row">
-          <span class="row-icon">⌖</span>
-          <span>
-            <strong>الرسائل المثبتة</strong>
-            <small>0 رسالة</small>
-          </span>
-          <b>›</b>
-        </button>
-
-      </div>
-
-
-      <div class="drawer-section">
-
-        <button class="settings-row">
-          <span class="row-icon">◐</span>
-          <span>
-            <strong>الرسائل المؤقتة</strong>
-            <small>متوقفة</small>
-          </span>
-          <b>›</b>
-        </button>
-
-        <button class="settings-row">
-          <span class="row-icon">◇</span>
-          <span>
-            <strong>التشفير</strong>
-            <small>حماية المحادثة</small>
-          </span>
-          <b>›</b>
-        </button>
-
-      </div>
-
-
-      <button class="danger-row">
-        <span>⊘</span>
-        حظر جهة الاتصال
-      </button>
-
-      <button class="danger-row">
-        <span>⚑</span>
-        الإبلاغ عن جهة الاتصال
-      </button>
-
-    </div>
-
-  </aside>
-
-
-  <!-- =======================================================
-       OVERLAY
-  ======================================================== -->
-
-  <div
-    id="nova-overlay"
-    class="nova-overlay hidden"
-  ></div>
-
-
-  <!-- =======================================================
-       ATTACHMENT SHEET
-  ======================================================== -->
-
-  <section
-    id="attachment-sheet"
-    class="bottom-sheet hidden"
-  >
-
-    <div class="sheet-handle"></div>
-
-    <header class="sheet-header">
-      <h2>إرسال</h2>
-
-      <button
-        class="icon-button"
-        data-action="close-sheet"
-      >
-        ×
-      </button>
-    </header>
-
-    <div class="attachment-grid">
-
-      <button
-        class="attachment-item"
-        data-attachment="camera"
-      >
-        <span class="attachment-icon">◎</span>
-        <strong>الكاميرا</strong>
-      </button>
-
-      <button
-        class="attachment-item"
-        data-attachment="gallery"
-      >
-        <span class="attachment-icon">▧</span>
-        <strong>المعرض</strong>
-      </button>
-
-      <button
-        class="attachment-item"
-        data-attachment="document"
-      >
-        <span class="attachment-icon">▤</span>
-        <strong>مستند</strong>
-      </button>
-
-      <button
-        class="attachment-item"
-        data-attachment="contact"
-      >
-        <span class="attachment-icon">♙</span>
-        <strong>جهة اتصال</strong>
-      </button>
-
-      <button
-        class="attachment-item"
-        data-attachment="location"
-      >
-        <span class="attachment-icon">⌖</span>
-        <strong>الموقع</strong>
-      </button>
-
-      <button
-        class="attachment-item"
-        data-attachment="poll"
-      >
-        <span class="attachment-icon">☷</span>
-        <strong>استطلاع</strong>
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       EMOJI / STICKER SHEET
-  ======================================================== -->
-
-  <section
-    id="emoji-sheet"
-    class="bottom-sheet emoji-sheet hidden"
-  >
-
-    <div class="sheet-handle"></div>
-
-    <header class="sheet-header">
-
-      <div class="picker-tabs">
-
-        <button class="picker-tab active">
-          ☺
-        </button>
-
-        <button class="picker-tab">
-          ★
-        </button>
-
-        <button class="picker-tab">
-          GIF
-        </button>
-
-      </div>
-
-      <button
-        class="icon-button"
-        data-action="close-sheet"
-      >
-        ×
-      </button>
-
-    </header>
-
-
-    <div class="emoji-grid">
-
-      <button>😀</button>
-      <button>😂</button>
-      <button>😍</button>
-      <button>🥰</button>
-      <button>😎</button>
-      <button>😭</button>
-      <button>😅</button>
-      <button>🤣</button>
-      <button>😉</button>
-      <button>😊</button>
-      <button>🙂</button>
-      <button>🙃</button>
-      <button>🤔</button>
-      <button>😴</button>
-      <button>🔥</button>
-      <button>❤️</button>
-      <button>💙</button>
-      <button>💚</button>
-      <button>💜</button>
-      <button>✨</button>
-      <button>👏</button>
-      <button>👍</button>
-      <button>👎</button>
-      <button>🙏</button>
-      <button>🎉</button>
-      <button>🚀</button>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       MESSAGE CONTEXT MENU
-  ======================================================== -->
-
-  <section
-    id="message-menu"
-    class="context-menu hidden"
-  >
-
-    <button data-message-action="reply">
-      <span>↩</span>
-      الرد
-    </button>
-
-    <button data-message-action="forward">
-      <span>↗</span>
-      إعادة توجيه
-    </button>
-
-    <button data-message-action="copy">
-      <span>▣</span>
-      نسخ
-    </button>
-
-    <button data-message-action="star">
-      <span>★</span>
-      تمييز
-    </button>
-
-    <button data-message-action="pin">
-      <span>⌖</span>
-      تثبيت
-    </button>
-
-    <button data-message-action="select">
-      <span>☷</span>
-      تحديد
-    </button>
-
-    <button data-message-action="info">
-      <span>ⓘ</span>
-      معلومات
-    </button>
-
-    <button
-      class="danger-action"
-      data-message-action="delete"
-    >
-      <span>⌫</span>
-      حذف
-    </button>
-
-  </section>
-
-
-  <!-- =======================================================
-       FORWARD SHEET
-  ======================================================== -->
-
-  <section
-    id="forward-sheet"
-    class="bottom-sheet forward-sheet hidden"
-  >
-
-    <div class="sheet-handle"></div>
-
-    <header class="sheet-header">
-
-      <h2>إعادة توجيه</h2>
-
-      <button
-        class="icon-button"
-        data-action="close-sheet"
-      >
-        ×
-      </button>
-
-    </header>
-
-    <div class="search-box">
-      <span>⌕</span>
-      <input
-        type="search"
-        placeholder="البحث عن محادثة"
-      >
-    </div>
-
-    <div class="forward-list">
-
-      <div class="empty-state compact-empty">
-
-        <div class="empty-icon">↗</div>
-
-        <h2>لا توجد محادثات</h2>
-
-        <p>
-          المحادثات المتاحة لإعادة التوجيه ستظهر هنا.
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       GLOBAL SEARCH
-  ======================================================== -->
-
-  <section
-    id="search-overlay"
-    class="search-overlay hidden"
-  >
-
-    <header class="search-header">
-
-      <button
-        class="icon-button"
-        data-action="close-search"
-      >
-        →
-      </button>
-
-      <div class="global-search-input">
-
-        <span>⌕</span>
-
-        <input
-          id="global-search-input"
-          type="search"
-          placeholder="بحث في NOVA"
-          autocomplete="off"
-        >
-
-        <button
-          data-action="clear-global-search"
-        >
-          ×
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <div class="search-tabs">
-
-      <button class="active">الكل</button>
-      <button>الرسائل</button>
-      <button>الأشخاص</button>
-      <button>المجموعات</button>
-      <button>الوسائط</button>
-      <button>الروابط</button>
-
-    </div>
-
+    <!-- Attachment Sheet -->
 
     <div
-      id="global-search-results"
-      class="global-search-results"
+      class="nova-overlay"
+      id="nova-attachment-overlay"
+      aria-hidden="true"
     >
 
-      <div class="empty-state">
+      <div class="nova-sheet">
 
-        <div class="empty-icon">⌕</div>
+        <div class="sheet-handle"></div>
 
-        <h2>ابحث في NOVA</h2>
+        <div class="sheet-header">
 
-        <p>
-          ابحث عن رسائل أو أشخاص أو مجموعات أو ملفات.
-        </p>
+          <div class="sheet-title">
+            إرفاق
+          </div>
 
-      </div>
+          <button
+            class="icon-button"
+            type="button"
+            data-close-modal="nova-attachment-overlay"
+          >
+            ×
+          </button>
 
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       CALL SCREEN
-  ======================================================== -->
-
-  <section
-    id="call-screen"
-    class="call-screen hidden"
-  >
-
-    <div class="call-background">
-
-      <div class="call-glow"></div>
-
-      <div class="call-grid"></div>
-
-    </div>
-
-
-    <header class="call-header">
-
-      <button
-        class="icon-button light"
-        data-action="minimize-call"
-      >
-        ↓
-      </button>
-
-      <span id="call-type-label">
-        مكالمة صوتية
-      </span>
-
-      <button
-        class="icon-button light"
-        data-action="call-menu"
-      >
-        ⋮
-      </button>
-
-    </header>
-
-
-    <div class="call-main">
-
-      <div class="call-avatar">
-
-        <div class="nova-logo nova-logo-large">
-          <svg viewBox="0 0 100 100">
-            <path
-              d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-              fill="#39d8c2"
-            />
-            <path
-              d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-              fill="#061012"
-            />
-            <path
-              d="M67 35H76V65H67Z"
-              fill="#061012"
-            />
-          </svg>
         </div>
 
-      </div>
-
-      <h2 id="call-person-name">
-        NOVA
-      </h2>
-
-      <span id="call-status">
-        جاري الاتصال...
-      </span>
-
-    </div>
-
-
-    <div class="call-controls">
-
-      <button class="call-control">
-        <span>♩</span>
-        <small>كتم</small>
-      </button>
-
-      <button class="call-control">
-        <span>▣</span>
-        <small>فيديو</small>
-      </button>
-
-      <button class="call-control">
-        <span>⌁</span>
-        <small>مكبر</small>
-      </button>
-
-      <button
-        class="call-control hangup"
-        data-action="end-call"
-      >
-        <span>☎</span>
-        <small>إنهاء</small>
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       INCOMING CALL
-  ======================================================== -->
-
-  <section
-    id="incoming-call"
-    class="incoming-call hidden"
-  >
-
-    <div class="incoming-call-card">
-
-      <div class="incoming-avatar">
-        <div class="nova-logo nova-logo-medium">
-          <svg viewBox="0 0 100 100">
-            <path
-              d="M50 8C27 8 10 25 10 47C10 68 25 83 45 86L45 94L61 84C83 80 90 65 90 47C90 25 73 8 50 8Z"
-              fill="#39d8c2"
-            />
-            <path
-              d="M28 61V35H36L51 54V35H61V65H53L38 46V65Z"
-              fill="#061012"
-            />
-            <path
-              d="M67 35H76V65H67Z"
-              fill="#061012"
-            />
-          </svg>
-        </div>
-      </div>
-
-      <span>مكالمة واردة</span>
-
-      <h2 id="incoming-call-name">
-        NOVA
-      </h2>
-
-      <div class="incoming-call-actions">
-
-        <button
-          class="call-action decline"
-          data-action="decline-call"
-        >
-          <span>☎</span>
-          رفض
-        </button>
-
-        <button
-          class="call-action accept"
-          data-action="accept-call"
-        >
-          <span>☎</span>
-          قبول
-        </button>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       STATUS VIEWER
-  ======================================================== -->
-
-  <section
-    id="status-viewer"
-    class="status-viewer hidden"
-  >
-
-    <div class="status-progress">
-
-      <span></span>
-
-    </div>
-
-    <header class="status-viewer-header">
-
-      <button
-        class="icon-button light"
-        data-action="close-status"
-      >
-        ×
-      </button>
-
-      <div>
-        <strong>حالتي</strong>
-        <small>الآن</small>
-      </div>
-
-      <button
-        class="icon-button light"
-        data-action="status-viewer-menu"
-      >
-        ⋮
-      </button>
-
-    </header>
-
-
-    <div class="status-viewer-content">
-
-      <div class="empty-state dark-empty">
-
-        <div class="empty-icon">◌</div>
-
-        <h2>لا توجد حالة لعرضها</h2>
-
-        <p>
-          أضف حالة جديدة لتظهر هنا.
-        </p>
-
-      </div>
-
-    </div>
-
-
-    <div class="status-reply">
-
-      <input
-        type="text"
-        placeholder="الرد على الحالة"
-      >
-
-      <button>
-        ↑
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       MODAL
-  ======================================================== -->
-
-  <section
-    id="nova-modal"
-    class="modal-layer hidden"
-  >
-
-    <div class="modal-card">
-
-      <header class="modal-header">
-
-        <h2 id="modal-title">NOVA</h2>
-
-        <button
-          class="icon-button"
-          data-action="close-modal"
-        >
-          ×
-        </button>
-
-      </header>
-
-      <div
-        id="modal-content"
-        class="modal-content"
-      ></div>
-
-      <footer
-        id="modal-footer"
-        class="modal-footer"
-      ></footer>
-
-    </div>
-
-  </section>
-
-
-  <!-- =======================================================
-       TOAST
-  ======================================================== -->
-
-  <div
-    id="nova-toast"
-    class="toast hidden"
-    role="status"
-    aria-live="polite"
-  >
-
-    <span id="toast-icon">✓</span>
-
-    <span id="toast-message">
-      NOVA
-    </span>
-
-  </div>
-
-
-  <!-- =======================================================
-       APP MENU
-  ======================================================== -->
-
-  <section
-    id="app-menu"
-    class="app-menu hidden"
-  >
-
-    <button data-action="new-chat">
-      <span>＋</span>
-      محادثة جديدة
-    </button>
-
-    <button data-action="new-group">
-      <span>◎</span>
-      مجموعة جديدة
-    </button>
-
-    <button data-action="create-community">
-      <span>◉</span>
-      مجتمع جديد
-    </button>
-
-    <button data-action="global-search">
-      <span>⌕</span>
-      بحث
-    </button>
-
-    <button data-view="settings">
-      <span>⚙</span>
-      الإعدادات
-    </button>
-
-  </section>
-
-
-  <!-- =======================================================
-       HIDDEN FILE INPUTS
-  ======================================================== -->
-
-  <input
-    id="nova-image-input"
-    type="file"
-    accept="image/*"
-    hidden
-  >
-
-  <input
-    id="nova-video-input"
-    type="file"
-    accept="video/*"
-    hidden
-  >
-
-  <input
-    id="nova-document-input"
-    type="file"
-    hidden
-  >
-
-  <input
-    id="nova-camera-input"
-    type="file"
-    accept="image/*"
-    capture="environment"
-    hidden
-  >
-
-</div>
-
-
-<script src="nova-config.js"></script>
-<script src="nova.js"></script>
-
-</body>
-    </html>
+        <div class="sheet-body">
+
+          <div class="sheet-grid">
+
+            <button class="sheet-action" type="button">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor
