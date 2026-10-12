@@ -1,2304 +1,876 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
-  >
-
-  <meta name="theme-color" content="#06110f">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <meta
-    name="description"
-    content="NOVA — منصة مراسلة وتواصل حديثة للمحادثات والمكالمات والمجموعات والمجتمعات."
-  >
-
-  <title>NOVA — نوفا</title>
-
-  <!-- =========================================================
-       NOVA
-       Phase 1 — Main Application
-       ========================================================= -->
-
-  <link rel="manifest" href="manifest.json">
-
-  <!--
-    مهم:
-    التصميم الأساسي موجود في nova.css.
-    لكن الـLoader لديه CSS احتياطي هنا أيضًا،
-    حتى لا تظل الشاشة معلقة إذا فشل تحميل CSS الخارجي.
-  -->
-  <style>
-    :root {
-      --nova-bg: #030807;
-      --nova-surface: #071311;
-      --nova-surface-2: #0b1917;
-      --nova-border: rgba(255,255,255,.08);
-      --nova-text: #f4faf8;
-      --nova-muted: #8fa4a0;
-      --nova-accent: #39dec4;
-      --nova-accent-2: #20bba5;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      overflow: hidden;
-      background: var(--nova-bg);
-      color: var(--nova-text);
-      font-family:
-        "Cairo",
-        "IBM Plex Sans Arabic",
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-    }
-
-    button,
-    input,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      border: 0;
-      cursor: pointer;
-    }
-
-    /* =========================================================
-       LOADER — مستقل عن nova.js
-       ========================================================= */
-
-    #nova-loader {
-      position: fixed;
-      inset: 0;
-      z-index: 999999;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      overflow: hidden;
-
-      background:
-        radial-gradient(
-          circle at 80% 12%,
-          rgba(38, 207, 182, .13),
-          transparent 32%
-        ),
-        radial-gradient(
-          circle at 15% 85%,
-          rgba(19, 128, 116, .10),
-          transparent 30%
-        ),
-        linear-gradient(
-          145deg,
-          #020605 0%,
-          #03100e 48%,
-          #020706 100%
-        );
-
-      opacity: 1;
-      visibility: visible;
-      transition:
-        opacity .65s ease,
-        visibility .65s ease;
-    }
-
-    #nova-loader.loader-hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    .loader-noise {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .08;
-
-      background-image:
-        linear-gradient(
-          rgba(255,255,255,.03) 1px,
-          transparent 1px
-        ),
-        linear-gradient(
-          90deg,
-          rgba(255,255,255,.03) 1px,
-          transparent 1px
-        );
-
-      background-size: 42px 42px;
-      mask-image: linear-gradient(
-        to bottom,
-        black,
-        transparent 90%
-      );
-    }
-
-    .loader-glow {
-      position: absolute;
-      width: 430px;
-      height: 430px;
-      border-radius: 50%;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(51, 224, 196, .13),
-          transparent 68%
-        );
-
-      filter: blur(5px);
-      animation: loaderGlow 4s ease-in-out infinite;
-    }
-
-    @keyframes loaderGlow {
-      0%,
-      100% {
-        transform: scale(.9);
-        opacity: .65;
-      }
-
-      50% {
-        transform: scale(1.12);
-        opacity: 1;
-      }
-    }
-
-    .loader-content {
-      position: relative;
-      z-index: 2;
-
-      width: min(88vw, 430px);
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      text-align: center;
-    }
-
-    .nova-logo-loader {
-      position: relative;
-
-      width: 92px;
-      height: 92px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 30px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #43ead1,
-          #1bbca8
-        );
-
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,.08),
-        0 18px 55px rgba(40, 220, 190, .25),
-        inset 0 1px 0 rgba(255,255,255,.4);
-
-      transform: translateY(0);
-      animation: logoFloat 2.7s ease-in-out infinite;
-    }
-
-    .nova-logo-loader::after {
-      content: "";
-
-      position: absolute;
-
-      right: 9px;
-      bottom: -13px;
-
-      width: 0;
-      height: 0;
-
-      border-top: 19px solid #1bbca8;
-      border-left: 18px solid transparent;
-    }
-
-    .nova-logo-letter {
-      color: #03100d;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      font-size: 43px;
-      font-weight: 900;
-      letter-spacing: -5px;
-
-      transform: translateX(-2px);
-    }
-
-    @keyframes logoFloat {
-      0%,
-      100% {
-        transform: translateY(0) scale(1);
-      }
-
-      50% {
-        transform: translateY(-8px) scale(1.025);
-      }
-    }
-
-    .loader-brand {
-      margin-top: 27px;
-
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      font-size: 31px;
-      font-weight: 800;
-      letter-spacing: 8px;
-
-      color: #f6fffd;
-    }
-
-    .loader-arabic {
-      margin-top: 3px;
-
-      color: #78918c;
-      font-size: 15px;
-    }
-
-    .loader-welcome {
-      margin-top: 53px;
-
-      color: #f4faf8;
-      font-size: 23px;
-      font-weight: 800;
-    }
-
-    .loader-subtitle {
-      margin-top: 7px;
-
-      color: #718985;
-      font-size: 14px;
-    }
-
-    .loader-progress-wrap {
-      width: min(360px, 78vw);
-
-      margin-top: 48px;
-    }
-
-    .loader-progress {
-      position: relative;
-
-      width: 100%;
-      height: 4px;
-
-      overflow: hidden;
-
-      border-radius: 99px;
-
-      background: rgba(255,255,255,.07);
-    }
-
-    .loader-progress-bar {
-      width: 0%;
-      height: 100%;
-
-      border-radius: inherit;
-
-      background:
-        linear-gradient(
-          90deg,
-          #1bbca8,
-          #54f0d8
-        );
-
-      box-shadow:
-        0 0 16px rgba(62, 230, 204, .5);
-
-      transition: width .25s ease;
-    }
-
-    .loader-status {
-      margin-top: 14px;
-
-      color: #6f8783;
-      font-size: 12px;
-
-      min-height: 20px;
-    }
-
-    .loader-version {
-      position: absolute;
-      bottom: 27px;
-
-      color: rgba(255,255,255,.28);
-      font-size: 10px;
-      letter-spacing: 1px;
-    }
-
-    /* =========================================================
-       APPLICATION SHELL
-       ========================================================= */
-
-    #nova-app {
-      position: fixed;
-      inset: 0;
-
-      display: flex;
-
-      background:
-        radial-gradient(
-          circle at 100% 0%,
-          rgba(25, 161, 143, .08),
-          transparent 34%
-        ),
-        #030807;
-
-      opacity: 0;
-      visibility: hidden;
-
-      transition:
-        opacity .55s ease,
-        visibility .55s ease;
-    }
-
-    #nova-app.app-visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .app-shell {
-      position: relative;
-
-      width: 100%;
-      height: 100%;
-
-      display: grid;
-
-      grid-template-columns:
-        72px
-        360px
-        minmax(0, 1fr);
-
-      overflow: hidden;
-    }
-
-    /* =========================================================
-       LEFT NAVIGATION
-       ========================================================= */
-
-    .nova-sidebar {
-      position: relative;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-
-      padding: 18px 10px;
-
-      background:
-        linear-gradient(
-          180deg,
-          #071310,
-          #04100e
-        );
-
-      border-left: 1px solid var(--nova-border);
-      border-right: 1px solid var(--nova-border);
-    }
-
-    .sidebar-brand {
-      width: 46px;
-      height: 46px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 15px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #40e4cb,
-          #169f8d
-        );
-
-      color: #03100d;
-
-      font-family: Arial, sans-serif;
-      font-size: 20px;
-      font-weight: 900;
-
-      box-shadow:
-        0 12px 35px rgba(31, 201, 174, .18);
-    }
-
-    .sidebar-nav {
-      width: 100%;
-
-      margin-top: 35px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .nav-button {
-      position: relative;
-
-      width: 48px;
-      height: 48px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 15px;
-
-      color: #78908c;
-      background: transparent;
-
-      transition:
-        background .2s ease,
-        color .2s ease,
-        transform .2s ease;
-    }
-
-    .nav-button:hover {
-      color: #eafff9;
-      background: rgba(255,255,255,.05);
-      transform: translateY(-1px);
-    }
-
-    .nav-button.active {
-      color: #48e1ca;
-
-      background:
-        rgba(48, 214, 190, .11);
-
-      box-shadow:
-        inset 0 0 0 1px rgba(56, 225, 201, .08);
-    }
-
-    .nav-icon {
-      width: 21px;
-      height: 21px;
-
-      display: block;
-    }
-
-    .nav-badge {
-      position: absolute;
-
-      top: 3px;
-      right: 2px;
-
-      min-width: 17px;
-      height: 17px;
-
-      padding: 0 4px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 99px;
-
-      background: #e65367;
-      color: #fff;
-
-      font-size: 9px;
-      font-weight: 800;
-    }
-
-    .sidebar-bottom {
-      margin-top: auto;
-
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-    }
-
-    /* =========================================================
-       LIST PANEL
-       ========================================================= */
-
-    .nova-list-panel {
-      min-width: 0;
-      height: 100%;
-
-      display: flex;
-      flex-direction: column;
-
-      background:
-        linear-gradient(
-          180deg,
-          #071310,
-          #06110f
-        );
-
-      border-left: 1px solid var(--nova-border);
-    }
-
-    .list-header {
-      padding: 22px 20px 14px;
-    }
-
-    .list-header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 15px;
-    }
-
-    .list-title {
-      margin: 0;
-
-      color: #f4faf8;
-      font-size: 24px;
-      font-weight: 800;
-    }
-
-    .list-actions {
-      display: flex;
-      gap: 7px;
-    }
-
-    .icon-button {
-      width: 39px;
-      height: 39px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 12px;
-
-      color: #9bb0ac;
-      background: rgba(255,255,255,.045);
-
-      transition: .2s ease;
-    }
-
-    .icon-button:hover {
-      color: #fff;
-      background: rgba(255,255,255,.08);
-    }
-
-    .search-box {
-      margin-top: 17px;
-
-      height: 45px;
-
-      display: flex;
-      align-items: center;
-
-      gap: 10px;
-
-      padding: 0 13px;
-
-      border: 1px solid rgba(255,255,255,.055);
-      border-radius: 14px;
-
-      background: rgba(255,255,255,.045);
-    }
-
-    .search-box svg {
-      flex: 0 0 auto;
-
-      width: 18px;
-      height: 18px;
-
-      color: #6e8581;
-    }
-
-    .search-box input {
-      width: 100%;
-
-      border: 0;
-      outline: 0;
-
-      color: #f4faf8;
-      background: transparent;
-
-      font-size: 13px;
-    }
-
-    .search-box input::placeholder {
-      color: #607571;
-    }
-
-    .filter-tabs {
-      display: flex;
-      gap: 7px;
-
-      padding: 14px 20px 8px;
-
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .filter-tabs::-webkit-scrollbar {
-      display: none;
-    }
-
-    .filter-tab {
-      flex: 0 0 auto;
-
-      height: 32px;
-
-      padding: 0 13px;
-
-      border: 1px solid rgba(255,255,255,.05);
-      border-radius: 99px;
-
-      color: #718783;
-      background: rgba(255,255,255,.025);
-
-      font-size: 11px;
-    }
-
-    .filter-tab.active {
-      color: #3fe0c7;
-      background: rgba(47,215,190,.09);
-      border-color: rgba(47,215,190,.12);
-    }
-
-    .list-content {
-      flex: 1;
-
-      min-height: 0;
-
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-
-    .list-content::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    .list-content::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,.08);
-      border-radius: 99px;
-    }
-
-    .empty-state-small {
-      min-height: 330px;
-
-      padding: 35px 25px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      text-align: center;
-    }
-
-    .empty-icon {
-      width: 66px;
-      height: 66px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 22px;
-
-      color: #45d9c2;
-      background: rgba(49,215,190,.08);
-      border: 1px solid rgba(49,215,190,.09);
-    }
-
-    .empty-title {
-      margin-top: 18px;
-
-      color: #dce9e6;
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    .empty-description {
-      max-width: 250px;
-
-      margin-top: 7px;
-
-      color: #627773;
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    /* =========================================================
-       MAIN CONTENT
-       ========================================================= */
-
-    .nova-main {
-      position: relative;
-
-      min-width: 0;
-      min-height: 0;
-
-      overflow: hidden;
-
-      background:
-        radial-gradient(
-          circle at 50% 10%,
-          rgba(25, 170, 150, .055),
-          transparent 40%
-        ),
-        #030807;
-    }
-
-    .main-view {
-      width: 100%;
-      height: 100%;
-    }
-
-    .welcome-view {
-      height: 100%;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      padding: 30px;
-
-      text-align: center;
-    }
-
-    .welcome-symbol {
-      width: 94px;
-      height: 94px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 30px;
-
-      color: #071310;
-
-      background:
-        linear-gradient(
-          145deg,
-          #42e6cd,
-          #169d8b
-        );
-
-      font-family: Arial, sans-serif;
-      font-size: 37px;
-      font-weight: 900;
-
-      box-shadow:
-        0 25px 80px rgba(38, 218, 190, .12);
-    }
-
-    .welcome-view h1 {
-      margin: 25px 0 0;
-
-      color: #f4faf8;
-
-      font-size: 27px;
-      font-weight: 800;
-    }
-
-    .welcome-view p {
-      max-width: 470px;
-
-      margin: 10px 0 0;
-
-      color: #687f7b;
-
-      font-size: 13px;
-      line-height: 2;
-    }
-
-    .welcome-security {
-      margin-top: 28px;
-
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 9px 14px;
-
-      border-radius: 99px;
-
-      color: #71908a;
-      background: rgba(255,255,255,.035);
-
-      font-size: 11px;
-    }
-
-    /* =========================================================
-       CONVERSATION
-       ========================================================= */
-
-    .conversation-view {
-      position: absolute;
-      inset: 0;
-
-      display: none;
-      flex-direction: column;
-
-      background:
-        radial-gradient(
-          circle at 20% 15%,
-          rgba(42, 180, 160, .05),
-          transparent 32%
-        ),
-        #06100e;
-    }
-
-    .conversation-view.open {
-      display: flex;
-    }
-
-    .conversation-header {
-      min-height: 70px;
-
-      display: flex;
-      align-items: center;
-
-      gap: 11px;
-
-      padding: 10px 18px;
-
-      border-bottom: 1px solid rgba(255,255,255,.055);
-
-      background:
-        rgba(5, 14, 12, .92);
-
-      backdrop-filter: blur(18px);
-    }
-
-    .conversation-user {
-      min-width: 0;
-
-      flex: 1;
-
-      display: flex;
-      align-items: center;
-      gap: 11px;
-    }
-
-    .avatar {
-      position: relative;
-
-      width: 44px;
-      height: 44px;
-
-      flex: 0 0 auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      overflow: hidden;
-
-      border-radius: 15px;
-
-      background:
-        linear-gradient(
-          145deg,
-          #1a3e38,
-          #0d211e
-        );
-
-      color: #72dcca;
-
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .avatar.large {
-      width: 84px;
-      height: 84px;
-
-      border-radius: 26px;
-
-      font-size: 25px;
-    }
-
-    .online-dot {
-      position: absolute;
-
-      right: -1px;
-      bottom: -1px;
-
-      width: 12px;
-      height: 12px;
-
-      border: 3px solid #071310;
-      border-radius: 50%;
-
-      background: #40d7a5;
-    }
-
-    .conversation-user-info {
-      min-width: 0;
-    }
-
-    .conversation-name {
-      overflow: hidden;
-
-      color: #edf8f5;
-
-      font-size: 14px;
-      font-weight: 800;
-
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .conversation-status {
-      margin-top: 2px;
-
-      color: #718985;
-
-      font-size: 10px;
-    }
-
-    .conversation-actions {
-      display: flex;
-      gap: 5px;
-    }
-
-    .messages-area {
-      position: relative;
-
-      flex: 1;
-
-      min-height: 0;
-
-      overflow-y: auto;
-
-      padding: 25px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .conversation-empty {
-      max-width: 430px;
-
-      text-align: center;
-    }
-
-    .conversation-empty-icon {
-      width: 62px;
-      height: 62px;
-
-      margin: 0 auto 17px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 21px;
-
-      color: #43ddc5;
-      background: rgba(54,220,195,.07);
-    }
-
-    .conversation-empty h3 {
-      margin: 0;
-
-      color: #dce9e6;
-
-      font-size: 16px;
-    }
-
-    .conversation-empty p {
-      margin: 8px 0 0;
-
-      color: #647b76;
-
-      font-size: 12px;
-      line-height: 1.8;
-    }
-
-    .composer {
-      display: flex;
-      align-items: flex-end;
-
-      gap: 8px;
-
-      padding: 12px 15px;
-
-      border-top: 1px solid rgba(255,255,255,.05);
-
-      background: rgba(5,14,12,.95);
-    }
-
-    .composer-input-wrap {
-      min-width: 0;
-      flex: 1;
-
-      min-height: 44px;
-
-      display: flex;
-      align-items: flex-end;
-
-      gap: 8px;
-
-      padding: 7px 11px;
-
-      border-radius: 15px;
-
-      background: rgba(255,255,255,.045);
-      border: 1px solid rgba(255,255,255,.045);
-    }
-
-    .composer textarea {
-      flex: 1;
-
-      min-width: 0;
-      max-height: 110px;
-
-      resize: none;
-
-      border: 0;
-      outline: 0;
-
-      color: #edf8f5;
-      background: transparent;
-
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .composer textarea::placeholder {
-      color: #627873;
-    }
-
-    .composer-icon {
-      width: 31px;
-      height: 31px;
-
-      flex: 0 0 auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      color: #77908b;
-      background: transparent;
-
-      border-radius: 10px;
-    }
-
-    .send-button {
-      width: 45px;
-      height: 45px;
-
-      flex: 0 0 auto;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border-radius: 15px;
-
-      color: #03100d;
-
-      background:
-        linear-gradient(
-          145deg,
-          #47e5ce,
-          #1bb49f
-        );
-
-      box-shadow:
-        0 9px 30px rgba(39,213,187,.15);
-    }
-
-    /* =========================================================
-       MOBILE BOTTOM NAV
-       ========================================================= */
-
-    .mobile-nav {
-      display: none;
-    }
-
-    /* =========================================================
-       MODAL ROOT
-       ========================================================= */
-
-    #nova-modal-root {
-      position: fixed;
-      inset: 0;
-
-      z-index: 50000;
-
-      pointer-events: none;
-    }
-
-    .nova-overlay {
-      position: absolute;
-      inset: 0;
-
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-
-      padding: 18px;
-
-      background: rgba(0,0,0,.62);
-
-      backdrop-filter: blur(8px);
-
-      opacity: 0;
-      visibility: hidden;
-
-      transition: .25s ease;
-    }
-
-    .nova-overlay.open {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-
-    .nova-sheet {
-      width: min(100%, 570px);
-      max-height: min(82vh, 720px);
-
-      overflow: auto;
-
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 24px;
-
-      background:
-        linear-gradient(
-          180deg,
-          #0a1815,
-          #06110f
-        );
-
-      box-shadow:
-        0 35px 100px rgba(0,0,0,.5);
-
-      transform: translateY(20px);
-
-      transition: .3s ease;
-    }
-
-    .nova-overlay.open .nova-sheet {
-      transform: translateY(0);
-    }
-
-    .sheet-handle {
-      width: 42px;
-      height: 4px;
-
-      margin: 10px auto 4px;
-
-      border-radius: 99px;
-
-      background: rgba(255,255,255,.12);
-    }
-
-    .sheet-header {
-      padding: 18px 20px;
-
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      border-bottom: 1px solid rgba(255,255,255,.055);
-    }
-
-    .sheet-title {
-      color: #eef8f5;
-      font-size: 16px;
-      font-weight: 800;
-    }
-
-    .sheet-body {
-      padding: 17px;
-    }
-
-    .sheet-grid {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
-      gap: 9px;
-    }
-
-    .sheet-action {
-      min-height: 92px;
-
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-
-      gap: 9px;
-
-      border-radius: 17px;
-
-      color: #9db2ae;
-      background: rgba(255,255,255,.035);
-
-      border: 1px solid rgba(255,255,255,.04);
-
-      transition: .2s ease;
-    }
-
-    .sheet-action:hover {
-      color: #fff;
-      background: rgba(255,255,255,.065);
-      border-color: rgba(65,220,197,.13);
-    }
-
-    .sheet-action svg {
-      width: 24px;
-      height: 24px;
-
-      color: #42dac2;
-    }
-
-    .sheet-action span {
-      font-size: 11px;
-    }
-
-    /* =========================================================
-       TOAST
-       ========================================================= */
-
-    #nova-toast-root {
-      position: fixed;
-
-      z-index: 100000;
-
-      left: 50%;
-      bottom: 25px;
-
-      transform: translate(-50%, 20px);
-
-      opacity: 0;
-      visibility: hidden;
-
-      pointer-events: none;
-
-      padding: 11px 17px;
-
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 99px;
-
-      color: #e9f7f4;
-
-      background: rgba(11,25,22,.94);
-
-      box-shadow:
-        0 15px 45px rgba(0,0,0,.35);
-
-      backdrop-filter: blur(16px);
-
-      font-size: 11px;
-
-      transition: .3s ease;
-    }
-
-    #nova-toast-root.show {
-      opacity: 1;
-      visibility: visible;
-      transform: translate(-50%, 0);
-    }
-
-    /* =========================================================
-       MOBILE
-       ========================================================= */
-
-    @media (max-width: 900px) {
-
-      .app-shell {
-        display: block;
-      }
-
-      .nova-sidebar {
-        display: none;
-      }
-
-      .nova-list-panel {
-        width: 100%;
-        height: 100%;
-
-        border: 0;
-      }
-
-      .nova-main {
-        position: fixed;
-        inset: 0;
-
-        z-index: 20;
-
-        transform: translateX(100%);
-
-        transition: transform .3s ease;
-      }
-
-      .nova-main.mobile-open {
-        transform: translateX(0);
-      }
-
-      .mobile-nav {
-        position: fixed;
-
-        left: 10px;
-        right: 10px;
-        bottom: calc(10px + env(safe-area-inset-bottom));
-
-        z-index: 100;
-
-        height: 64px;
-
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-
-        padding: 6px;
-
-        border: 1px solid rgba(255,255,255,.07);
-        border-radius: 21px;
-
-        background:
-          rgba(5, 16, 14, .94);
-
-        backdrop-filter: blur(20px);
-
-        box-shadow:
-          0 15px 50px rgba(0,0,0,.4);
-      }
-
-      .mobile-nav button {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-
-        gap: 3px;
-
-        border-radius: 15px;
-
-        color: #637a75;
-        background: transparent;
-
-        font-size: 9px;
-      }
-
-      .mobile-nav button.active {
-        color: #46ddc6;
-        background: rgba(54,218,195,.08);
-      }
-
-      .mobile-nav svg {
-        width: 20px;
-        height: 20px;
-      }
-
-      .list-header {
-        padding-top: calc(
-          18px + env(safe-area-inset-top)
-        );
-      }
-
-      .conversation-header {
-        padding-top: calc(
-          10px + env(safe-area-inset-top)
-        );
-      }
-
-      .composer {
-        padding-bottom: calc(
-          10px + env(safe-area-inset-bottom)
-        );
-      }
-
-      .messages-area {
-        padding: 18px;
-      }
-
-      .welcome-view {
-        padding:
-          30px
-          25px
-          110px;
-      }
-    }
-
-    @media (max-width: 480px) {
-
-      .list-title {
-        font-size: 22px;
-      }
-
-      .sheet-grid {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-      .conversation-actions .optional-action {
-        display: none;
-      }
-
-      .welcome-symbol {
-        width: 82px;
-        height: 82px;
-
-        border-radius: 27px;
-      }
-
-      .welcome-view h1 {
-        font-size: 23px;
-      }
-
-      .welcome-view p {
-        font-size: 12px;
-      }
-    }
-  </style>
-
-  <!-- التصميم الكامل -->
-  <link rel="stylesheet" href="nova.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05090c">
+<title>NEXORA | Cyber Control Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05090c;
+  --panel:#0a1117;
+  --panel2:#0d171e;
+  --line:#1b343b;
+  --green:#38f5a3;
+  --cyan:#42d9f5;
+  --red:#ff5470;
+  --yellow:#f7c96b;
+  --text:#d9e9ec;
+  --muted:#78939c;
+  --radius:13px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:"Cairo",sans-serif;min-height:100vh;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(ellipse at 10% 0%,#0c39282b,transparent 45%),
+    radial-gradient(ellipse at 90% 80%,#083a4922,transparent 40%),
+    repeating-linear-gradient(0deg,transparent 0 39px,#1b343b12 40px),
+    repeating-linear-gradient(90deg,transparent 0 39px,#1b343b12 40px);
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--green);outline-offset:3px
+}
+.topbar{
+  min-height:70px;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:12px 24px;border-bottom:1px solid var(--line);
+  background:#05090ceF;position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:43px;height:43px;display:grid;place-items:center;border:1px solid var(--green);
+  color:var(--green);font:600 23px "IBM Plex Mono",monospace;
+  clip-path:polygon(15% 0,100% 0,100% 85%,85% 100%,0 100%,0 15%);
+  background:#38f5a30b;box-shadow:inset 0 0 18px #38f5a310
+}
+.brand h1{font-size:18px;letter-spacing:2px;margin:0}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:11px}
+.top-right{display:flex;align-items:center;gap:13px}
+.pill{font:11px "IBM Plex Mono",monospace;color:var(--green);border:1px solid #38f5a344;padding:7px 10px;border-radius:30px}
+.dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-left:6px;box-shadow:0 0 10px var(--green)}
+.layout{display:grid;grid-template-columns:235px minmax(0,1fr);min-height:calc(100vh - 70px)}
+.sidebar{padding:20px 13px;border-left:1px solid var(--line);background:#071015a8}
+.nav-title{font-size:10px;color:#58727a;padding:10px 13px;letter-spacing:1px}
+.nav{
+  display:flex;align-items:center;gap:11px;width:100%;padding:11px 13px;
+  color:#92aab0;background:transparent;border:1px solid transparent;
+  border-radius:9px;text-align:right;font-size:12px;margin-bottom:4px;transition:.2s
+}
+.nav:hover,.nav.active{background:#38f5a30d;border-color:#38f5a32b;color:var(--green)}
+.nav .ico{font:15px "IBM Plex Mono",monospace;width:19px;text-align:center}
+.side-bottom{margin-top:35px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#0a1419}
+.side-bottom strong{display:block;font-size:12px;color:var(--green)}
+.side-bottom p{font-size:10px;color:var(--muted);line-height:1.9}
+main{padding:24px;min-width:0;max-width:1600px;width:100%;margin:auto}
+.page{display:none;animation:fade .25s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:22px}
+.page-heading h2{margin:0;font-size:23px}
+.page-heading p{margin:5px 0;color:var(--muted);font-size:12px}
+.eyebrow{color:var(--green);font:10px "IBM Plex Mono",monospace;letter-spacing:2px;margin-bottom:8px}
+.btn{
+  background:#38f5a310;color:var(--green);border:1px solid #38f5a34d;
+  padding:9px 14px;border-radius:8px;font-size:12px;transition:.2s
+}
+.btn:hover{background:#38f5a322;border-color:var(--green)}
+.btn.secondary{color:var(--text);border-color:var(--line);background:#0b141a}
+.btn.danger{color:var(--red);border-color:#ff547044}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px}
+.card{
+  border:1px solid var(--line);background:linear-gradient(145deg,#0c171d,#080e13);
+  border-radius:var(--radius);padding:17px;min-width:0
+}
+.stat-top{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px}
+.stat-icon{color:var(--green);font:17px "IBM Plex Mono",monospace}
+.stat-value{font:500 25px "IBM Plex Mono",monospace;margin:16px 0 7px;color:#e8f8f5;direction:ltr;text-align:right}
+.stat-foot{font-size:10px;color:var(--muted)}
+.green{color:var(--green)}.cyan{color:var(--cyan)}.yellow{color:var(--yellow)}.red{color:var(--red)}
+.grid-2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:15px;margin-bottom:16px}
+.card-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
+.card-title h3{font-size:13px;margin:0;font-weight:700}
+.card-title span{font:10px "IBM Plex Mono",monospace;color:var(--muted)}
+.terminal{
+  min-height:280px;max-height:390px;overflow:auto;padding:15px;
+  background:#03080a;border:1px solid #19352d;border-radius:9px;
+  font:12px/1.9 "IBM Plex Mono",monospace;direction:ltr;text-align:left
+}
+.term-line{white-space:pre-wrap;overflow-wrap:anywhere;color:#a8c7bd}
+.term-line .prompt{color:var(--green)}
+.term-line.error{color:var(--red)}
+.term-line.info{color:var(--cyan)}
+.term-line.warn{color:var(--yellow)}
+.term-input-row{display:flex;gap:8px;margin-top:10px;direction:ltr}
+.term-input{
+  min-width:0;flex:1;background:#050b0e;color:var(--green);border:1px solid var(--line);
+  padding:12px;border-radius:8px;font:12px "IBM Plex Mono",monospace;direction:ltr
+}
+.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.quick{
+  text-align:right;border:1px solid var(--line);background:#0a1318;padding:13px;
+  border-radius:9px;color:var(--text);transition:.2s
+}
+.quick:hover{border-color:#38f5a366;transform:translateY(-2px)}
+.quick b{display:block;font-size:12px;margin-bottom:4px}
+.quick small{font-size:10px;color:var(--muted)}
+.quick .qicon{color:var(--green);font:17px "IBM Plex Mono",monospace;margin-bottom:9px}
+.log-list{display:flex;flex-direction:column}
+.log-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #1b343b99;font-size:11px}
+.log-row:last-child{border:0}
+.log-marker{width:7px;height:7px;border-radius:50%;background:var(--green);margin-top:7px;flex-shrink:0}
+.log-row p{margin:0;line-height:1.8;overflow-wrap:anywhere}
+.log-row small{color:var(--muted);font:10px "IBM Plex Mono",monospace;display:block;margin-top:3px;direction:ltr;text-align:right}
+.bar-row{display:grid;grid-template-columns:75px 1fr 38px;align-items:center;gap:10px;margin:17px 0;font-size:11px}
+.bar-track{height:7px;background:#18282e;border-radius:9px;overflow:hidden}
+.bar-fill{height:100%;width:0;background:var(--green);border-radius:9px;transition:width .7s}
+.bar-value{font:10px "IBM Plex Mono",monospace;color:var(--green);direction:ltr}
+.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.field{margin:12px 0}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:7px}
+.field input,.field textarea,.field select{
+  width:100%;background:#060d11;color:var(--text);border:1px solid var(--line);
+  border-radius:8px;padding:11px;direction:ltr;text-align:left;font-size:12px
+}
+.field textarea{min-height:100px;resize:vertical}
+.result{
+  background:#050b0e;border:1px solid var(--line);padding:13px;border-radius:9px;
+  font:11px/1.9 "IBM Plex Mono",monospace;direction:ltr;text-align:left;
+  white-space:pre-wrap;overflow-wrap:anywhere;min-height:65px;margin-top:12px
+}
+.file-drop{
+  padding:28px 15px;border:1px dashed #38f5a366;border-radius:10px;text-align:center;
+  background:#38f5a306
+}
+.file-drop p{font-size:11px;color:var(--muted)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:450px}
+th,td{padding:12px;text-align:right;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+td{overflow-wrap:anywhere}
+.badge{font-size:10px;border:1px solid #38f5a333;color:var(--green);padding:4px 8px;border-radius:20px;white-space:nowrap}
+.badge.warn{color:var(--yellow);border-color:#f7c96b44}
+.badge.red{color:var(--red);border-color:#ff547044}
+.radar-wrap{height:270px;display:grid;place-items:center;overflow:hidden}
+.radar{
+  position:relative;width:min(245px,75vw);aspect-ratio:1;border-radius:50%;
+  border:1px solid #38f5a355;overflow:hidden;
+  background:repeating-radial-gradient(circle,transparent 0 28px,#38f5a328 29px 30px)
+}
+.radar:before{
+  content:"";position:absolute;inset:0;
+  background:conic-gradient(from 0deg,transparent 0deg,#38f5a329 40deg,transparent 80deg);
+  animation:spin 5s linear infinite
+}
+.radar:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#38f5a326}
+.radar-line{position:absolute;left:0;right:0;top:50%;height:1px;background:#38f5a326}
+.radar-center{position:absolute;width:6px;height:6px;left:calc(50% - 3px);top:calc(50% - 3px);background:var(--green);border-radius:50%;box-shadow:0 0 15px var(--green)}
+.radar-label{position:absolute;bottom:9px;left:0;right:0;text-align:center;color:var(--muted);font:9px "IBM Plex Mono",monospace}
+@keyframes spin{to{transform:rotate(360deg)}}
+.module-list{display:flex;flex-direction:column;gap:9px}
+.module{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px;border:1px solid var(--line);border-radius:9px;background:#091218
+}
+.module b{font-size:12px;display:block}
+.module small{font-size:10px;color:var(--muted)}
+.module .mod-icon{font:17px "IBM Plex Mono",monospace;color:var(--cyan)}
+.footer{padding:22px 0 5px;text-align:center;color:#536d75;font-size:10px}
+.notice{padding:12px;border:1px solid #f7c96b33;background:#f7c96b08;color:#bca66e;border-radius:9px;font-size:11px;line-height:1.9;margin-bottom:16px}
+.hidden{display:none!important}
+.mobile-menu{display:none}
+@media(max-width:1000px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid-2{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+  .topbar{padding:10px 13px;min-height:62px}
+  .brand h1{font-size:15px}
+  .brand p{font-size:9px}
+  .logo{width:37px;height:37px}
+  .pill{font-size:9px;padding:6px}
+  .layout{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;
+    display:flex;gap:5px;overflow-x:auto;padding:7px;
+    border-left:0;border-top:1px solid var(--line);background:#050b0ef5;
+    scrollbar-width:none
+  }
+  .sidebar::-webkit-scrollbar{display:none}
+  .nav-title,.side-bottom{display:none}
+  .nav{flex:0 0 auto;width:auto;min-width:66px;display:flex;flex-direction:column;gap:3px;
+    justify-content:center;text-align:center;padding:7px 9px;margin:0;font-size:9px}
+  .nav .ico{font-size:15px}
+  main{padding:18px 12px 95px}
+  .page-heading h2{font-size:20px}
+  .stats{gap:9px}
+  .card{padding:13px}
+  .stat-value{font-size:21px}
+  .section-grid{grid-template-columns:1fr}
+  .quick-grid{gap:8px}
+  .quick{padding:11px}
+}
+@media(max-width:370px){
+  .top-right .pill{display:none}
+  .stats{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:18px}
+}
+</style>
 </head>
-
 <body>
 
-  <!-- =========================================================
-       NOVA LOADER
-       مهم جدًا:
-       هذا الجزء مستقل تمامًا عن nova.js.
-       ========================================================= -->
-
-  <section id="nova-loader" aria-label="جاري تشغيل NOVA">
-
-    <div class="loader-noise"></div>
-    <div class="loader-glow"></div>
-
-    <div class="loader-content">
-
-      <div class="nova-logo-loader" aria-hidden="true">
-        <span class="nova-logo-letter">N</span>
-      </div>
-
-      <div class="loader-brand">NOVA</div>
-
-      <div class="loader-arabic">
-        نوفا
-      </div>
-
-      <div class="loader-welcome">
-        مرحبًا بك في NOVA ✦
-      </div>
-
-      <div class="loader-subtitle">
-        تواصل • تحدث • شارك
-      </div>
-
-      <div class="loader-progress-wrap">
-
-        <div class="loader-progress">
-          <div
-            id="nova-loader-progress"
-            class="loader-progress-bar"
-          ></div>
-        </div>
-
-        <div
-          id="nova-loader-status"
-          class="loader-status"
-        >
-          جاري تشغيل نوفا...
-        </div>
-
-      </div>
-
-      <div class="loader-version">
-        NOVA 1.0.0
-      </div>
-
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">N</div>
+    <div>
+      <h1>NEXORA <span style="color:var(--green)">/</span> CONTROL</h1>
+      <p>CYBERSECURITY WORKSTATION</p>
     </div>
-
-  </section>
-
-
-  <!-- =========================================================
-       APPLICATION
-       ========================================================= -->
-
-  <main id="nova-app">
-
-    <div class="app-shell">
-
-      <!-- =====================================================
-           SIDEBAR
-           ===================================================== -->
-
-      <aside class="nova-sidebar">
-
-        <button
-          class="sidebar-brand"
-          type="button"
-          aria-label="NOVA"
-          data-action="home"
-        >
-          N
-        </button>
-
-        <nav class="sidebar-nav">
-
-          <button
-            class="nav-button active"
-            type="button"
-            data-section="chats"
-            title="المحادثات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
-            </svg>
-          </button>
-
-          <button
-            class="nav-button"
-            type="button"
-            data-section="status"
-            title="الحالات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <circle cx="12" cy="12" r="8.5"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-
-          <button
-            class="nav-button"
-            type="button"
-            data-section="calls"
-            title="المكالمات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
-            </svg>
-          </button>
-
-          <button
-            class="nav-button"
-            type="button"
-            data-section="communities"
-            title="المجتمعات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <rect x="4" y="4" width="16" height="16" rx="4"/>
-              <path d="M8 9h8M8 12h8M8 15h5"/>
-            </svg>
-          </button>
-
-        </nav>
-
-        <div class="sidebar-bottom">
-
-          <button
-            class="nav-button"
-            type="button"
-            data-action="notifications"
-            title="الإشعارات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-              <path d="M10 21h4"/>
-            </svg>
-            <span class="nav-badge" hidden>0</span>
-          </button>
-
-          <button
-            class="nav-button"
-            type="button"
-            data-action="settings"
-            title="الإعدادات"
-          >
-            <svg
-              class="nav-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.8 1.8-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V20h-2.55v-.1a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.8-1.8.06-.06A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.56-1.04h-.1v-2.55h.1A1.7 1.7 0 0 0 8.1 10.4a1.7 1.7 0 0 0-.34-1.88L7.7 8.46l1.8-1.8.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.04-1.56V5h2.55v.1a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.8 1.8-.06.06A1.7 1.7 0 0 0 19.4 10.4a1.7 1.7 0 0 0 1.56 1.04h.1v2.55h-.1A1.7 1.7 0 0 0 19.4 15Z"/>
-            </svg>
-          </button>
-
-        </div>
-
-      </aside>
-
-
-      <!-- =====================================================
-           LIST PANEL
-           ===================================================== -->
-
-      <section class="nova-list-panel">
-
-        <header class="list-header">
-
-          <div class="list-header-top">
-
-            <h1
-              class="list-title"
-              id="nova-list-title"
-            >
-              المحادثات
-            </h1>
-
-            <div class="list-actions">
-
-              <button
-                class="icon-button"
-                type="button"
-                title="محادثة جديدة"
-                data-action="new-chat"
-              >
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                >
-                  <path d="M12 5v14M5 12h14"/>
-                </svg>
-              </button>
-
-              <button
-                class="icon-button"
-                type="button"
-                title="القائمة"
-                data-action="main-menu"
-              >
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                >
-                  <circle cx="5" cy="12" r="1"/>
-                  <circle cx="12" cy="12" r="1"/>
-                  <circle cx="19" cy="12" r="1"/>
-                </svg>
-              </button>
-
-            </div>
-
-          </div>
-
-
-          <label class="search-box">
-
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            >
-              <circle cx="11" cy="11" r="7"/>
-              <path d="m20 20-4-4"/>
-            </svg>
-
-            <input
-              id="nova-global-search"
-              type="search"
-              autocomplete="off"
-              placeholder="بحث في NOVA"
-              aria-label="بحث"
-            >
-
-          </label>
-
-        </header>
-
-
-        <div class="filter-tabs">
-
-          <button
-            class="filter-tab active"
-            type="button"
-            data-chat-filter="all"
-          >
-            الكل
-          </button>
-
-          <button
-            class="filter-tab"
-            type="button"
-            data-chat-filter="unread"
-          >
-            غير مقروءة
-          </button>
-
-          <button
-            class="filter-tab"
-            type="button"
-            data-chat-filter="favorites"
-          >
-            المفضلة
-          </button>
-
-          <button
-            class="filter-tab"
-            type="button"
-            data-chat-filter="groups"
-          >
-            المجموعات
-          </button>
-
-        </div>
-
-
-        <div
-          class="list-content"
-          id="nova-list-content"
-        >
-
-          <!--
-            لا توجد بيانات تجريبية هنا.
-            عندما يتصل الـBackend الحقيقي سيتم ملء القائمة.
-          -->
-
-          <div class="empty-state-small">
-
-            <div class="empty-icon">
-
-              <svg
-                width="29"
-                height="29"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-              >
-                <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
-              </svg>
-
-            </div>
-
-            <div class="empty-title">
-              لا توجد محادثات بعد
-            </div>
-
-            <div class="empty-description">
-              عندما تبدأ أول محادثة حقيقية ستظهر هنا.
-              NOVA لا يعرض مستخدمين أو رسائل وهمية.
-            </div>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      <!-- =====================================================
-           MAIN
-           ===================================================== -->
-
-      <section class="nova-main" id="nova-main">
-
-        <div class="main-view">
-
-          <!-- ================================================
-               WELCOME
-               ================================================ -->
-
-          <section
-            class="welcome-view"
-            id="nova-welcome-view"
-          >
-
-            <div class="welcome-symbol">
-              N
-            </div>
-
-            <h1>
-              أهلاً بك في NOVA
-            </h1>
-
-            <p>
-              مكان واحد لمحادثاتك ومكالماتك ومجموعاتك
-              ومجتمعاتك، بتجربة حديثة وسريعة وآمنة.
-            </p>
-
-            <div class="welcome-security">
-
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-              >
-                <rect
-                  x="5"
-                  y="10"
-                  width="14"
-                  height="10"
-                  rx="2"
-                />
-                <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
-              </svg>
-
-              <span>
-                خصوصيتك جزء أساسي من تصميم NOVA
-              </span>
-
-            </div>
-
-          </section>
-
-
-          <!-- ================================================
-               CONVERSATION
-               ================================================ -->
-
-          <section
-            class="conversation-view"
-            id="nova-conversation"
-          >
-
-            <header class="conversation-header">
-
-              <button
-                class="icon-button mobile-back"
-                type="button"
-                data-action="close-conversation"
-                aria-label="رجوع"
-              >
-                <svg
-                  width="19"
-                  height="19"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                >
-                  <path d="m15 18-6-6 6-6"/>
-                </svg>
-              </button>
-
-
-              <div class="conversation-user">
-
-                <div class="avatar">
-
-                  N
-
-                  <span class="online-dot"></span>
-
-                </div>
-
-                <div class="conversation-user-info">
-
-                  <div class="conversation-name">
-                    محادثة جديدة
-                  </div>
-
-                  <div class="conversation-status">
-                    اختر محادثة لبدء التواصل
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <div class="conversation-actions">
-
-                <button
-                  class="icon-button optional-action"
-                  type="button"
-                  data-action="voice-call"
-                  title="مكالمة صوتية"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  >
-                    <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
-                  </svg>
-                </button>
-
-                <button
-                  class="icon-button optional-action"
-                  type="button"
-                  data-action="video-call"
-                  title="مكالمة فيديو"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  >
-                    <rect
-                      x="3"
-                      y="6"
-                      width="13"
-                      height="12"
-                      rx="2"
-                    />
-                    <path d="m16 10 5-3v10l-5-3"/>
-                  </svg>
-                </button>
-
-                <button
-                  class="icon-button"
-                  type="button"
-                  data-action="chat-search"
-                  title="بحث في المحادثة"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  >
-                    <circle cx="11" cy="11" r="6.5"/>
-                    <path d="m16 16 4 4"/>
-                  </svg>
-                </button>
-
-                <button
-                  class="icon-button"
-                  type="button"
-                  data-action="chat-menu"
-                  title="المزيد"
-                >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  >
-                    <circle cx="5" cy="12" r="1"/>
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="19" cy="12" r="1"/>
-                  </svg>
-                </button>
-
-              </div>
-
-            </header>
-
-
-            <div class="messages-area">
-
-              <div class="conversation-empty">
-
-                <div class="conversation-empty-icon">
-
-                  <svg
-                    width="27"
-                    height="27"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.6"
-                  >
-                    <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
-                  </svg>
-
-                </div>
-
-                <h3>
-                  لا توجد رسائل
-                </h3>
-
-                <p>
-                  هذه المساحة ستعرض الرسائل الحقيقية
-                  بعد اتصال الحساب بخدمة NOVA.
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <form
-              class="composer"
-              id="nova-composer"
-            >
-
-              <button
-                class="composer-icon"
-                type="button"
-                data-action="emoji"
-                title="إيموجي"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.7"
-                >
-                  <circle cx="12" cy="12" r="8.5"/>
-                  <path d="M8.5 14.2c.9 1.1 2.1 1.7 3.5 1.7s2.6-.6 3.5-1.7"/>
-                  <path d="M9 9.5h.01M15 9.5h.01"/>
-                </svg>
-              </button>
-
-
-              <div class="composer-input-wrap">
-
-                <textarea
-                  id="nova-message-input"
-                  rows="1"
-                  placeholder="اكتب رسالة..."
-                  autocomplete="off"
-                ></textarea>
-
-                <button
-                  class="composer-icon"
-                  type="button"
-                  data-action="attachments"
-                  title="إرفاق"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.7"
-                  >
-                    <path d="m20.5 11.5-8.2 8.2a5 5 0 0 1-7.1-7.1l9-9a3.5 3.5 0 0 1 5 5l-8.7 8.7a2 2 0 0 1-2.8-2.8l7.7-7.7"/>
-                  </svg>
-                </button>
-
-              </div>
-
-
-              <button
-                class="send-button"
-                id="nova-send-button"
-                type="submit"
-                title="إرسال"
-              >
-
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 3 10 14"/>
-                  <path d="m21 3-7 18-4-7-7-4 18-7Z"/>
-                </svg>
-
-              </button>
-
-            </form>
-
-          </section>
-
-        </div>
-
-      </section>
-
+  </div>
+  <div class="top-right">
+    <span class="pill"><span class="dot"></span>LOCAL SESSION</span>
+    <span id="clock" style="font:11px 'IBM Plex Mono';color:var(--muted);direction:ltr"></span>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="nav-title">MAIN WORKSPACE</div>
+  <button class="nav active" data-page="dashboard"><span class="ico">⌂</span>الرئيسية</button>
+  <button class="nav" data-page="terminal"><span class="ico">&gt;_</span>Terminal</button>
+  <button class="nav" data-page="network"><span class="ico">⌘</span>الشبكات</button>
+  <button class="nav" data-page="security"><span class="ico">◇</span>مختبر الأمان</button>
+  <button class="nav" data-page="files"><span class="ico">▤</span>تحليل الملفات</button>
+  <button class="nav" data-page="users"><span class="ico">◎</span>المستخدمون</button>
+  <button class="nav" data-page="radar"><span class="ico">⊙</span>Radar</button>
+  <button class="nav" data-page="logs"><span class="ico">≡</span>سجل الأحداث</button>
+  <button class="nav" data-page="settings"><span class="ico">⚙</span>الإعدادات</button>
+  <div class="side-bottom">
+    <strong>◆ LOCAL SECURITY LAB</strong>
+    <p>بيئة محلية للأدوات المصرح بها. حالة الاتصال بالخدمات الخارجية لم يتم التحقق منها.</p>
+    <span class="badge">BROWSER MODE</span>
+  </div>
+</aside>
+
+<main>
+<section class="page active" id="page-dashboard">
+  <div class="page-heading">
+    <div><div class="eyebrow">SYSTEM OVERVIEW / 01</div><h2>مركز القيادة</h2><p>نظرة عامة على بيئة العمل المحلية وحالة التطبيق.</p></div>
+    <button class="btn" id="refreshBtn">↻ تحديث الحالة</button>
+  </div>
+  <div class="notice">تنبيه: هذه لوحة تعمل داخل المتصفح. المؤشرات أدناه تقيس حالة التطبيق والبيئة المتاحة له، وليست قياسات شاملة لنظام التشغيل أو نتائج فحص أمني خارجي.</div>
+  <div class="stats">
+    <div class="card"><div class="stat-top"><span>حالة التطبيق</span><span class="stat-icon">◉</span></div><div class="stat-value green" id="appStatus">ONLINE</div><div class="stat-foot">جلسة المتصفح الحالية</div></div>
+    <div class="card"><div class="stat-top"><span>وقت الجلسة</span><span class="stat-icon">◷</span></div><div class="stat-value" id="uptime">00:00</div><div class="stat-foot">منذ فتح الصفحة</div></div>
+    <div class="card"><div class="stat-top"><span>أحداث مسجلة</span><span class="stat-icon">≡</span></div><div class="stat-value" id="eventCount">0</div><div class="stat-foot">في سجل هذه الجلسة</div></div>
+    <div class="card"><div class="stat-top"><span>حالة الشبكة</span><span class="stat-icon">⌘</span></div><div class="stat-value" id="networkStatus">--</div><div class="stat-foot">وفق واجهة المتصفح</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><h3>Terminal — LIVE SESSION</h3><span class="green">LOCAL</span></div>
+      <div class="terminal" id="dashTerminal" aria-live="polite"></div>
+      <div class="term-input-row"><input class="term-input" id="dashCommand" placeholder="help" autocomplete="off"><button class="btn" id="dashRun">RUN ↵</button></div>
     </div>
+    <div class="card">
+      <div class="card-title"><h3>أدوات سريعة</h3><span>QUICK ACCESS</span></div>
+      <div class="quick-grid">
+        <button class="quick" data-go="network"><div class="qicon">⌘</div><b>تحليل الاتصال</b><small>حالة المتصفح والاتصال</small></button>
+        <button class="quick" data-go="security"><div class="qicon">◇</div><b>مختبر الأمان</b><small>إنشاء بصمة SHA-256</small></button>
+        <button class="quick" data-go="files"><div class="qicon">▤</div><b>فحص ملف</b><small>تحليل ملف تختاره</small></button>
+        <button class="quick" data-go="logs"><div class="qicon">≡</div><b>سجل الأحداث</b><small>عرض وتصدير السجل</small></button>
+      </div>
+      <div style="margin-top:20px">
+        <div class="card-title"><h3>قدرات المتصفح</h3><span>ENVIRONMENT</span></div>
+        <div class="bar-row"><span>JavaScript</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-value">ON</span></div>
+        <div class="bar-row"><span>WebCrypto</span><div class="bar-track"><div class="bar-fill" id="cryptoBar"></div></div><span class="bar-value" id="cryptoLabel">--</span></div>
+        <div class="bar-row"><span>Online API</span><div class="bar-track"><div class="bar-fill" id="onlineBar"></div></div><span class="bar-value" id="onlineLabel">--</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><h3>آخر الأحداث</h3><button class="btn secondary" data-go="logs">عرض الكل ←</button></div>
+    <div class="log-list" id="recentLogs"></div>
+  </div>
+</section>
 
+<section class="page" id="page-terminal">
+  <div class="page-heading"><div><div class="eyebrow">COMMAND INTERFACE / 02</div><h2>Terminal</h2><p>مفسر أوامر محلي بسيط ينفذ الأوامر المدعومة في هذه الصفحة.</p></div><button class="btn secondary" id="clearTerm">مسح الشاشة</button></div>
+  <div class="notice">هذا ليس Shell لنظام التشغيل. لا ينفذ أوامر Linux أو Windows عشوائية، ولا يمنح صلاحيات خارج المتصفح.</div>
+  <div class="card">
+    <div class="terminal" id="fullTerminal" style="height:390px;max-height:60vh"></div>
+    <div class="term-input-row"><input class="term-input" id="fullCommand" placeholder="help" autocomplete="off"><button class="btn" id="fullRun">EXECUTE ↵</button></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
+      <button class="btn secondary cmd-shortcut" data-cmd="help">help</button>
+      <button class="btn secondary cmd-shortcut" data-cmd="status">status</button>
+      <button class="btn secondary cmd-shortcut" data-cmd="network">network</button>
+      <button class="btn secondary cmd-shortcut" data-cmd="time">time</button>
+      <button class="btn secondary cmd-shortcut" data-cmd="history">history</button>
+    </div>
+  </div>
+</section>
 
-    <!-- =======================================================
-         MOBILE NAV
-         ======================================================= -->
+<section class="page" id="page-network">
+  <div class="page-heading"><div><div class="eyebrow">NETWORK OBSERVATORY / 03</div><h2>تحليل الشبكة</h2><p>عرض بيانات الاتصال التي يكشفها المتصفح فعليًا.</p></div><button class="btn" id="refreshNetwork">فحص الحالة ↻</button></div>
+  <div class="notice">المتصفح لا يكشف عنوان IP العام أو الأجهزة المتصلة بالراوتر تلقائيًا. هذه الصفحة لا تنفذ مسحًا خفيًا للشبكات.</div>
+  <div class="section-grid">
+    <div class="card"><div class="card-title"><h3>حالة الاتصال</h3><span>CONNECTIVITY</span></div><div id="networkDetails" class="result"></div></div>
+    <div class="card"><div class="card-title"><h3>معلومات البيئة</h3><span>BROWSER API</span></div><div id="browserDetails" class="result"></div></div>
+    <div class="card"><div class="card-title"><h3>اختبار الوصول إلى عنوان تختاره</h3><span>HTTP CHECK</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.9">يرسل طلب HEAD إلى عنوان HTTPS عام تحدده. قد تمنع سياسة CORS قراءة النتيجة، وهذا لا يعني بالضرورة أن الموقع متوقف.</p>
+      <div class="field"><label>HTTPS URL</label><input id="urlCheck" type="url" placeholder="https://example.com"></div>
+      <button class="btn" id="checkUrl">اختبار الوصول</button><div class="result" id="urlResult">جاهز.</div>
+    </div>
+    <div class="card"><div class="card-title"><h3>قواعد الاستخدام</h3><span>SAFE SCOPE</span></div>
+      <div class="module-list">
+        <div class="module"><div><b>تحليل اتصال المتصفح</b><small>بيانات متاحة محليًا</small></div><span class="badge">AVAILABLE</span></div>
+        <div class="module"><div><b>فحص URL</b><small>طلب HTTP محدود</small></div><span class="badge">AVAILABLE</span></div>
+        <div class="module"><div><b>اكتشاف أجهزة الشبكة</b><small>يحتاج أداة محلية مخولة</small></div><span class="badge warn">NOT CONNECTED</span></div>
+        <div class="module"><div><b>فحص المنافذ</b><small>يحتاج بيئة فحص مصرحًا بها</small></div><span class="badge warn">NOT CONNECTED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <nav class="mobile-nav">
+<section class="page" id="page-security">
+  <div class="page-heading"><div><div class="eyebrow">CRYPTOGRAPHY LAB / 04</div><h2>مختبر الأمان</h2><p>أدوات تشفير وبصمات رقمية تعمل داخل المتصفح.</p></div></div>
+  <div class="section-grid">
+    <div class="card"><div class="card-title"><h3>SHA-256 Hash</h3><span>WEB CRYPTO</span></div>
+      <div class="field"><label>النص المراد حساب بصمته</label><textarea id="hashInput" placeholder="اكتب النص هنا..."></textarea></div>
+      <button class="btn" id="hashBtn">حساب البصمة</button><div class="result" id="hashResult">لم يتم حساب بصمة بعد.</div>
+      <button class="btn secondary" id="copyHash" style="margin-top:9px">نسخ البصمة</button>
+    </div>
+    <div class="card"><div class="card-title"><h3>توليد قيمة عشوائية آمنة</h3><span>CRYPTO API</span></div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.9">يستخدم مولد الأرقام العشوائية المشفر الذي يوفره المتصفح عند توفره.</p>
+      <div class="field"><label>عدد البايتات (1–64)</label><input id="randomLength" type="number" min="1" max="64" value="16"></div>
+      <button class="btn" id="randomBtn">توليد</button><div class="result" id="randomResult">بانتظار الطلب.</div>
+    </div>
+    <div class="card"><div class="card-title"><h3>تشفير وفك تشفير</h3><span>AES-GCM</span></div>
+      <div class="field"><label>النص</label><textarea id="aesInput" placeholder="أدخل نصًا لتشفيره..."></textarea></div>
+      <button class="btn" id="encryptBtn">تشفير النص</button>
+      <div class="result" id="aesResult">الناتج المشفر سيظهر هنا.</div>
+      <button class="btn secondary" id="decryptBtn" style="margin-top:9px">فك آخر عملية تشفير</button>
+      <div class="result" id="decryptResult">لا توجد عملية تشفير بعد.</div>
+    </div>
+    <div class="card"><div class="card-title"><h3>حالة وحدات التشفير</h3><span>CAPABILITIES</span></div><div id="cryptoDetails" class="result"></div></div>
+  </div>
+</section>
 
-      <button
-        class="active"
-        type="button"
-        data-section="chats"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        >
-          <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.8 8.8 0 0 1-3.3-.64L4 20l1.55-4.08A7.25 7.25 0 0 1 4.5 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
-        </svg>
-        <span>الدردشات</span>
-      </button>
+<section class="page" id="page-files">
+  <div class="page-heading"><div><div class="eyebrow">LOCAL FILE INSPECTOR / 05</div><h2>تحليل الملفات</h2><p>اختر ملفًا لتحليل بياناته وحساب بصمته الرقمية.</p></div></div>
+  <div class="notice">التحليل هنا قراءة محلية للملف الذي تختاره. لا يتم رفع الملف إلى خادم. حساب البصمة لا يثبت وحده أن الملف آمن أو خبيث.</div>
+  <div class="card">
+    <div class="file-drop"><div style="font-size:30px;color:var(--green)">▤</div><b>اختر ملفًا من جهازك</b><p>يمكنك تحليل ملف نصي أو ثنائي وحساب SHA-256 له.</p><input id="fileInput" type="file" style="max-width:100%;margin:10px auto;color:var(--muted)"></div>
+    <div class="result" id="fileResult">لم يتم اختيار ملف.</div>
+    <div id="fileTextWrap" class="hidden"><div class="field"><label>معاينة نصية محدودة</label><textarea id="filePreview" readonly></textarea></div></div>
+  </div>
+</section>
 
-      <button
-        type="button"
-        data-section="status"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        >
-          <circle cx="12" cy="12" r="8.5"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-        <span>الحالات</span>
-      </button>
+<section class="page" id="page-users">
+  <div class="page-heading"><div><div class="eyebrow">LOCAL ACCESS REGISTRY / 06</div><h2>إدارة المستخدمين</h2><p>إدارة سجل محلي لأسماء العرض والصلاحيات داخل هذه الواجهة فقط.</p></div></div>
+  <div class="notice">هذه القائمة محلية وليست نظام حسابات حقيقيًا متعدد المستخدمين. لا تخزن كلمات مرور ولا تمنح صلاحيات لنظام التشغيل.</div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title"><h3>إضافة مستخدم محلي</h3><span>NEW ENTRY</span></div>
+      <div class="field"><label>اسم العرض</label><input id="userName" maxlength="40" placeholder="analyst-01" dir="auto"></div>
+      <div class="field"><label>الدور</label><select id="userRole"><option value="Viewer">Viewer — قراءة</option><option value="Analyst">Analyst — تحليل</option><option value="Admin">Admin — إدارة الواجهة</option></select></div>
+      <button class="btn" id="addUser">إضافة إلى السجل</button>
+    </div>
+    <div class="card"><div class="card-title"><h3>إحصائيات السجل</h3><span>LOCAL RECORDS</span></div>
+      <div class="stat-value" id="userCount">0</div><div class="stat-foot">إدخالات محفوظة في جلسة الصفحة</div>
+      <button class="btn secondary" id="exportUsers" style="margin-top:15px">تصدير CSV</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-title"><h3>سجل المستخدمين</h3><span>REGISTRY</span></div><div class="table-wrap"><table><thead><tr><th>المعرف</th><th>اسم العرض</th><th>الدور</th><th>الإجراء</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
+</section>
 
-      <button
-        type="button"
-        data-section="calls"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        >
-          <path d="M7.2 4.8 9.5 4l2 4.5-1.8 1.4a13.5 13.5 0 0 0 4.4 4.4l1.4-1.8 4.5 2-.8 2.3a2.2 2.2 0 0 1-2.3 1.5A14.7 14.7 0 0 1 5.7 7.1 2.2 2.2 0 0 1 7.2 4.8Z"/>
-        </svg>
-        <span>المكالمات</span>
-      </button>
+<section class="page" id="page-radar">
+  <div class="page-heading"><div><div class="eyebrow">VISUAL TELEMETRY / 07</div><h2>Radar & Modules</h2><p>مؤشر بصري متحرك لحالة واجهة المختبر، وليس ماسحًا للأجهزة المحيطة.</p></div></div>
+  <div class="grid-2">
+    <div class="card"><div class="card-title"><h3>LOCAL ACTIVITY RADAR</h3><span class="green">ANIMATION</span></div>
+      <div class="radar-wrap"><div class="radar"><div class="radar-line"></div><div class="radar-center"></div><div class="radar-label">LOCAL SESSION · VISUAL ONLY</div></div></div>
+      <p style="font-size:10px;color:var(--muted);text-align:center">لا يمثل نقاطًا أو أجهزة مكتشفة فعليًا.</p>
+    </div>
+    <div class="card"><div class="card-title"><h3>حالة الوحدات</h3><span>MODULE STATUS</span></div>
+      <div class="module-list" id="moduleList"></div>
+    </div>
+  </div>
+</section>
 
-      <button
-        type="button"
-        data-action="settings"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-        >
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.8 1.8-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.04 1.56V20h-2.55v-.1a1.7 1.7 0 0 0-1.04-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.8-1.8.06-.06A1.7 1.7 0 0 0 8.1 15a1.7 1.7 0 0 0-1.56-1.04h-.1v-2.55h.1A1.7 1.7 0 0 0 8.1 10.4a1.7 1.7 0 0 0-.34-1.88L7.7 8.46l1.8-1.8.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.04-1.56V5h2.55v.1a1.7 1.7 0 0 0 1.04 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.8 1.8-.06.06A1.7 1.7 0 0 0 19.4 10.4a1.7 1.7 0 0 0 1.56 1.04h.1v2.55h-.1A1.7 1.7 0 0 0 19.4 15Z"/>
-        </svg>
-        <span>الإعدادات</span>
-      </button>
+<section class="page" id="page-logs">
+  <div class="page-heading"><div><div class="eyebrow">AUDIT TRAIL / 08</div><h2>سجل الأحداث</h2><p>سجل العمليات التي نفذتها الواجهة خلال الجلسة الحالية.</p></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" id="exportLogs">تصدير JSON</button><button class="btn danger" id="clearLogs">مسح السجل</button></div></div>
+  <div class="card"><div class="card-title"><h3>الأحداث المسجلة</h3><span id="logsCount">0 EVENTS</span></div><div class="log-list" id="allLogs"></div></div>
+</section>
 
-    </nav>
+<section class="page" id="page-settings">
+  <div class="page-heading"><div><div class="eyebrow">WORKSPACE CONFIG / 09</div><h2>الإعدادات</h2><p>تخصيص سلوك الواجهة المحلية.</p></div></div>
+  <div class="section-grid">
+    <div class="card"><div class="card-title"><h3>إعدادات العرض</h3><span>APPEARANCE</span></div>
+      <div class="field"><label>لون الواجهة الأساسي</label><select id="accentSelect"><option value="#38f5a3">Cyber Green</option><option value="#42d9f5">Neon Cyan</option><option value="#c084fc">Cyber Violet</option><option value="#ffb454">Amber Terminal</option></select></div>
+      <div class="field"><label>سرعة المؤثرات</label><select id="motionSelect"><option value="1">طبيعية</option><option value="2">سريعة</option><option value="0">إيقاف الحركة</option></select></div>
+      <button class="btn" id="saveSettings">تطبيق الإعدادات</button>
+    </div>
+    <div class="card"><div class="card-title"><h3>بيانات الجلسة</h3><span>SESSION INFO</span></div><div id="settingsInfo" class="result"></div><button class="btn secondary" id="downloadReport" style="margin-top:10px">تصدير تقرير الجلسة</button></div>
+    <div class="card"><div class="card-title"><h3>حدود الصلاحيات</h3><span>BROWSER SANDBOX</span></div><div class="module-list">
+      <div class="module"><div><b>قراءة ملفات يختارها المستخدم</b><small>بعد موافقته</small></div><span class="badge">ALLOWED</span></div>
+      <div class="module"><div><b>تشفير البيانات داخل الصفحة</b><small>باستخدام WebCrypto</small></div><span class="badge">ALLOWED</span></div>
+      <div class="module"><div><b>الوصول إلى ملفات الجهاز كلها</b><small>دون اختيار المستخدم</small></div><span class="badge red">BLOCKED</span></div>
+      <div class="module"><div><b>التحكم في أجهزة الآخرين</b><small>دون تصريح</small></div><span class="badge red">NOT AVAILABLE</span></div>
+    </div></div>
+  </div>
+</section>
 
-  </main>
+<div class="footer">NEXORA CONTROL CENTER · LOCAL BROWSER WORKSPACE · NO UNVERIFIED SCAN RESULTS</div>
+</main>
+</div>
 
+<script>
+"use strict";
 
-  <!-- =========================================================
-       MODAL ROOT
-       ========================================================= -->
+const $ = id => document.getElementById(id);
+const startedAt = Date.now();
+const state = {
+  logs: [],
+  commands: [],
+  users: [],
+  lastCipher: null,
+  settings: {accent:"#38f5a3",motion:"1"}
+};
 
-  <div id="nova-modal-root">
+function now(){
+  return new Date().toLocaleTimeString("en-GB",{hour12:false});
+}
+function record(type,message){
+  const item={time:new Date().toISOString(),type,message:String(message)};
+  state.logs.unshift(item);
+  if(state.logs.length>500) state.logs.pop();
+  updateLogs();
+}
+function addLine(target,message,type=""){
+  const el=$(target);
+  if(!el)return;
+  const row=document.createElement("div");
+  row.className="term-line "+type;
+  row.textContent=message;
+  el.appendChild(row);
+  while(el.children.length>180)el.removeChild(el.firstChild);
+  el.scrollTop=el.scrollHeight;
+}
+function promptLine(target,cmd){
+  addLine(target,"nexora@local:~$ "+cmd,"");
+}
+function formatBytes(bytes){
+  if(bytes<1024)return bytes+" B";
+  if(bytes<1048576)return (bytes/1024).toFixed(2)+" KB";
+  if(bytes<1073741824)return (bytes/1048576).toFixed(2)+" MB";
+  return (bytes/1073741824).toFixed(2)+" GB";
+}
+function escapeCSV(value){
+  return '"'+String(value).replace(/"/g,'""')+'"';
+}
+function downloadFile(name,content,type="text/plain"){
+  const blob=new Blob([content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function goPage(name){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const page=$("page-"+name);
+  if(page)page.classList.add("active");
+  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+  if(name==="network")refreshNetwork();
+  if(name==="settings")renderSettingsInfo();
+  if(name==="logs")updateLogs();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.page)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.go)));
 
-    <!-- Attachment Sheet -->
+const helpText=[
+  "الأوامر المتاحة:",
+  "help       — عرض قائمة الأوامر",
+  "status     — حالة التطبيق",
+  "time       — الوقت الحالي",
+  "network    — حالة الاتصال التي يكشفها المتصفح",
+  "env        — معلومات بيئة المتصفح",
+  "history    — سجل الأوامر الحالي",
+  "clear      — مسح شاشة الطرفية",
+  "logs       — عدد الأحداث المسجلة",
+  "version    — إصدار الواجهة",
+  "",
+  "هذا Terminal محلي محدود، وليس مفسر أوامر لنظام التشغيل."
+].join("\n");
 
-    <div
-      class="nova-overlay"
-      id="nova-attachment-overlay"
-      aria-hidden="true"
-    >
+function executeCommand(raw,target){
+  const cmd=raw.trim();
+  if(!cmd)return;
+  state.commands.push({time:new Date().toISOString(),command:cmd});
+  promptLine(target,cmd);
+  record("COMMAND","Terminal command: "+cmd);
+  const parts=cmd.split(/\s+/);
+  switch(parts[0].toLowerCase()){
+    case "help":
+      helpText.split("\n").forEach(x=>addLine(target,x,"info"));break;
+    case "status":
+      addLine(target,"Application: ONLINE","info");
+      addLine(target,"Runtime: browser JavaScript");
+      addLine(target,"Secure context: "+(window.isSecureContext?"yes":"no"));
+      addLine(target,"Crypto API: "+(!!(crypto&&crypto.subtle)));
+      addLine(target,"Network: "+(navigator.onLine?"online":"offline"));
+      break;
+    case "time":
+      addLine(target,new Date().toString(),"info");break;
+    case "network":
+      addLine(target,"Browser online: "+navigator.onLine,"info");
+      addLine(target,"Effective connection details depend on browser support.");
+      if(navigator.connection){
+        addLine(target,"Type: "+(navigator.connection.effectiveType||"unknown"));
+        addLine(target,"Downlink: "+(navigator.connection.downlink??"unknown"));
+      }else addLine(target,"Network Information API: unavailable");
+      break;
+    case "env":
+      addLine(target,"Platform: "+(navigator.userAgentData?.platform||navigator.platform||"unknown"));
+      addLine(target,"Language: "+navigator.language);
+      addLine(target,"Screen: "+screen.width+"x"+screen.height);
+      addLine(target,"Viewport: "+innerWidth+"x"+innerHeight);
+      addLine(target,"Cookies enabled: "+navigator.cookieEnabled);break;
+    case "history":
+      if(!state.commands.length)addLine(target,"No commands.");
+      state.commands.slice(-30).forEach((x,i)=>addLine(target,(i+1)+". "+x.command));
+      break;
+    case "logs":
+      addLine(target,"Recorded events: "+state.logs.length,"info");break;
+    case "version":
+      addLine(target,"NEXORA CONTROL CENTER 1.0.0","info");break;
+    case "clear":
+      $(target).innerHTML="";break;
+    default:
+      addLine(target,"Command not supported: "+parts[0],"error");
+      addLine(target,"اكتب help لعرض الأوامر المتاحة.","warn");
+  }
+}
+function runInput(inputId,target){
+  const input=$(inputId);
+  executeCommand(input.value,target);
+  input.value="";
+}
+$("dashRun").addEventListener("click",()=>runInput("dashCommand","dashTerminal"));
+$("dashCommand").addEventListener("keydown",e=>{if(e.key==="Enter")runInput("dashCommand","dashTerminal")});
+$("fullRun").addEventListener("click",()=>runInput("fullCommand","fullTerminal"));
+$("fullCommand").addEventListener("keydown",e=>{if(e.key==="Enter")runInput("fullCommand","fullTerminal")});
+document.querySelectorAll(".cmd-shortcut").forEach(b=>b.addEventListener("click",()=>executeCommand(b.dataset.cmd,"fullTerminal")));
+$("clearTerm").addEventListener("click",()=>{$("fullTerminal").innerHTML="";record("TERMINAL","Terminal display cleared")});
 
-      <div class="nova-sheet">
+function refreshStatus(){
+  $("appStatus").textContent="ONLINE";
+  $("networkStatus").textContent=navigator.onLine?"ONLINE":"OFFLINE";
+  $("networkStatus").className="stat-value "+(navigator.onLine?"green":"red");
+  $("cryptoBar").style.width=crypto?.subtle?"100%":"0%";
+  $("cryptoLabel").textContent=crypto?.subtle?"READY":"N/A";
+  $("onlineBar").style.width=navigator.onLine?"100%":"0%";
+  $("onlineLabel").textContent=navigator.onLine?"YES":"NO";
+}
+function refreshClock(){
+  $("clock").textContent=now();
+  const seconds=Math.floor((Date.now()-startedAt)/1000);
+  const h=String(Math.floor(seconds/3600)).padStart(2,"0");
+  const m=String(Math.floor(seconds%3600/60)).padStart(2,"0");
+  const s=String(seconds%60).padStart(2,"0");
+  $("uptime").textContent=h+":"+m+":"+s;
+}
+function refreshNetwork(){
+  const c=navigator.connection;
+  $("networkDetails").textContent=[
+    "navigator.onLine: "+navigator.onLine,
+    "connection API: "+(c?"available":"unavailable"),
+    "effectiveType: "+(c?.effectiveType||"not exposed"),
+    "downlink: "+(c?.downlink!=null?c.downlink+" Mbps":"not exposed"),
+    "rtt: "+(c?.rtt!=null?c.rtt+" ms":"not exposed"),
+    "saveData: "+(c?.saveData??"not exposed"),
+    "checkedAt: "+new Date().toISOString(),
+    "",
+    "These values do not identify devices on the local network."
+  ].join("\n");
+  $("browserDetails").textContent=[
+    "userAgent: "+navigator.userAgent,
+    "platform: "+(navigator.userAgentData?.platform||navigator.platform||"unknown"),
+    "language: "+navigator.language,
+    "languages: "+(navigator.languages||[]).join(", "),
+    "screen: "+screen.width+" x "+screen.height,
+    "viewport: "+innerWidth+" x "+innerHeight,
+    "secureContext: "+window.isSecureContext,
+    "cookiesEnabled: "+navigator.cookieEnabled
+  ].join("\n");
+}
+$("refreshNetwork").addEventListener("click",()=>{refreshNetwork();record("NETWORK","Browser connection details refreshed")});
+$("refreshBtn").addEventListener("click",()=>{refreshStatus();refreshNetwork();record("SYSTEM","Local dashboard status refreshed")});
+window.addEventListener("online",()=>{refreshStatus();record("NETWORK","Browser reports online")});
+window.addEventListener("offline",()=>{refreshStatus();record("NETWORK","Browser reports offline")});
+if(navigator.connection)navigator.connection.addEventListener?.("change",refreshNetwork);
 
-        <div class="sheet-handle"></div>
+$("checkUrl").addEventListener("click",async()=>{
+  const input=$("urlCheck").value.trim(),out=$("urlResult");
+  let url;
+  try{url=new URL(input)}catch{out.textContent="خطأ: أدخل عنوان URL صحيحًا.";return}
+  if(url.protocol!=="https:"){out.textContent="يُسمح بعناوين HTTPS فقط في هذه الأداة.";return}
+  if(url.username||url.password){out.textContent="لا تضع بيانات تسجيل الدخول داخل العنوان.";return}
+  out.textContent="جارٍ إرسال طلب محدود..."; 
+  const start=performance.now();
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),7000);
+    await fetch(url.href,{method:"HEAD",mode:"cors",cache:"no-store",signal:controller.signal,credentials:"omit",referrerPolicy:"no-referrer"});
+    clearTimeout(timer);
+    out.textContent="تمكن المتصفح من إتمام الطلب.\nElapsed: "+Math.round(performance.now()-start)+" ms\nملاحظة: سياسات CORS قد تمنع قراءة بعض الاستجابات.";
+    record("NETWORK","HTTP HEAD request completed: "+url.origin);
+  }catch(e){
+    out.textContent="تعذر تأكيد نجاح الطلب من المتصفح.\nReason: "+e.name+"\nقد يكون السبب CORS أو DNS أو TLS أو انقطاع الاتصال أو انتهاء المهلة.\nلم يتم إثبات أن الموقع متوقف.";
+    record("NETWORK","HTTP request could not be confirmed: "+url.origin);
+  }
+});
 
-        <div class="sheet-header">
+async function sha256(buffer){
+  if(!crypto?.subtle)throw new Error("WebCrypto غير متاح. افتح الصفحة في سياق آمن.");
+  const digest=await crypto.subtle.digest("SHA-256",buffer);
+  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+}
+$("hashBtn").addEventListener("click",async()=>{
+  try{
+    const hash=await sha256(new TextEncoder().encode($("hashInput").value));
+    $("hashResult").textContent=hash;
+    record("CRYPTO","SHA-256 digest generated");
+  }catch(e){$("hashResult").textContent=e.message}
+});
+$("copyHash").addEventListener("click",async()=>{
+  const value=$("hashResult").textContent;
+  try{await navigator.clipboard.writeText(value);record("CRYPTO","Hash copied to clipboard")}
+  catch{$("hashResult").textContent+="\nتعذر النسخ تلقائيًا؛ حدد البصمة وانسخها يدويًا."}
+});
+$("randomBtn").addEventListener("click",()=>{
+  const n=Number($("randomLength").value);
+  if(!Number.isInteger(n)||n<1||n>64){$("randomResult").textContent="أدخل عددًا صحيحًا من 1 إلى 64.";return}
+  if(!crypto?.getRandomValues){$("randomResult").textContent="مولد عشوائي آمن غير متاح.";return}
+  const arr=crypto.getRandomValues(new Uint8Array(n));
+  $("randomResult").textContent=Array.from(arr,b=>b.toString(16).padStart(2,"0")).join("");
+  record("CRYPTO","Secure random bytes generated: "+n);
+});
+$("encryptBtn").addEventListener("click",async()=>{
+  try{
+    if(!crypto?.subtle)throw new Error("WebCrypto غير متاح.");
+    const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const encoded=new TextEncoder().encode($("aesInput").value);
+    const encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,encoded);
+    state.lastCipher={key,iv,cipher:encrypted};
+    const toHex=b=>Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("");
+    $("aesResult").textContent="IV (hex): "+toHex(iv)+"\nCiphertext (hex): "+toHex(encrypted)+"\n\nالمفتاح موجود في الذاكرة لهذه الجلسة فقط، ولم يتم تصديره.";
+    $("decryptResult").textContent="تم إنشاء النص المشفر. يمكنك تجربة فك تشفيره الآن.";
+    record("CRYPTO","AES-GCM encryption completed in memory");
+  }catch(e){$("aesResult").textContent="فشل التشفير: "+e.message}
+});
+$("decryptBtn").addEventListener("click",async()=>{
+  try{
+    if(!state.lastCipher)throw new Error("شفّر نصًا أولًا.");
+    const {key,iv,cipher}=state.lastCipher;
+    const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,cipher);
+    $("decryptResult").textContent=new TextDecoder().decode(plain);
+    record("CRYPTO","AES-GCM decryption completed");
+  }catch(e){$("decryptResult").textContent="تعذر فك التشفير: "+e.message}
+});
+$("cryptoDetails").textContent=[
+  "WebCrypto: "+(crypto?.subtle?"available":"unavailable"),
+  "SHA-256: "+(crypto?.subtle?"available":"unavailable"),
+  "AES-GCM: "+(crypto?.subtle?"available":"unavailable"),
+  "Secure random: "+(crypto?.getRandomValues?"available":"unavailable"),
+  "Secure context: "+window.isSecureContext,
+  "",
+  "تنبيه: مفتاح AES التجريبي لا يتم حفظه أو تصديره."
+].join("\n");
 
-          <div class="sheet-title">
-            إرفاق
-          </div>
+$("fileInput").addEventListener("change",async e=>{
+  const file=e.target.files?.[0];
+  if(!file)return;
+  $("fileResult").textContent="جارٍ تحليل بيانات الملف...";
+  $("fileTextWrap").classList.add("hidden");
+  try{
+    const buffer=await file.arrayBuffer();
+    const hash=await sha256(buffer);
+    $("fileResult").textContent=[
+      "Name: "+file.name,
+      "Size: "+formatBytes(file.size)+" ("+file.size+" bytes)",
+      "MIME: "+(file.type||"unknown"),
+      "Last modified: "+new Date(file.lastModified).toISOString(),
+      "SHA-256: "+hash,
+      "",
+      "ملاحظة: البصمة تحدد المحتوى بدرجة عالية من التمييز، لكنها ليست حكمًا على أمان الملف."
+    ].join("\n");
+    if(file.size<=1024*1024 && (file.type.startsWith("text/")||/\.(txt|log|json|csv|html|css|js|xml|md)$/i.test(file.name))){
+      const text=await file.text();
+      $("filePreview").value=text.slice(0,20000);
+      $("fileTextWrap").classList.remove("hidden");
+    }
+    record("FILE","User-selected file analyzed: "+file.name+" ("+file.size+" bytes)");
+  }catch(err){$("fileResult").textContent="فشل تحليل الملف: "+err.message}
+});
 
-          <button
-            class="icon-button"
-            type="button"
-            data-close-modal="nova-attachment-overlay"
-          >
-            ×
-          </button>
+function renderUsers(){
+  $("userCount").textContent=state.users.length;
+  const tbody=$("usersTable");tbody.replaceChildren();
+  if(!state.users.length){
+    const tr=document.createElement("tr"),td=document.createElement("td");
+    td.colSpan=4;td.textContent="لا توجد إدخالات. أضف مستخدمًا محليًا للبدء.";
+    tr.appendChild(td);tbody.appendChild(tr);return;
+  }
+  state.users.forEach(user=>{
+    const tr=document.createElement("tr");
+    [user.id,user.name,user.role].forEach(value=>{
+      const td=document.createElement("td");td.textContent=value;tr.appendChild(td)
+    });
+    const td=document.createElement("td"),btn=document.createElement("button");
+    btn.className="btn danger";btn.textContent="حذف";
+    btn.addEventListener("click",()=>{
+      state.users=state.users.filter(u=>u.id!==user.id);
+      record("USER","Removed local registry entry: "+user.name);renderUsers();
+    });
+    td.appendChild(btn);tr.appendChild(td);tbody.appendChild(tr);
+  });
+}
+$("addUser").addEventListener("click",()=>{
+  const name=$("userName").value.trim(),role=$("userRole").value;
+  if(!name){$("userName").focus();return}
+  if(state.users.some(u=>u.name.toLowerCase()===name.toLowerCase())){alert("هذا الاسم موجود بالفعل.");return}
+  const user={id:"U-"+crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase(),name,role};
+  state.users.push(user);
+  $("userName").value="";
+  record("USER","Added local registry entry: "+name+" ("+role+")");
+  renderUsers();
+});
+$("exportUsers").addEventListener("click",()=>{
+  const rows=[["id","name","role"],...state.users.map(u=>[u.id,u.name,u.role])];
+  downloadFile("nexora-users.csv","\uFEFF"+rows.map(r=>r.map(escapeCSV).join(",")).join("\r\n"),"text/csv;charset=utf-8");
+  record("EXPORT","User registry exported as CSV");
+});
 
-        </div>
+function updateLogs(){
+  $("eventCount").textContent=state.logs.length;
+  $("logsCount").textContent=state.logs.length+" EVENTS";
+  const render=(target,items)=>{
+    const box=$(target);box.replaceChildren();
+    if(!items.length){
+      const p=document.createElement("p");p.style.color="var(--muted)";p.textContent="لا توجد أحداث مسجلة بعد.";box.appendChild(p);return;
+    }
+    items.forEach(item=>{
+      const row=document.createElement("div");row.className="log-row";
+      const marker=document.createElement("span");marker.className="log-marker";
+      if(item.type==="ERROR")marker.style.background="var(--red)";
+      const body=document.createElement("div");body.style.minWidth="0";
+      const p=document.createElement("p");p.textContent="["+item.type+"] "+item.message;
+      const small=document.createElement("small");small.textContent=item.time;
+      body.append(p,small);row.append(marker,body);box.appendChild(row);
+    });
+  };
+  render("recentLogs",state.logs.slice(0,5));
+  render("allLogs",state.logs);
+}
+$("exportLogs").addEventListener("click",()=>{
+  downloadFile("nexora-audit-log.json",JSON.stringify(state.logs,null,2),"application/json");
+  record("EXPORT","Event log exported as JSON");
+});
+$("clearLogs").addEventListener("click",()=>{
+  if(!confirm("هل تريد مسح سجل الأحداث الحالي؟"))return;
+  state.logs=[];updateLogs();
+  record("SYSTEM","Event log cleared");
+});
 
-        <div class="sheet-body">
+function renderModules(){
+  const modules=[
+    ["Terminal","مفسر أوامر محلي محدود","READY"],
+    ["WebCrypto","بصمات وتشفير محلي","READY"],
+    ["File Inspector","تحليل الملفات المختارة","READY"],
+    ["Browser Network","بيانات الاتصال المتاحة","READY"],
+    ["Remote Scanner","لا يوجد خادم فحص متصل","OFFLINE"],
+    ["System Shell","يتطلب تطبيقًا محليًا منفصلًا","UNAVAILABLE"],
+    ["Persistent Accounts","يتطلب خادمًا وقاعدة بيانات","UNCONNECTED"]
+  ];
+  const box=$("moduleList");box.replaceChildren();
+  modules.forEach(m=>{
+    const row=document.createElement("div");row.className="module";
+    const left=document.createElement("div"),b=document.createElement("b"),small=document.createElement("small");
+    b.textContent=m[0];small.textContent=m[1];left.append(b,small);
+    const badge=document.createElement("span");badge.className="badge"+(m[2]!=="READY"?" warn":"");badge.textContent=m[2];
+    row.append(left,badge);box.appendChild(row);
+  });
+}
+function renderSettingsInfo(){
+  $("settingsInfo").textContent=[
+    "App: NEXORA CONTROL CENTER",
+    "Version: 1.0.0",
+    "Session started: "+new Date(startedAt).toISOString(),
+    "Current time: "+new Date().toISOString(),
+    "Runtime: "+(typeof window!=="undefined"?"Browser":"Unknown"),
+    "Secure context: "+window.isSecureContext,
+    "Events: "+state.logs.length,
+    "Commands: "+state.commands.length,
+    "Local user entries: "+state.users.length,
+    "Network online: "+navigator.onLine
+  ].join("\n");
+}
+$("saveSettings").addEventListener("click",()=>{
+  state.settings.accent=$("accentSelect").value;
+  state.settings.motion=$("motionSelect").value;
+  document.documentElement.style.setProperty("--green",state.settings.accent);
+  document.documentElement.style.setProperty("--cyan",state.settings.accent);
+  document.documentElement.style.setProperty("--motion",state.settings.motion);
+  if(state.settings.motion==="0"){
+    document.querySelectorAll("*").forEach(el=>el.style.animationDuration="0.001ms");
+  }else{
+    document.querySelectorAll("*").forEach(el=>el.style.animationDuration="");
+  }
+  record("SETTINGS","Appearance settings applied");
+  alert("تم تطبيق إعدادات الواجهة.");
+});
+$("downloadReport").addEventListener("click",()=>{
+  const report={
+    app:"NEXORA CONTROL CENTER",
+    version:"1.0.0",
+    generatedAt:new Date().toISOString(),
+    sessionDurationMs:Date.now()-startedAt,
+    browser:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},
+    counts:{events:state.logs.length,commands:state.commands.length,users:state.users.length},
+    events:state.logs,
+    commands:state.commands,
+    users:state.users,
+    note:"Local browser session report; not a full operating-system security assessment."
+  };
+  downloadFile("nexora-session-report.json",JSON.stringify(report,null,2),"application/json");
+  record("EXPORT","Session report exported");
+});
 
-          <div class="sheet-grid">
+window.addEventListener("resize",()=>{
+  if($("settingsInfo"))renderSettingsInfo();
+});
 
-            <button class="sheet-action" type="button">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor
+function initialize(){
+  refreshStatus();refreshClock();refreshNetwork();renderUsers();renderModules();renderSettingsInfo();
+  addLine("dashTerminal","NEXORA CONTROL CENTER v1.0.0","info");
+  addLine("dashTerminal","Local browser workspace initialized.");
+  addLine("dashTerminal","Type help to list supported commands.","info");
+  addLine("fullTerminal","NEXORA CONTROL CENTER v1.0.0","info");
+  addLine("fullTerminal","Browser-only command interpreter initialized.");
+  addLine("fullTerminal","Type help to list supported commands.","info");
+  record("SYSTEM","Application initialized in local browser session");
+}
+setInterval(refreshClock,1000);
+initialize();
+</script>
+</body>
+  </html>
