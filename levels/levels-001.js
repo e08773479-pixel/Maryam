@@ -256,5 +256,28 @@
     }
   ];
 
-  window.LevelsLoader.registerLevels(rawLevels);
+  if (!window.LevelsLoader) {
+  document.body.insertAdjacentHTML(
+    "beforeend",
+    '<div style="position:fixed;z-index:999999;top:10px;left:10px;right:10px;padding:16px;background:#8b0000;color:white;border-radius:12px;direction:rtl;font-size:16px">خطأ تحميل: ملف levels-loader.js غير موجود أو لم يتم تحميله قبل ملف المراحل.</div>'
+  );
+
+  throw new Error("LevelsLoader is missing");
+}
+
+window.LevelsLoader.registerLevels(rawLevels);
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  '<div id="level-load-test" style="position:fixed;z-index:999998;bottom:10px;left:10px;right:10px;padding:12px;background:#14532d;color:white;border-radius:12px;direction:rtl;font-size:15px">تم تحميل ' +
+    window.LevelsLoader.getLoadedCount() +
+    ' مراحل. المرحلة الأولى: ' +
+    (window.LevelsLoader.getLevel(1) ? "موجودة بنجاح" : "غير موجودة") +
+    "</div>"
+);
+
+console.info(
+  "[GAME] اختبار المرحلة الأولى:",
+  window.LevelsLoader.getLevel(1)
+);
 })();
