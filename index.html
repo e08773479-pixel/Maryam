@@ -1,876 +1,819 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#05090c">
-<title>NEXORA | Cyber Control Center</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#05090c;
-  --panel:#0a1117;
-  --panel2:#0d171e;
-  --line:#1b343b;
-  --green:#38f5a3;
-  --cyan:#42d9f5;
-  --red:#ff5470;
-  --yellow:#f7c96b;
-  --text:#d9e9ec;
-  --muted:#78939c;
-  --radius:13px;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font-family:"Cairo",sans-serif;min-height:100vh;
-}
-body:before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
-  background:
-    radial-gradient(ellipse at 10% 0%,#0c39282b,transparent 45%),
-    radial-gradient(ellipse at 90% 80%,#083a4922,transparent 40%),
-    repeating-linear-gradient(0deg,transparent 0 39px,#1b343b12 40px),
-    repeating-linear-gradient(90deg,transparent 0 39px,#1b343b12 40px);
-}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible,textarea:focus-visible{
-  outline:2px solid var(--green);outline-offset:3px
-}
-.topbar{
-  min-height:70px;display:flex;align-items:center;justify-content:space-between;
-  gap:16px;padding:12px 24px;border-bottom:1px solid var(--line);
-  background:#05090ceF;position:sticky;top:0;z-index:10;backdrop-filter:blur(16px)
-}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{
-  width:43px;height:43px;display:grid;place-items:center;border:1px solid var(--green);
-  color:var(--green);font:600 23px "IBM Plex Mono",monospace;
-  clip-path:polygon(15% 0,100% 0,100% 85%,85% 100%,0 100%,0 15%);
-  background:#38f5a30b;box-shadow:inset 0 0 18px #38f5a310
-}
-.brand h1{font-size:18px;letter-spacing:2px;margin:0}
-.brand p{margin:2px 0 0;color:var(--muted);font-size:11px}
-.top-right{display:flex;align-items:center;gap:13px}
-.pill{font:11px "IBM Plex Mono",monospace;color:var(--green);border:1px solid #38f5a344;padding:7px 10px;border-radius:30px}
-.dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-left:6px;box-shadow:0 0 10px var(--green)}
-.layout{display:grid;grid-template-columns:235px minmax(0,1fr);min-height:calc(100vh - 70px)}
-.sidebar{padding:20px 13px;border-left:1px solid var(--line);background:#071015a8}
-.nav-title{font-size:10px;color:#58727a;padding:10px 13px;letter-spacing:1px}
-.nav{
-  display:flex;align-items:center;gap:11px;width:100%;padding:11px 13px;
-  color:#92aab0;background:transparent;border:1px solid transparent;
-  border-radius:9px;text-align:right;font-size:12px;margin-bottom:4px;transition:.2s
-}
-.nav:hover,.nav.active{background:#38f5a30d;border-color:#38f5a32b;color:var(--green)}
-.nav .ico{font:15px "IBM Plex Mono",monospace;width:19px;text-align:center}
-.side-bottom{margin-top:35px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#0a1419}
-.side-bottom strong{display:block;font-size:12px;color:var(--green)}
-.side-bottom p{font-size:10px;color:var(--muted);line-height:1.9}
-main{padding:24px;min-width:0;max-width:1600px;width:100%;margin:auto}
-.page{display:none;animation:fade .25s ease}
-.page.active{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:22px}
-.page-heading h2{margin:0;font-size:23px}
-.page-heading p{margin:5px 0;color:var(--muted);font-size:12px}
-.eyebrow{color:var(--green);font:10px "IBM Plex Mono",monospace;letter-spacing:2px;margin-bottom:8px}
-.btn{
-  background:#38f5a310;color:var(--green);border:1px solid #38f5a34d;
-  padding:9px 14px;border-radius:8px;font-size:12px;transition:.2s
-}
-.btn:hover{background:#38f5a322;border-color:var(--green)}
-.btn.secondary{color:var(--text);border-color:var(--line);background:#0b141a}
-.btn.danger{color:var(--red);border-color:#ff547044}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:18px}
-.card{
-  border:1px solid var(--line);background:linear-gradient(145deg,#0c171d,#080e13);
-  border-radius:var(--radius);padding:17px;min-width:0
-}
-.stat-top{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px}
-.stat-icon{color:var(--green);font:17px "IBM Plex Mono",monospace}
-.stat-value{font:500 25px "IBM Plex Mono",monospace;margin:16px 0 7px;color:#e8f8f5;direction:ltr;text-align:right}
-.stat-foot{font-size:10px;color:var(--muted)}
-.green{color:var(--green)}.cyan{color:var(--cyan)}.yellow{color:var(--yellow)}.red{color:var(--red)}
-.grid-2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:15px;margin-bottom:16px}
-.card-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
-.card-title h3{font-size:13px;margin:0;font-weight:700}
-.card-title span{font:10px "IBM Plex Mono",monospace;color:var(--muted)}
-.terminal{
-  min-height:280px;max-height:390px;overflow:auto;padding:15px;
-  background:#03080a;border:1px solid #19352d;border-radius:9px;
-  font:12px/1.9 "IBM Plex Mono",monospace;direction:ltr;text-align:left
-}
-.term-line{white-space:pre-wrap;overflow-wrap:anywhere;color:#a8c7bd}
-.term-line .prompt{color:var(--green)}
-.term-line.error{color:var(--red)}
-.term-line.info{color:var(--cyan)}
-.term-line.warn{color:var(--yellow)}
-.term-input-row{display:flex;gap:8px;margin-top:10px;direction:ltr}
-.term-input{
-  min-width:0;flex:1;background:#050b0e;color:var(--green);border:1px solid var(--line);
-  padding:12px;border-radius:8px;font:12px "IBM Plex Mono",monospace;direction:ltr
-}
-.quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.quick{
-  text-align:right;border:1px solid var(--line);background:#0a1318;padding:13px;
-  border-radius:9px;color:var(--text);transition:.2s
-}
-.quick:hover{border-color:#38f5a366;transform:translateY(-2px)}
-.quick b{display:block;font-size:12px;margin-bottom:4px}
-.quick small{font-size:10px;color:var(--muted)}
-.quick .qicon{color:var(--green);font:17px "IBM Plex Mono",monospace;margin-bottom:9px}
-.log-list{display:flex;flex-direction:column}
-.log-row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #1b343b99;font-size:11px}
-.log-row:last-child{border:0}
-.log-marker{width:7px;height:7px;border-radius:50%;background:var(--green);margin-top:7px;flex-shrink:0}
-.log-row p{margin:0;line-height:1.8;overflow-wrap:anywhere}
-.log-row small{color:var(--muted);font:10px "IBM Plex Mono",monospace;display:block;margin-top:3px;direction:ltr;text-align:right}
-.bar-row{display:grid;grid-template-columns:75px 1fr 38px;align-items:center;gap:10px;margin:17px 0;font-size:11px}
-.bar-track{height:7px;background:#18282e;border-radius:9px;overflow:hidden}
-.bar-fill{height:100%;width:0;background:var(--green);border-radius:9px;transition:width .7s}
-.bar-value{font:10px "IBM Plex Mono",monospace;color:var(--green);direction:ltr}
-.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-.field{margin:12px 0}
-.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:7px}
-.field input,.field textarea,.field select{
-  width:100%;background:#060d11;color:var(--text);border:1px solid var(--line);
-  border-radius:8px;padding:11px;direction:ltr;text-align:left;font-size:12px
-}
-.field textarea{min-height:100px;resize:vertical}
-.result{
-  background:#050b0e;border:1px solid var(--line);padding:13px;border-radius:9px;
-  font:11px/1.9 "IBM Plex Mono",monospace;direction:ltr;text-align:left;
-  white-space:pre-wrap;overflow-wrap:anywhere;min-height:65px;margin-top:12px
-}
-.file-drop{
-  padding:28px 15px;border:1px dashed #38f5a366;border-radius:10px;text-align:center;
-  background:#38f5a306
-}
-.file-drop p{font-size:11px;color:var(--muted)}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:11px;min-width:450px}
-th,td{padding:12px;text-align:right;border-bottom:1px solid var(--line)}
-th{color:var(--muted);font-weight:500}
-td{overflow-wrap:anywhere}
-.badge{font-size:10px;border:1px solid #38f5a333;color:var(--green);padding:4px 8px;border-radius:20px;white-space:nowrap}
-.badge.warn{color:var(--yellow);border-color:#f7c96b44}
-.badge.red{color:var(--red);border-color:#ff547044}
-.radar-wrap{height:270px;display:grid;place-items:center;overflow:hidden}
-.radar{
-  position:relative;width:min(245px,75vw);aspect-ratio:1;border-radius:50%;
-  border:1px solid #38f5a355;overflow:hidden;
-  background:repeating-radial-gradient(circle,transparent 0 28px,#38f5a328 29px 30px)
-}
-.radar:before{
-  content:"";position:absolute;inset:0;
-  background:conic-gradient(from 0deg,transparent 0deg,#38f5a329 40deg,transparent 80deg);
-  animation:spin 5s linear infinite
-}
-.radar:after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:#38f5a326}
-.radar-line{position:absolute;left:0;right:0;top:50%;height:1px;background:#38f5a326}
-.radar-center{position:absolute;width:6px;height:6px;left:calc(50% - 3px);top:calc(50% - 3px);background:var(--green);border-radius:50%;box-shadow:0 0 15px var(--green)}
-.radar-label{position:absolute;bottom:9px;left:0;right:0;text-align:center;color:var(--muted);font:9px "IBM Plex Mono",monospace}
-@keyframes spin{to{transform:rotate(360deg)}}
-.module-list{display:flex;flex-direction:column;gap:9px}
-.module{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:12px;border:1px solid var(--line);border-radius:9px;background:#091218
-}
-.module b{font-size:12px;display:block}
-.module small{font-size:10px;color:var(--muted)}
-.module .mod-icon{font:17px "IBM Plex Mono",monospace;color:var(--cyan)}
-.footer{padding:22px 0 5px;text-align:center;color:#536d75;font-size:10px}
-.notice{padding:12px;border:1px solid #f7c96b33;background:#f7c96b08;color:#bca66e;border-radius:9px;font-size:11px;line-height:1.9;margin-bottom:16px}
-.hidden{display:none!important}
-.mobile-menu{display:none}
-@media(max-width:1000px){
-  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .grid-2{grid-template-columns:1fr}
-}
-@media(max-width:700px){
-  .topbar{padding:10px 13px;min-height:62px}
-  .brand h1{font-size:15px}
-  .brand p{font-size:9px}
-  .logo{width:37px;height:37px}
-  .pill{font-size:9px;padding:6px}
-  .layout{grid-template-columns:1fr}
-  .sidebar{
-    position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;
-    display:flex;gap:5px;overflow-x:auto;padding:7px;
-    border-left:0;border-top:1px solid var(--line);background:#050b0ef5;
-    scrollbar-width:none
-  }
-  .sidebar::-webkit-scrollbar{display:none}
-  .nav-title,.side-bottom{display:none}
-  .nav{flex:0 0 auto;width:auto;min-width:66px;display:flex;flex-direction:column;gap:3px;
-    justify-content:center;text-align:center;padding:7px 9px;margin:0;font-size:9px}
-  .nav .ico{font-size:15px}
-  main{padding:18px 12px 95px}
-  .page-heading h2{font-size:20px}
-  .stats{gap:9px}
-  .card{padding:13px}
-  .stat-value{font-size:21px}
-  .section-grid{grid-template-columns:1fr}
-  .quick-grid{gap:8px}
-  .quick{padding:11px}
-}
-@media(max-width:370px){
-  .top-right .pill{display:none}
-  .stats{grid-template-columns:1fr 1fr}
-  .stat-value{font-size:18px}
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0908">
+  <meta name="description" content="JOKER — منصة الألعاب والتحديات والتواصل الاجتماعي">
+  <title>JOKER 👑 | عالمك، لعبتك، تحديك</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="joker.css">
+
+  <script src="config.js" defer></script>
+  <script src="games.js" defer></script>
+  <script src="gems.js" defer></script>
+  <script src="joker.js" defer></script>
 </head>
+
 <body>
+  <div class="app-shell" id="appShell">
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">N</div>
-    <div>
-      <h1>NEXORA <span style="color:var(--green)">/</span> CONTROL</h1>
-      <p>CYBERSECURITY WORKSTATION</p>
-    </div>
-  </div>
-  <div class="top-right">
-    <span class="pill"><span class="dot"></span>LOCAL SESSION</span>
-    <span id="clock" style="font:11px 'IBM Plex Mono';color:var(--muted);direction:ltr"></span>
-  </div>
-</header>
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#home" data-page="home" aria-label="JOKER الرئيسية">
+        <span class="brand-crown">♛</span>
+        <span class="brand-text">
+          <strong>JOKER</strong>
+          <small>PLAY YOUR WORLD</small>
+        </span>
+      </a>
 
-<div class="layout">
-<aside class="sidebar">
-  <div class="nav-title">MAIN WORKSPACE</div>
-  <button class="nav active" data-page="dashboard"><span class="ico">⌂</span>الرئيسية</button>
-  <button class="nav" data-page="terminal"><span class="ico">&gt;_</span>Terminal</button>
-  <button class="nav" data-page="network"><span class="ico">⌘</span>الشبكات</button>
-  <button class="nav" data-page="security"><span class="ico">◇</span>مختبر الأمان</button>
-  <button class="nav" data-page="files"><span class="ico">▤</span>تحليل الملفات</button>
-  <button class="nav" data-page="users"><span class="ico">◎</span>المستخدمون</button>
-  <button class="nav" data-page="radar"><span class="ico">⊙</span>Radar</button>
-  <button class="nav" data-page="logs"><span class="ico">≡</span>سجل الأحداث</button>
-  <button class="nav" data-page="settings"><span class="ico">⚙</span>الإعدادات</button>
-  <div class="side-bottom">
-    <strong>◆ LOCAL SECURITY LAB</strong>
-    <p>بيئة محلية للأدوات المصرح بها. حالة الاتصال بالخدمات الخارجية لم يتم التحقق منها.</p>
-    <span class="badge">BROWSER MODE</span>
-  </div>
-</aside>
-
-<main>
-<section class="page active" id="page-dashboard">
-  <div class="page-heading">
-    <div><div class="eyebrow">SYSTEM OVERVIEW / 01</div><h2>مركز القيادة</h2><p>نظرة عامة على بيئة العمل المحلية وحالة التطبيق.</p></div>
-    <button class="btn" id="refreshBtn">↻ تحديث الحالة</button>
-  </div>
-  <div class="notice">تنبيه: هذه لوحة تعمل داخل المتصفح. المؤشرات أدناه تقيس حالة التطبيق والبيئة المتاحة له، وليست قياسات شاملة لنظام التشغيل أو نتائج فحص أمني خارجي.</div>
-  <div class="stats">
-    <div class="card"><div class="stat-top"><span>حالة التطبيق</span><span class="stat-icon">◉</span></div><div class="stat-value green" id="appStatus">ONLINE</div><div class="stat-foot">جلسة المتصفح الحالية</div></div>
-    <div class="card"><div class="stat-top"><span>وقت الجلسة</span><span class="stat-icon">◷</span></div><div class="stat-value" id="uptime">00:00</div><div class="stat-foot">منذ فتح الصفحة</div></div>
-    <div class="card"><div class="stat-top"><span>أحداث مسجلة</span><span class="stat-icon">≡</span></div><div class="stat-value" id="eventCount">0</div><div class="stat-foot">في سجل هذه الجلسة</div></div>
-    <div class="card"><div class="stat-top"><span>حالة الشبكة</span><span class="stat-icon">⌘</span></div><div class="stat-value" id="networkStatus">--</div><div class="stat-foot">وفق واجهة المتصفح</div></div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><h3>Terminal — LIVE SESSION</h3><span class="green">LOCAL</span></div>
-      <div class="terminal" id="dashTerminal" aria-live="polite"></div>
-      <div class="term-input-row"><input class="term-input" id="dashCommand" placeholder="help" autocomplete="off"><button class="btn" id="dashRun">RUN ↵</button></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><h3>أدوات سريعة</h3><span>QUICK ACCESS</span></div>
-      <div class="quick-grid">
-        <button class="quick" data-go="network"><div class="qicon">⌘</div><b>تحليل الاتصال</b><small>حالة المتصفح والاتصال</small></button>
-        <button class="quick" data-go="security"><div class="qicon">◇</div><b>مختبر الأمان</b><small>إنشاء بصمة SHA-256</small></button>
-        <button class="quick" data-go="files"><div class="qicon">▤</div><b>فحص ملف</b><small>تحليل ملف تختاره</small></button>
-        <button class="quick" data-go="logs"><div class="qicon">≡</div><b>سجل الأحداث</b><small>عرض وتصدير السجل</small></button>
+      <div class="sidebar-profile">
+        <div class="avatar avatar-main" id="sidebarAvatar">J</div>
+        <div class="profile-copy">
+          <strong id="sidebarUsername">زائر جوكر</strong>
+          <span id="sidebarStatus">وضع الاستعراض</span>
+        </div>
+        <span class="status-dot"></span>
       </div>
-      <div style="margin-top:20px">
-        <div class="card-title"><h3>قدرات المتصفح</h3><span>ENVIRONMENT</span></div>
-        <div class="bar-row"><span>JavaScript</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-value">ON</span></div>
-        <div class="bar-row"><span>WebCrypto</span><div class="bar-track"><div class="bar-fill" id="cryptoBar"></div></div><span class="bar-value" id="cryptoLabel">--</span></div>
-        <div class="bar-row"><span>Online API</span><div class="bar-track"><div class="bar-fill" id="onlineBar"></div></div><span class="bar-value" id="onlineLabel">--</span></div>
+
+      <div class="sidebar-label">القائمة الرئيسية</div>
+
+      <nav class="main-nav" aria-label="القائمة الرئيسية">
+        <button class="nav-item active" data-page="home">
+          <span class="nav-icon">⌂</span><span>الرئيسية</span>
+        </button>
+        <button class="nav-item" data-page="games">
+          <span class="nav-icon">▣</span><span>مركز الألعاب</span>
+        </button>
+        <button class="nav-item" data-page="quickplay">
+          <span class="nav-icon">⚡</span><span>العب الآن</span>
+          <span class="nav-badge">سريع</span>
+        </button>
+        <button class="nav-item" data-page="rooms">
+          <span class="nav-icon">▤</span><span>غرف اللعب</span>
+        </button>
+        <button class="nav-item" data-page="friends">
+          <span class="nav-icon">♙</span><span>الأصدقاء</span>
+        </button>
+        <button class="nav-item" data-page="messages">
+          <span class="nav-icon">▱</span><span>المحادثات</span>
+        </button>
+        <button class="nav-item" data-page="tournaments">
+          <span class="nav-icon">♜</span><span>البطولات</span>
+        </button>
+        <button class="nav-item" data-page="leaderboard">
+          <span class="nav-icon">♛</span><span>المتصدرون</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-label">المكافآت والحساب</div>
+
+      <nav class="main-nav" aria-label="المكافآت والحساب">
+        <button class="nav-item" data-page="gems">
+          <span class="nav-icon">◇</span><span>الجواهر والمتجر</span>
+        </button>
+        <button class="nav-item" data-page="profile">
+          <span class="nav-icon">◎</span><span>ملفي الشخصي</span>
+        </button>
+        <button class="nav-item" data-page="notifications">
+          <span class="nav-icon">♧</span><span>الإشعارات</span>
+        </button>
+        <button class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙</span><span>الإعدادات</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="sidebar-promo">
+          <span class="promo-crown">♛</span>
+          <strong>عالم JOKER</strong>
+          <p>اكتشف الألعاب والتحديات المتاحة.</p>
+          <button class="btn btn-gold btn-small" data-page="games">اكتشف الألعاب</button>
+        </div>
+
+        <div class="sidebar-footer">
+          <span>JOKER PLATFORM</span>
+          <span>الإصدار 1.0</span>
+        </div>
       </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><h3>آخر الأحداث</h3><button class="btn secondary" data-go="logs">عرض الكل ←</button></div>
-    <div class="log-list" id="recentLogs"></div>
-  </div>
-</section>
+    </aside>
 
-<section class="page" id="page-terminal">
-  <div class="page-heading"><div><div class="eyebrow">COMMAND INTERFACE / 02</div><h2>Terminal</h2><p>مفسر أوامر محلي بسيط ينفذ الأوامر المدعومة في هذه الصفحة.</p></div><button class="btn secondary" id="clearTerm">مسح الشاشة</button></div>
-  <div class="notice">هذا ليس Shell لنظام التشغيل. لا ينفذ أوامر Linux أو Windows عشوائية، ولا يمنح صلاحيات خارج المتصفح.</div>
-  <div class="card">
-    <div class="terminal" id="fullTerminal" style="height:390px;max-height:60vh"></div>
-    <div class="term-input-row"><input class="term-input" id="fullCommand" placeholder="help" autocomplete="off"><button class="btn" id="fullRun">EXECUTE ↵</button></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:13px">
-      <button class="btn secondary cmd-shortcut" data-cmd="help">help</button>
-      <button class="btn secondary cmd-shortcut" data-cmd="status">status</button>
-      <button class="btn secondary cmd-shortcut" data-cmd="network">network</button>
-      <button class="btn secondary cmd-shortcut" data-cmd="time">time</button>
-      <button class="btn secondary cmd-shortcut" data-cmd="history">history</button>
-    </div>
-  </div>
-</section>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
 
-<section class="page" id="page-network">
-  <div class="page-heading"><div><div class="eyebrow">NETWORK OBSERVATORY / 03</div><h2>تحليل الشبكة</h2><p>عرض بيانات الاتصال التي يكشفها المتصفح فعليًا.</p></div><button class="btn" id="refreshNetwork">فحص الحالة ↻</button></div>
-  <div class="notice">المتصفح لا يكشف عنوان IP العام أو الأجهزة المتصلة بالراوتر تلقائيًا. هذه الصفحة لا تنفذ مسحًا خفيًا للشبكات.</div>
-  <div class="section-grid">
-    <div class="card"><div class="card-title"><h3>حالة الاتصال</h3><span>CONNECTIVITY</span></div><div id="networkDetails" class="result"></div></div>
-    <div class="card"><div class="card-title"><h3>معلومات البيئة</h3><span>BROWSER API</span></div><div id="browserDetails" class="result"></div></div>
-    <div class="card"><div class="card-title"><h3>اختبار الوصول إلى عنوان تختاره</h3><span>HTTP CHECK</span></div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.9">يرسل طلب HEAD إلى عنوان HTTPS عام تحدده. قد تمنع سياسة CORS قراءة النتيجة، وهذا لا يعني بالضرورة أن الموقع متوقف.</p>
-      <div class="field"><label>HTTPS URL</label><input id="urlCheck" type="url" placeholder="https://example.com"></div>
-      <button class="btn" id="checkUrl">اختبار الوصول</button><div class="result" id="urlResult">جاهز.</div>
-    </div>
-    <div class="card"><div class="card-title"><h3>قواعد الاستخدام</h3><span>SAFE SCOPE</span></div>
-      <div class="module-list">
-        <div class="module"><div><b>تحليل اتصال المتصفح</b><small>بيانات متاحة محليًا</small></div><span class="badge">AVAILABLE</span></div>
-        <div class="module"><div><b>فحص URL</b><small>طلب HTTP محدود</small></div><span class="badge">AVAILABLE</span></div>
-        <div class="module"><div><b>اكتشاف أجهزة الشبكة</b><small>يحتاج أداة محلية مخولة</small></div><span class="badge warn">NOT CONNECTED</span></div>
-        <div class="module"><div><b>فحص المنافذ</b><small>يحتاج بيئة فحص مصرحًا بها</small></div><span class="badge warn">NOT CONNECTED</span></div>
+        <div class="breadcrumb">
+          <span class="breadcrumb-muted">JOKER</span>
+          <span class="breadcrumb-divider">/</span>
+          <strong id="currentPageTitle">الرئيسية</strong>
+        </div>
+
+        <div class="topbar-actions">
+          <label class="global-search">
+            <span>⌕</span>
+            <input id="globalSearch" type="search" placeholder="ابحث عن لعبة أو صديق..." autocomplete="off">
+            <kbd>/</kbd>
+          </label>
+
+          <button class="icon-button notification-button" data-page="notifications" aria-label="الإشعارات">
+            ♧<span class="notification-indicator"></span>
+          </button>
+
+          <button class="wallet-chip" data-page="gems" aria-label="عرض الجواهر">
+            <span class="wallet-gem">◆</span>
+            <span>
+              <small>الجواهر</small>
+              <strong id="headerGemBalance">غير متصل</strong>
+            </span>
+            <b>+</b>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-container">
+
+        <!-- HOME -->
+        <section class="page active" id="page-home" data-title="الرئيسية">
+
+          <div class="welcome-row">
+            <div>
+              <div class="eyebrow"><span class="live-dot"></span> مرحبًا بك في عالم JOKER</div>
+              <h1>اللعبة تبدأ <span class="gold-text">من هنا.</span></h1>
+              <p class="muted">اختر لعبتك، تحدَّ أصدقاءك، واصنع إنجازك القادم.</p>
+            </div>
+
+            <button class="btn btn-outline" data-page="profile">ملفي الشخصي ↗</button>
+          </div>
+
+          <section class="hero-banner">
+            <img
+              class="hero-image"
+              src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85"
+              alt="أجواء منافسات الألعاب الإلكترونية"
+            >
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+              <span class="hero-tag">JOKER GAMING WORLD</span>
+              <h2>كل تحدٍّ له<br><span>بطل جديد.</span></h2>
+              <p>ابدأ بجولة جديدة، أو ابحث عن منافس، أو ادعُ صديقك للعب.</p>
+              <div class="hero-buttons">
+                <button class="btn btn-gold" data-page="games">استكشف الألعاب <span>←</span></button>
+                <button class="btn btn-glass" data-page="quickplay">منافسة سريعة ⚡</button>
+              </div>
+            </div>
+            <div class="hero-mark">♛</div>
+          </section>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">DISCOVER</span>
+              <h2>اكتشف عالم الألعاب</h2>
+            </div>
+            <button class="text-button" data-page="games">كل الألعاب ←</button>
+          </div>
+
+          <div class="category-grid">
+            <button class="category-card" data-category="board">
+              <span class="category-art category-domino">▥</span>
+              <span class="category-info"><strong>ألعاب الطاولة</strong><small>دومينو وشطرنج وداما</small></span>
+              <span class="category-arrow">←</span>
+            </button>
+
+            <button class="category-card" data-category="skill">
+              <span class="category-art category-skill">✦</span>
+              <span class="category-info"><strong>ألعاب المهارة</strong><small>سرعة وذكاء وتركيز</small></span>
+              <span class="category-arrow">←</span>
+            </button>
+
+            <button class="category-card" data-category="puzzle">
+              <span class="category-art category-puzzle">▦</span>
+              <span class="category-info"><strong>الألغاز</strong><small>اختبر قدراتك</small></span>
+              <span class="category-arrow">←</span>
+            </button>
+
+            <button class="category-card" data-category="challenge">
+              <span class="category-art category-challenge">⚡</span>
+              <span class="category-info"><strong>التحديات</strong><small>ابدأ تحديًا جديدًا</small></span>
+              <span class="category-arrow">←</span>
+            </button>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">GAME LIBRARY</span>
+              <h2>ألعاب تستحق التجربة</h2>
+            </div>
+            <button class="text-button" data-page="games">عرض المكتبة ←</button>
+          </div>
+
+          <div class="game-grid" id="homeGames">
+            <article class="game-card">
+              <div class="game-art">
+                <img src="https://images.unsplash.com/photo-1606503153255-59d8b8b82176?auto=format&fit=crop&w=700&q=80" alt="قطع لعبة طاولة" loading="lazy">
+                <span class="game-category">استراتيجية</span>
+              </div>
+              <div class="game-info">
+                <h3>الدومينو</h3>
+                <p>خطط لحركاتك وتحدَّ خصمك.</p>
+                <button class="btn btn-outline btn-block" data-game="domino">فتح اللعبة</button>
+              </div>
+            </article>
+
+            <article class="game-card">
+              <div class="game-art">
+                <img src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=700&q=80" alt="لوحة شطرنج" loading="lazy">
+                <span class="game-category">ذكاء</span>
+              </div>
+              <div class="game-info">
+                <h3>الشطرنج</h3>
+                <p>فكر في الخطوة القادمة.</p>
+                <button class="btn btn-outline btn-block" data-game="chess">فتح اللعبة</button>
+              </div>
+            </article>
+
+            <article class="game-card">
+              <div class="game-art">
+                <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=700&q=80" alt="معدات ألعاب" loading="lazy">
+                <span class="game-category">مهارة</span>
+              </div>
+              <div class="game-info">
+                <h3>تحدي السرعة</h3>
+                <p>اختبر سرعة استجابتك.</p>
+                <button class="btn btn-outline btn-block" data-game="reaction">فتح اللعبة</button>
+              </div>
+            </article>
+
+            <article class="game-card">
+              <div class="game-art">
+                <img src="https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=700&q=80" alt="ألعاب رقمية" loading="lazy">
+                <span class="game-category">ألغاز</span>
+              </div>
+              <div class="game-info">
+                <h3>تحدي الذاكرة</h3>
+                <p>ركز وتذكر أماكن البطاقات.</p>
+                <button class="btn btn-outline btn-block" data-game="memory">فتح اللعبة</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">PLAY TOGETHER</span>
+              <h2>العب مع الآخرين</h2>
+            </div>
+          </div>
+
+          <div class="feature-grid">
+            <button class="feature-card" data-page="quickplay">
+              <span class="feature-icon">⚡</span>
+              <strong>منافسة عشوائية</strong>
+              <p>ابدأ البحث عن منافس عند توفر خدمة المطابقة.</p>
+              <span class="feature-link">ابدأ البحث ←</span>
+            </button>
+
+            <button class="feature-card" data-page="friends">
+              <span class="feature-icon">♙</span>
+              <strong>ابحث عن صديق</strong>
+              <p>ابحث عن اللاعبين وأرسل طلبات الصداقة.</p>
+              <span class="feature-link">البحث عن لاعب ←</span>
+            </button>
+
+            <button class="feature-card" data-page="rooms">
+              <span class="feature-icon">▤</span>
+              <strong>غرف اللعب</strong>
+              <p>استعرض الغرف المتاحة أو أنشئ غرفة.</p>
+              <span class="feature-link">استكشف الغرف ←</span>
+            </button>
+          </div>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">YOUR ACCOUNT</span>
+              <h2>حسابك في JOKER</h2>
+            </div>
+          </div>
+
+          <div class="account-notice">
+            <div class="notice-icon">i</div>
+            <div>
+              <strong>أنت الآن في وضع الاستعراض</strong>
+              <p>يمكنك استكشاف الواجهة. بيانات الحساب والأصدقاء والأرصدة الحقيقية تتطلب تسجيل الدخول وربط الخدمات المناسبة.</p>
+            </div>
+            <button class="btn btn-gold btn-small" data-page="profile">الحساب</button>
+          </div>
+        </section>
+
+        <!-- GAMES -->
+        <section class="page" id="page-games" data-title="مركز الألعاب">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">GAME LIBRARY</span>
+              <h1>مركز <span class="gold-text">الألعاب</span></h1>
+              <p class="muted">اكتشف الألعاب واختر تحديك القادم.</p>
+            </div>
+          </div>
+
+          <div class="filter-row" id="gameFilters">
+            <button class="filter-chip active" data-category="all">الكل</button>
+            <button class="filter-chip" data-category="board">ألعاب الطاولة</button>
+            <button class="filter-chip" data-category="skill">المهارة</button>
+            <button class="filter-chip" data-category="puzzle">الألغاز</button>
+            <button class="filter-chip" data-category="challenge">التحديات</button>
+          </div>
+
+          <div class="game-grid" id="allGames">
+            <div class="empty-state">
+              <span>▣</span>
+              <h3>مكتبة الألعاب</h3>
+              <p>سيتم ربط هذه المساحة بكتالوج الألعاب في مرحلة تشغيل المنطق.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- QUICK PLAY -->
+        <section class="page" id="page-quickplay" data-title="العب الآن">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">QUICK MATCH</span>
+              <h1>ابحث عن <span class="gold-text">منافس</span></h1>
+              <p class="muted">اختر اللعبة ونوع المباراة قبل بدء المطابقة.</p>
+            </div>
+          </div>
+
+          <div class="panel matchmaking-panel">
+            <div class="matchmaking-emblem">⚡</div>
+            <h2>مستعد للتحدي؟</h2>
+            <p>اختر لعبتك، ثم ابدأ البحث عن لاعب متاح.</p>
+
+            <label class="form-label" for="quickGame">اللعبة</label>
+            <select id="quickGame" class="form-control">
+              <option value="domino">الدومينو</option>
+              <option value="chess">الشطرنج</option>
+              <option value="reaction">تحدي السرعة</option>
+              <option value="memory">تحدي الذاكرة</option>
+            </select>
+
+            <label class="form-label" for="matchType">نوع المباراة</label>
+            <select id="matchType" class="form-control">
+              <option value="casual">ودية</option>
+              <option value="ranked">تنافسية</option>
+            </select>
+
+            <button class="btn btn-gold btn-block" id="findOpponentButton">ابحث عن منافس ⚡</button>
+            <div class="inline-status" id="matchmakingStatus" role="status">خدمة المطابقة غير متصلة بعد.</div>
+          </div>
+        </section>
+
+        <!-- ROOMS -->
+        <section class="page" id="page-rooms" data-title="غرف اللعب">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">GAME ROOMS</span>
+              <h1>غرف <span class="gold-text">اللعب</span></h1>
+              <p class="muted">الغرف المشتركة تحتاج إلى خدمة خادم متصلة.</p>
+            </div>
+            <button class="btn btn-gold" id="createRoomButton">+ إنشاء غرفة</button>
+          </div>
+
+          <div class="panel">
+            <div class="empty-state">
+              <span>▤</span>
+              <h3>الغرف المتاحة</h3>
+              <p>لا توجد غرف حقيقية معروضة حاليًا؛ ستظهر الغرف عند اتصال خدمة الغرف.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- FRIENDS -->
+        <section class="page" id="page-friends" data-title="الأصدقاء">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">SOCIAL</span>
+              <h1>الأصدقاء <span class="gold-text">واللاعبون</span></h1>
+              <p class="muted">ابحث عن لاعب باستخدام اسمه أو معرّفه.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <form id="friendSearchForm" class="search-form">
+              <input id="friendSearchInput" class="form-control" type="search" placeholder="اكتب اسم اللاعب أو المعرّف..." autocomplete="off">
+              <button class="btn btn-gold" type="submit">بحث</button>
+            </form>
+            <div id="friendSearchResults" class="results-area" aria-live="polite">
+              <div class="empty-state">
+                <span>♙</span>
+                <h3>ابحث عن أصدقائك</h3>
+                <p>البحث الحقيقي يتطلب اتصالًا بخدمة الحسابات.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-heading">
+            <div><h2>طلبات الصداقة</h2></div>
+          </div>
+
+          <div class="panel">
+            <div class="empty-state">
+              <p>طلبات الصداقة ستظهر هنا بعد اتصال خدمة المستخدمين.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- MESSAGES -->
+        <section class="page" id="page-messages" data-title="المحادثات">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">MESSAGES</span>
+              <h1>المحادثات</h1>
+              <p class="muted">محادثات اللاعبين والأصدقاء.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="empty-state">
+              <span>▱</span>
+              <h3>محادثاتك</h3>
+              <p>لا توجد محادثات محملة. ستحتاج الرسائل بين المستخدمين إلى خدمة خلفية ومصادقة.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- TOURNAMENTS -->
+        <section class="page" id="page-tournaments" data-title="البطولات">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">COMPETITIONS</span>
+              <h1>البطولات <span class="gold-text">والتحديات</span></h1>
+              <p class="muted">استعرض المنافسات عند توفر بياناتها الفعلية.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="empty-state">
+              <span>♜</span>
+              <h3>مركز البطولات</h3>
+              <p>لا توجد بطولات حقيقية محملة حاليًا.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- LEADERBOARD -->
+        <section class="page" id="page-leaderboard" data-title="المتصدرون">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">LEADERBOARD</span>
+              <h1>لوحة <span class="gold-text">المتصدرين</span></h1>
+              <p class="muted">ترتيب يعتمد على نتائج محفوظة فعلية.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="empty-state">
+              <span>♛</span>
+              <h3>ترتيب اللاعبين</h3>
+              <p>سيظهر الترتيب بعد توصيل نظام النتائج والحسابات.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- GEMS -->
+        <section class="page" id="page-gems" data-title="الجواهر والمتجر">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">GEMS & STORE</span>
+              <h1>الجواهر <span class="gold-text">والمتجر</span></h1>
+              <p class="muted">إدارة الرصيد والعناصر والمكافآت.</p>
+            </div>
+          </div>
+
+          <div class="gems-hero panel">
+            <div>
+              <span class="eyebrow">AVAILABLE BALANCE</span>
+              <h2 id="gemsPageBalance">غير متصل</h2>
+              <p>الرصيد الحقيقي يظهر بعد تسجيل الدخول والاتصال بالخدمة.</p>
+            </div>
+            <div class="gems-illustration">◆</div>
+          </div>
+
+          <div class="section-heading"><div><h2>المتجر</h2></div></div>
+          <div class="panel">
+            <div class="empty-state">
+              <span>◇</span>
+              <h3>متجر JOKER</h3>
+              <p>العناصر والأسعار والمشتريات ستُحمّل من إعدادات المتجر الفعلية.</p>
+            </div>
+          </div>
+
+          <div class="section-heading"><div><h2>سجل الحركات</h2></div></div>
+          <div class="panel">
+            <p class="muted">لا يوجد سجل محمل؛ لن يتم إنشاء معاملات وهمية.</p>
+          </div>
+        </section>
+
+        <!-- PROFILE -->
+        <section class="page" id="page-profile" data-title="ملفي الشخصي">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">PLAYER PROFILE</span>
+              <h1>ملفي <span class="gold-text">الشخصي</span></h1>
+            </div>
+          </div>
+
+          <div class="panel profile-panel">
+            <div class="avatar profile-avatar" id="profileAvatar">J</div>
+            <h2 id="profileDisplayName">زائر جوكر</h2>
+            <p class="muted" id="profileId">لم يتم تسجيل الدخول</p>
+            <div class="profile-actions">
+              <button class="btn btn-gold" id="openLoginButton">تسجيل الدخول</button>
+              <button class="btn btn-outline" id="editProfileButton">تعديل البيانات</button>
+            </div>
+            <div class="profile-stats">
+              <div><strong>—</strong><span>المستوى</span></div>
+              <div><strong>—</strong><span>الانتصارات</span></div>
+              <div><strong>—</strong><span>الإنجازات</span></div>
+            </div>
+            <p class="muted">الإحصاءات ستظهر بعد توفر بيانات الحساب ونتائج اللعب.</p>
+          </div>
+        </section>
+
+        <!-- NOTIFICATIONS -->
+        <section class="page" id="page-notifications" data-title="الإشعارات">
+          <div class="page-heading">
+            <div><span class="eyebrow">NOTIFICATIONS</span><h1>الإشعارات</h1></div>
+          </div>
+          <div class="panel">
+            <div class="empty-state">
+              <span>♧</span>
+              <h3>لا توجد إشعارات محملة</h3>
+              <p>ستظهر هنا إشعارات النظام والحساب عند اتصال الخدمة.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="page" id="page-settings" data-title="الإعدادات">
+          <div class="page-heading">
+            <div><span class="eyebrow">PREFERENCES</span><h1>الإعدادات</h1></div>
+          </div>
+
+          <div class="panel settings-list">
+            <div class="setting-row">
+              <div><strong>اللغة</strong><p>لغة واجهة المنصة</p></div>
+              <select id="languageSelect" class="form-control setting-select">
+                <option value="ar">العربية</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>الصوت</strong><p>أصوات الواجهة والألعاب</p></div>
+              <label class="toggle"><input id="soundToggle" type="checkbox" checked><span></span></label>
+            </div>
+
+            <div class="setting-row">
+              <div><strong>الحالة الاجتماعية</strong><p>إعدادات ظهور حالة الاتصال عند توفر الحساب</p></div>
+              <span class="setting-note">تتطلب تسجيل الدخول</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- GAME VIEW -->
+        <section class="page" id="page-game" data-title="اللعبة">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">GAME SESSION</span>
+              <h1 id="activeGameTitle">اللعبة</h1>
+            </div>
+            <button class="btn btn-outline" data-page="games">العودة للألعاب</button>
+          </div>
+
+          <div class="panel game-session" id="gameSession">
+            <div class="empty-state">
+              <span>▣</span>
+              <h3>منطقة اللعب</h3>
+              <p>سيتم تشغيل اللعبة المختارة بعد تنفيذ منطقها في ملف games.js.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- LOGIN -->
+        <section class="page" id="page-login" data-title="تسجيل الدخول">
+          <div class="panel auth-panel">
+            <div class="auth-logo">♛</div>
+            <span class="eyebrow">WELCOME TO JOKER</span>
+            <h1>أهلًا بعودتك</h1>
+            <p class="muted">سجّل الدخول للوصول إلى حسابك.</p>
+
+            <form id="loginForm">
+              <label class="form-label" for="loginEmail">البريد الإلكتروني</label>
+              <input class="form-control" id="loginEmail" type="email" autocomplete="email" required>
+
+              <label class="form-label" for="loginPassword">كلمة المرور</label>
+              <input class="form-control" id="loginPassword" type="password" autocomplete="current-password" required>
+
+              <button class="btn btn-gold btn-block" type="submit">تسجيل الدخول</button>
+            </form>
+
+            <div id="authStatus" class="inline-status" role="status">خدمة المصادقة غير متصلة بعد.</div>
+          </div>
+        </section>
+
       </div>
-    </div>
+
+      <footer class="main-footer">
+        <span>♛ JOKER</span>
+        <span>عالم الألعاب والتحديات</span>
+        <span>واجهة أولية قيد التطوير</span>
+      </footer>
+    </main>
   </div>
-</section>
 
-<section class="page" id="page-security">
-  <div class="page-heading"><div><div class="eyebrow">CRYPTOGRAPHY LAB / 04</div><h2>مختبر الأمان</h2><p>أدوات تشفير وبصمات رقمية تعمل داخل المتصفح.</p></div></div>
-  <div class="section-grid">
-    <div class="card"><div class="card-title"><h3>SHA-256 Hash</h3><span>WEB CRYPTO</span></div>
-      <div class="field"><label>النص المراد حساب بصمته</label><textarea id="hashInput" placeholder="اكتب النص هنا..."></textarea></div>
-      <button class="btn" id="hashBtn">حساب البصمة</button><div class="result" id="hashResult">لم يتم حساب بصمة بعد.</div>
-      <button class="btn secondary" id="copyHash" style="margin-top:9px">نسخ البصمة</button>
-    </div>
-    <div class="card"><div class="card-title"><h3>توليد قيمة عشوائية آمنة</h3><span>CRYPTO API</span></div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.9">يستخدم مولد الأرقام العشوائية المشفر الذي يوفره المتصفح عند توفره.</p>
-      <div class="field"><label>عدد البايتات (1–64)</label><input id="randomLength" type="number" min="1" max="64" value="16"></div>
-      <button class="btn" id="randomBtn">توليد</button><div class="result" id="randomResult">بانتظار الطلب.</div>
-    </div>
-    <div class="card"><div class="card-title"><h3>تشفير وفك تشفير</h3><span>AES-GCM</span></div>
-      <div class="field"><label>النص</label><textarea id="aesInput" placeholder="أدخل نصًا لتشفيره..."></textarea></div>
-      <button class="btn" id="encryptBtn">تشفير النص</button>
-      <div class="result" id="aesResult">الناتج المشفر سيظهر هنا.</div>
-      <button class="btn secondary" id="decryptBtn" style="margin-top:9px">فك آخر عملية تشفير</button>
-      <div class="result" id="decryptResult">لا توجد عملية تشفير بعد.</div>
-    </div>
-    <div class="card"><div class="card-title"><h3>حالة وحدات التشفير</h3><span>CAPABILITIES</span></div><div id="cryptoDetails" class="result"></div></div>
-  </div>
-</section>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
 
-<section class="page" id="page-files">
-  <div class="page-heading"><div><div class="eyebrow">LOCAL FILE INSPECTOR / 05</div><h2>تحليل الملفات</h2><p>اختر ملفًا لتحليل بياناته وحساب بصمته الرقمية.</p></div></div>
-  <div class="notice">التحليل هنا قراءة محلية للملف الذي تختاره. لا يتم رفع الملف إلى خادم. حساب البصمة لا يثبت وحده أن الملف آمن أو خبيث.</div>
-  <div class="card">
-    <div class="file-drop"><div style="font-size:30px;color:var(--green)">▤</div><b>اختر ملفًا من جهازك</b><p>يمكنك تحليل ملف نصي أو ثنائي وحساب SHA-256 له.</p><input id="fileInput" type="file" style="max-width:100%;margin:10px auto;color:var(--muted)"></div>
-    <div class="result" id="fileResult">لم يتم اختيار ملف.</div>
-    <div id="fileTextWrap" class="hidden"><div class="field"><label>معاينة نصية محدودة</label><textarea id="filePreview" readonly></textarea></div></div>
-  </div>
-</section>
+  <nav class="mobile-nav" aria-label="التنقل السريع">
+    <button class="mobile-nav-item active" data-page="home"><span>⌂</span><small>الرئيسية</small></button>
+    <button class="mobile-nav-item" data-page="games"><span>▣</span><small>الألعاب</small></button>
+    <button class="mobile-nav-item" data-page="quickplay"><span>⚡</span><small>العب</small></button>
+    <button class="mobile-nav-item" data-page="friends"><span>♙</span><small>الأصدقاء</small></button>
+    <button class="mobile-nav-item" data-page="profile"><span>◎</span><small>حسابي</small></button>
+  </nav>
 
-<section class="page" id="page-users">
-  <div class="page-heading"><div><div class="eyebrow">LOCAL ACCESS REGISTRY / 06</div><h2>إدارة المستخدمين</h2><p>إدارة سجل محلي لأسماء العرض والصلاحيات داخل هذه الواجهة فقط.</p></div></div>
-  <div class="notice">هذه القائمة محلية وليست نظام حسابات حقيقيًا متعدد المستخدمين. لا تخزن كلمات مرور ولا تمنح صلاحيات لنظام التشغيل.</div>
-  <div class="grid-2">
-    <div class="card"><div class="card-title"><h3>إضافة مستخدم محلي</h3><span>NEW ENTRY</span></div>
-      <div class="field"><label>اسم العرض</label><input id="userName" maxlength="40" placeholder="analyst-01" dir="auto"></div>
-      <div class="field"><label>الدور</label><select id="userRole"><option value="Viewer">Viewer — قراءة</option><option value="Analyst">Analyst — تحليل</option><option value="Admin">Admin — إدارة الواجهة</option></select></div>
-      <button class="btn" id="addUser">إضافة إلى السجل</button>
-    </div>
-    <div class="card"><div class="card-title"><h3>إحصائيات السجل</h3><span>LOCAL RECORDS</span></div>
-      <div class="stat-value" id="userCount">0</div><div class="stat-foot">إدخالات محفوظة في جلسة الصفحة</div>
-      <button class="btn secondary" id="exportUsers" style="margin-top:15px">تصدير CSV</button>
-    </div>
-  </div>
-  <div class="card"><div class="card-title"><h3>سجل المستخدمين</h3><span>REGISTRY</span></div><div class="table-wrap"><table><thead><tr><th>المعرف</th><th>اسم العرض</th><th>الدور</th><th>الإجراء</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
-</section>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
 
-<section class="page" id="page-radar">
-  <div class="page-heading"><div><div class="eyebrow">VISUAL TELEMETRY / 07</div><h2>Radar & Modules</h2><p>مؤشر بصري متحرك لحالة واجهة المختبر، وليس ماسحًا للأجهزة المحيطة.</p></div></div>
-  <div class="grid-2">
-    <div class="card"><div class="card-title"><h3>LOCAL ACTIVITY RADAR</h3><span class="green">ANIMATION</span></div>
-      <div class="radar-wrap"><div class="radar"><div class="radar-line"></div><div class="radar-center"></div><div class="radar-label">LOCAL SESSION · VISUAL ONLY</div></div></div>
-      <p style="font-size:10px;color:var(--muted);text-align:center">لا يمثل نقاطًا أو أجهزة مكتشفة فعليًا.</p>
-    </div>
-    <div class="card"><div class="card-title"><h3>حالة الوحدات</h3><span>MODULE STATUS</span></div>
-      <div class="module-list" id="moduleList"></div>
-    </div>
-  </div>
-</section>
+  <script>
+    (() => {
+      const pageButtons = document.querySelectorAll("[data-page]");
+      const pages = document.querySelectorAll(".page");
+      const title = document.getElementById("currentPageTitle");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("mobileOverlay");
+      const shell = document.getElementById("appShell");
 
-<section class="page" id="page-logs">
-  <div class="page-heading"><div><div class="eyebrow">AUDIT TRAIL / 08</div><h2>سجل الأحداث</h2><p>سجل العمليات التي نفذتها الواجهة خلال الجلسة الحالية.</p></div><div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn" id="exportLogs">تصدير JSON</button><button class="btn danger" id="clearLogs">مسح السجل</button></div></div>
-  <div class="card"><div class="card-title"><h3>الأحداث المسجلة</h3><span id="logsCount">0 EVENTS</span></div><div class="log-list" id="allLogs"></div></div>
-</section>
+      function showPage(name) {
+        const page = document.getElementById("page-" + name);
+        if (!page) return;
 
-<section class="page" id="page-settings">
-  <div class="page-heading"><div><div class="eyebrow">WORKSPACE CONFIG / 09</div><h2>الإعدادات</h2><p>تخصيص سلوك الواجهة المحلية.</p></div></div>
-  <div class="section-grid">
-    <div class="card"><div class="card-title"><h3>إعدادات العرض</h3><span>APPEARANCE</span></div>
-      <div class="field"><label>لون الواجهة الأساسي</label><select id="accentSelect"><option value="#38f5a3">Cyber Green</option><option value="#42d9f5">Neon Cyan</option><option value="#c084fc">Cyber Violet</option><option value="#ffb454">Amber Terminal</option></select></div>
-      <div class="field"><label>سرعة المؤثرات</label><select id="motionSelect"><option value="1">طبيعية</option><option value="2">سريعة</option><option value="0">إيقاف الحركة</option></select></div>
-      <button class="btn" id="saveSettings">تطبيق الإعدادات</button>
-    </div>
-    <div class="card"><div class="card-title"><h3>بيانات الجلسة</h3><span>SESSION INFO</span></div><div id="settingsInfo" class="result"></div><button class="btn secondary" id="downloadReport" style="margin-top:10px">تصدير تقرير الجلسة</button></div>
-    <div class="card"><div class="card-title"><h3>حدود الصلاحيات</h3><span>BROWSER SANDBOX</span></div><div class="module-list">
-      <div class="module"><div><b>قراءة ملفات يختارها المستخدم</b><small>بعد موافقته</small></div><span class="badge">ALLOWED</span></div>
-      <div class="module"><div><b>تشفير البيانات داخل الصفحة</b><small>باستخدام WebCrypto</small></div><span class="badge">ALLOWED</span></div>
-      <div class="module"><div><b>الوصول إلى ملفات الجهاز كلها</b><small>دون اختيار المستخدم</small></div><span class="badge red">BLOCKED</span></div>
-      <div class="module"><div><b>التحكم في أجهزة الآخرين</b><small>دون تصريح</small></div><span class="badge red">NOT AVAILABLE</span></div>
-    </div></div>
-  </div>
-</section>
+        pages.forEach(item => item.classList.toggle("active", item === page));
 
-<div class="footer">NEXORA CONTROL CENTER · LOCAL BROWSER WORKSPACE · NO UNVERIFIED SCAN RESULTS</div>
-</main>
-</div>
+        const pageTitle = page.dataset.title || "JOKER";
+        title.textContent = pageTitle;
 
-<script>
-"use strict";
+        pageButtons.forEach(button => {
+          const active = button.dataset.page === name;
+          button.classList.toggle("active", active);
+          if (active && button.classList.contains("mobile-nav-item")) {
+            button.setAttribute("aria-current", "page");
+          } else {
+            button.removeAttribute("aria-current");
+          }
+        });
 
-const $ = id => document.getElementById(id);
-const startedAt = Date.now();
-const state = {
-  logs: [],
-  commands: [],
-  users: [],
-  lastCipher: null,
-  settings: {accent:"#38f5a3",motion:"1"}
-};
+        sidebar.classList.remove("sidebar-open");
+        overlay.classList.remove("visible");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
-function now(){
-  return new Date().toLocaleTimeString("en-GB",{hour12:false});
-}
-function record(type,message){
-  const item={time:new Date().toISOString(),type,message:String(message)};
-  state.logs.unshift(item);
-  if(state.logs.length>500) state.logs.pop();
-  updateLogs();
-}
-function addLine(target,message,type=""){
-  const el=$(target);
-  if(!el)return;
-  const row=document.createElement("div");
-  row.className="term-line "+type;
-  row.textContent=message;
-  el.appendChild(row);
-  while(el.children.length>180)el.removeChild(el.firstChild);
-  el.scrollTop=el.scrollHeight;
-}
-function promptLine(target,cmd){
-  addLine(target,"nexora@local:~$ "+cmd,"");
-}
-function formatBytes(bytes){
-  if(bytes<1024)return bytes+" B";
-  if(bytes<1048576)return (bytes/1024).toFixed(2)+" KB";
-  if(bytes<1073741824)return (bytes/1048576).toFixed(2)+" MB";
-  return (bytes/1073741824).toFixed(2)+" GB";
-}
-function escapeCSV(value){
-  return '"'+String(value).replace(/"/g,'""')+'"';
-}
-function downloadFile(name,content,type="text/plain"){
-  const blob=new Blob([content],{type});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;a.download=name;
-  document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),1500);
-}
-function goPage(name){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  const page=$("page-"+name);
-  if(page)page.classList.add("active");
-  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
-  if(name==="network")refreshNetwork();
-  if(name==="settings")renderSettingsInfo();
-  if(name==="logs")updateLogs();
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-document.querySelectorAll(".nav").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.page)));
-document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.go)));
+      pageButtons.forEach(button => {
+        button.addEventListener("click", event => {
+          event.preventDefault();
+          showPage(button.dataset.page);
+        });
+      });
 
-const helpText=[
-  "الأوامر المتاحة:",
-  "help       — عرض قائمة الأوامر",
-  "status     — حالة التطبيق",
-  "time       — الوقت الحالي",
-  "network    — حالة الاتصال التي يكشفها المتصفح",
-  "env        — معلومات بيئة المتصفح",
-  "history    — سجل الأوامر الحالي",
-  "clear      — مسح شاشة الطرفية",
-  "logs       — عدد الأحداث المسجلة",
-  "version    — إصدار الواجهة",
-  "",
-  "هذا Terminal محلي محدود، وليس مفسر أوامر لنظام التشغيل."
-].join("\n");
+      document.getElementById("menuToggle").addEventListener("click", () => {
+        sidebar.classList.toggle("sidebar-open");
+        overlay.classList.toggle("visible");
+      });
 
-function executeCommand(raw,target){
-  const cmd=raw.trim();
-  if(!cmd)return;
-  state.commands.push({time:new Date().toISOString(),command:cmd});
-  promptLine(target,cmd);
-  record("COMMAND","Terminal command: "+cmd);
-  const parts=cmd.split(/\s+/);
-  switch(parts[0].toLowerCase()){
-    case "help":
-      helpText.split("\n").forEach(x=>addLine(target,x,"info"));break;
-    case "status":
-      addLine(target,"Application: ONLINE","info");
-      addLine(target,"Runtime: browser JavaScript");
-      addLine(target,"Secure context: "+(window.isSecureContext?"yes":"no"));
-      addLine(target,"Crypto API: "+(!!(crypto&&crypto.subtle)));
-      addLine(target,"Network: "+(navigator.onLine?"online":"offline"));
-      break;
-    case "time":
-      addLine(target,new Date().toString(),"info");break;
-    case "network":
-      addLine(target,"Browser online: "+navigator.onLine,"info");
-      addLine(target,"Effective connection details depend on browser support.");
-      if(navigator.connection){
-        addLine(target,"Type: "+(navigator.connection.effectiveType||"unknown"));
-        addLine(target,"Downlink: "+(navigator.connection.downlink??"unknown"));
-      }else addLine(target,"Network Information API: unavailable");
-      break;
-    case "env":
-      addLine(target,"Platform: "+(navigator.userAgentData?.platform||navigator.platform||"unknown"));
-      addLine(target,"Language: "+navigator.language);
-      addLine(target,"Screen: "+screen.width+"x"+screen.height);
-      addLine(target,"Viewport: "+innerWidth+"x"+innerHeight);
-      addLine(target,"Cookies enabled: "+navigator.cookieEnabled);break;
-    case "history":
-      if(!state.commands.length)addLine(target,"No commands.");
-      state.commands.slice(-30).forEach((x,i)=>addLine(target,(i+1)+". "+x.command));
-      break;
-    case "logs":
-      addLine(target,"Recorded events: "+state.logs.length,"info");break;
-    case "version":
-      addLine(target,"NEXORA CONTROL CENTER 1.0.0","info");break;
-    case "clear":
-      $(target).innerHTML="";break;
-    default:
-      addLine(target,"Command not supported: "+parts[0],"error");
-      addLine(target,"اكتب help لعرض الأوامر المتاحة.","warn");
-  }
-}
-function runInput(inputId,target){
-  const input=$(inputId);
-  executeCommand(input.value,target);
-  input.value="";
-}
-$("dashRun").addEventListener("click",()=>runInput("dashCommand","dashTerminal"));
-$("dashCommand").addEventListener("keydown",e=>{if(e.key==="Enter")runInput("dashCommand","dashTerminal")});
-$("fullRun").addEventListener("click",()=>runInput("fullCommand","fullTerminal"));
-$("fullCommand").addEventListener("keydown",e=>{if(e.key==="Enter")runInput("fullCommand","fullTerminal")});
-document.querySelectorAll(".cmd-shortcut").forEach(b=>b.addEventListener("click",()=>executeCommand(b.dataset.cmd,"fullTerminal")));
-$("clearTerm").addEventListener("click",()=>{$("fullTerminal").innerHTML="";record("TERMINAL","Terminal display cleared")});
+      overlay.addEventListener("click", () => {
+        sidebar.classList.remove("sidebar-open");
+        overlay.classList.remove("visible");
+      });
 
-function refreshStatus(){
-  $("appStatus").textContent="ONLINE";
-  $("networkStatus").textContent=navigator.onLine?"ONLINE":"OFFLINE";
-  $("networkStatus").className="stat-value "+(navigator.onLine?"green":"red");
-  $("cryptoBar").style.width=crypto?.subtle?"100%":"0%";
-  $("cryptoLabel").textContent=crypto?.subtle?"READY":"N/A";
-  $("onlineBar").style.width=navigator.onLine?"100%":"0%";
-  $("onlineLabel").textContent=navigator.onLine?"YES":"NO";
-}
-function refreshClock(){
-  $("clock").textContent=now();
-  const seconds=Math.floor((Date.now()-startedAt)/1000);
-  const h=String(Math.floor(seconds/3600)).padStart(2,"0");
-  const m=String(Math.floor(seconds%3600/60)).padStart(2,"0");
-  const s=String(seconds%60).padStart(2,"0");
-  $("uptime").textContent=h+":"+m+":"+s;
-}
-function refreshNetwork(){
-  const c=navigator.connection;
-  $("networkDetails").textContent=[
-    "navigator.onLine: "+navigator.onLine,
-    "connection API: "+(c?"available":"unavailable"),
-    "effectiveType: "+(c?.effectiveType||"not exposed"),
-    "downlink: "+(c?.downlink!=null?c.downlink+" Mbps":"not exposed"),
-    "rtt: "+(c?.rtt!=null?c.rtt+" ms":"not exposed"),
-    "saveData: "+(c?.saveData??"not exposed"),
-    "checkedAt: "+new Date().toISOString(),
-    "",
-    "These values do not identify devices on the local network."
-  ].join("\n");
-  $("browserDetails").textContent=[
-    "userAgent: "+navigator.userAgent,
-    "platform: "+(navigator.userAgentData?.platform||navigator.platform||"unknown"),
-    "language: "+navigator.language,
-    "languages: "+(navigator.languages||[]).join(", "),
-    "screen: "+screen.width+" x "+screen.height,
-    "viewport: "+innerWidth+" x "+innerHeight,
-    "secureContext: "+window.isSecureContext,
-    "cookiesEnabled: "+navigator.cookieEnabled
-  ].join("\n");
-}
-$("refreshNetwork").addEventListener("click",()=>{refreshNetwork();record("NETWORK","Browser connection details refreshed")});
-$("refreshBtn").addEventListener("click",()=>{refreshStatus();refreshNetwork();record("SYSTEM","Local dashboard status refreshed")});
-window.addEventListener("online",()=>{refreshStatus();record("NETWORK","Browser reports online")});
-window.addEventListener("offline",()=>{refreshStatus();record("NETWORK","Browser reports offline")});
-if(navigator.connection)navigator.connection.addEventListener?.("change",refreshNetwork);
+      document.querySelectorAll("[data-category]").forEach(button => {
+        button.addEventListener("click", () => {
+          const gamesPage = document.getElementById("page-games");
+          if (gamesPage) showPage("games");
 
-$("checkUrl").addEventListener("click",async()=>{
-  const input=$("urlCheck").value.trim(),out=$("urlResult");
-  let url;
-  try{url=new URL(input)}catch{out.textContent="خطأ: أدخل عنوان URL صحيحًا.";return}
-  if(url.protocol!=="https:"){out.textContent="يُسمح بعناوين HTTPS فقط في هذه الأداة.";return}
-  if(url.username||url.password){out.textContent="لا تضع بيانات تسجيل الدخول داخل العنوان.";return}
-  out.textContent="جارٍ إرسال طلب محدود..."; 
-  const start=performance.now();
-  try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),7000);
-    await fetch(url.href,{method:"HEAD",mode:"cors",cache:"no-store",signal:controller.signal,credentials:"omit",referrerPolicy:"no-referrer"});
-    clearTimeout(timer);
-    out.textContent="تمكن المتصفح من إتمام الطلب.\nElapsed: "+Math.round(performance.now()-start)+" ms\nملاحظة: سياسات CORS قد تمنع قراءة بعض الاستجابات.";
-    record("NETWORK","HTTP HEAD request completed: "+url.origin);
-  }catch(e){
-    out.textContent="تعذر تأكيد نجاح الطلب من المتصفح.\nReason: "+e.name+"\nقد يكون السبب CORS أو DNS أو TLS أو انقطاع الاتصال أو انتهاء المهلة.\nلم يتم إثبات أن الموقع متوقف.";
-    record("NETWORK","HTTP request could not be confirmed: "+url.origin);
-  }
-});
+          document.querySelectorAll("#gameFilters [data-category]").forEach(filter => {
+            filter.classList.toggle(
+              "active",
+              filter.dataset.category === button.dataset.category
+            );
+          });
 
-async function sha256(buffer){
-  if(!crypto?.subtle)throw new Error("WebCrypto غير متاح. افتح الصفحة في سياق آمن.");
-  const digest=await crypto.subtle.digest("SHA-256",buffer);
-  return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
-}
-$("hashBtn").addEventListener("click",async()=>{
-  try{
-    const hash=await sha256(new TextEncoder().encode($("hashInput").value));
-    $("hashResult").textContent=hash;
-    record("CRYPTO","SHA-256 digest generated");
-  }catch(e){$("hashResult").textContent=e.message}
-});
-$("copyHash").addEventListener("click",async()=>{
-  const value=$("hashResult").textContent;
-  try{await navigator.clipboard.writeText(value);record("CRYPTO","Hash copied to clipboard")}
-  catch{$("hashResult").textContent+="\nتعذر النسخ تلقائيًا؛ حدد البصمة وانسخها يدويًا."}
-});
-$("randomBtn").addEventListener("click",()=>{
-  const n=Number($("randomLength").value);
-  if(!Number.isInteger(n)||n<1||n>64){$("randomResult").textContent="أدخل عددًا صحيحًا من 1 إلى 64.";return}
-  if(!crypto?.getRandomValues){$("randomResult").textContent="مولد عشوائي آمن غير متاح.";return}
-  const arr=crypto.getRandomValues(new Uint8Array(n));
-  $("randomResult").textContent=Array.from(arr,b=>b.toString(16).padStart(2,"0")).join("");
-  record("CRYPTO","Secure random bytes generated: "+n);
-});
-$("encryptBtn").addEventListener("click",async()=>{
-  try{
-    if(!crypto?.subtle)throw new Error("WebCrypto غير متاح.");
-    const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
-    const iv=crypto.getRandomValues(new Uint8Array(12));
-    const encoded=new TextEncoder().encode($("aesInput").value);
-    const encrypted=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,encoded);
-    state.lastCipher={key,iv,cipher:encrypted};
-    const toHex=b=>Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("");
-    $("aesResult").textContent="IV (hex): "+toHex(iv)+"\nCiphertext (hex): "+toHex(encrypted)+"\n\nالمفتاح موجود في الذاكرة لهذه الجلسة فقط، ولم يتم تصديره.";
-    $("decryptResult").textContent="تم إنشاء النص المشفر. يمكنك تجربة فك تشفيره الآن.";
-    record("CRYPTO","AES-GCM encryption completed in memory");
-  }catch(e){$("aesResult").textContent="فشل التشفير: "+e.message}
-});
-$("decryptBtn").addEventListener("click",async()=>{
-  try{
-    if(!state.lastCipher)throw new Error("شفّر نصًا أولًا.");
-    const {key,iv,cipher}=state.lastCipher;
-    const plain=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,cipher);
-    $("decryptResult").textContent=new TextDecoder().decode(plain);
-    record("CRYPTO","AES-GCM decryption completed");
-  }catch(e){$("decryptResult").textContent="تعذر فك التشفير: "+e.message}
-});
-$("cryptoDetails").textContent=[
-  "WebCrypto: "+(crypto?.subtle?"available":"unavailable"),
-  "SHA-256: "+(crypto?.subtle?"available":"unavailable"),
-  "AES-GCM: "+(crypto?.subtle?"available":"unavailable"),
-  "Secure random: "+(crypto?.getRandomValues?"available":"unavailable"),
-  "Secure context: "+window.isSecureContext,
-  "",
-  "تنبيه: مفتاح AES التجريبي لا يتم حفظه أو تصديره."
-].join("\n");
+          window.dispatchEvent(new CustomEvent("joker:category", {
+            detail: { category: button.dataset.category }
+          }));
+        });
+      });
 
-$("fileInput").addEventListener("change",async e=>{
-  const file=e.target.files?.[0];
-  if(!file)return;
-  $("fileResult").textContent="جارٍ تحليل بيانات الملف...";
-  $("fileTextWrap").classList.add("hidden");
-  try{
-    const buffer=await file.arrayBuffer();
-    const hash=await sha256(buffer);
-    $("fileResult").textContent=[
-      "Name: "+file.name,
-      "Size: "+formatBytes(file.size)+" ("+file.size+" bytes)",
-      "MIME: "+(file.type||"unknown"),
-      "Last modified: "+new Date(file.lastModified).toISOString(),
-      "SHA-256: "+hash,
-      "",
-      "ملاحظة: البصمة تحدد المحتوى بدرجة عالية من التمييز، لكنها ليست حكمًا على أمان الملف."
-    ].join("\n");
-    if(file.size<=1024*1024 && (file.type.startsWith("text/")||/\.(txt|log|json|csv|html|css|js|xml|md)$/i.test(file.name))){
-      const text=await file.text();
-      $("filePreview").value=text.slice(0,20000);
-      $("fileTextWrap").classList.remove("hidden");
-    }
-    record("FILE","User-selected file analyzed: "+file.name+" ("+file.size+" bytes)");
-  }catch(err){$("fileResult").textContent="فشل تحليل الملف: "+err.message}
-});
+      document.querySelectorAll("[data-game]").forEach(button => {
+        button.addEventListener("click", () => {
+          const game = button.dataset.game;
+          document.getElementById("activeGameTitle").textContent = button.closest(".game-card")?.querySelector("h3")?.textContent || "اللعبة";
+          showPage("game");
 
-function renderUsers(){
-  $("userCount").textContent=state.users.length;
-  const tbody=$("usersTable");tbody.replaceChildren();
-  if(!state.users.length){
-    const tr=document.createElement("tr"),td=document.createElement("td");
-    td.colSpan=4;td.textContent="لا توجد إدخالات. أضف مستخدمًا محليًا للبدء.";
-    tr.appendChild(td);tbody.appendChild(tr);return;
-  }
-  state.users.forEach(user=>{
-    const tr=document.createElement("tr");
-    [user.id,user.name,user.role].forEach(value=>{
-      const td=document.createElement("td");td.textContent=value;tr.appendChild(td)
-    });
-    const td=document.createElement("td"),btn=document.createElement("button");
-    btn.className="btn danger";btn.textContent="حذف";
-    btn.addEventListener("click",()=>{
-      state.users=state.users.filter(u=>u.id!==user.id);
-      record("USER","Removed local registry entry: "+user.name);renderUsers();
-    });
-    td.appendChild(btn);tr.appendChild(td);tbody.appendChild(tr);
-  });
-}
-$("addUser").addEventListener("click",()=>{
-  const name=$("userName").value.trim(),role=$("userRole").value;
-  if(!name){$("userName").focus();return}
-  if(state.users.some(u=>u.name.toLowerCase()===name.toLowerCase())){alert("هذا الاسم موجود بالفعل.");return}
-  const user={id:"U-"+crypto.getRandomValues(new Uint32Array(1))[0].toString(16).toUpperCase(),name,role};
-  state.users.push(user);
-  $("userName").value="";
-  record("USER","Added local registry entry: "+name+" ("+role+")");
-  renderUsers();
-});
-$("exportUsers").addEventListener("click",()=>{
-  const rows=[["id","name","role"],...state.users.map(u=>[u.id,u.name,u.role])];
-  downloadFile("nexora-users.csv","\uFEFF"+rows.map(r=>r.map(escapeCSV).join(",")).join("\r\n"),"text/csv;charset=utf-8");
-  record("EXPORT","User registry exported as CSV");
-});
+          window.dispatchEvent(new CustomEvent("joker:open-game", {
+            detail: { game }
+          }));
+        });
+      });
 
-function updateLogs(){
-  $("eventCount").textContent=state.logs.length;
-  $("logsCount").textContent=state.logs.length+" EVENTS";
-  const render=(target,items)=>{
-    const box=$(target);box.replaceChildren();
-    if(!items.length){
-      const p=document.createElement("p");p.style.color="var(--muted)";p.textContent="لا توجد أحداث مسجلة بعد.";box.appendChild(p);return;
-    }
-    items.forEach(item=>{
-      const row=document.createElement("div");row.className="log-row";
-      const marker=document.createElement("span");marker.className="log-marker";
-      if(item.type==="ERROR")marker.style.background="var(--red)";
-      const body=document.createElement("div");body.style.minWidth="0";
-      const p=document.createElement("p");p.textContent="["+item.type+"] "+item.message;
-      const small=document.createElement("small");small.textContent=item.time;
-      body.append(p,small);row.append(marker,body);box.appendChild(row);
-    });
-  };
-  render("recentLogs",state.logs.slice(0,5));
-  render("allLogs",state.logs);
-}
-$("exportLogs").addEventListener("click",()=>{
-  downloadFile("nexora-audit-log.json",JSON.stringify(state.logs,null,2),"application/json");
-  record("EXPORT","Event log exported as JSON");
-});
-$("clearLogs").addEventListener("click",()=>{
-  if(!confirm("هل تريد مسح سجل الأحداث الحالي؟"))return;
-  state.logs=[];updateLogs();
-  record("SYSTEM","Event log cleared");
-});
+      document.getElementById("globalSearch").addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          const query = event.currentTarget.value.trim();
+          if (!query) return;
 
-function renderModules(){
-  const modules=[
-    ["Terminal","مفسر أوامر محلي محدود","READY"],
-    ["WebCrypto","بصمات وتشفير محلي","READY"],
-    ["File Inspector","تحليل الملفات المختارة","READY"],
-    ["Browser Network","بيانات الاتصال المتاحة","READY"],
-    ["Remote Scanner","لا يوجد خادم فحص متصل","OFFLINE"],
-    ["System Shell","يتطلب تطبيقًا محليًا منفصلًا","UNAVAILABLE"],
-    ["Persistent Accounts","يتطلب خادمًا وقاعدة بيانات","UNCONNECTED"]
-  ];
-  const box=$("moduleList");box.replaceChildren();
-  modules.forEach(m=>{
-    const row=document.createElement("div");row.className="module";
-    const left=document.createElement("div"),b=document.createElement("b"),small=document.createElement("small");
-    b.textContent=m[0];small.textContent=m[1];left.append(b,small);
-    const badge=document.createElement("span");badge.className="badge"+(m[2]!=="READY"?" warn":"");badge.textContent=m[2];
-    row.append(left,badge);box.appendChild(row);
-  });
-}
-function renderSettingsInfo(){
-  $("settingsInfo").textContent=[
-    "App: NEXORA CONTROL CENTER",
-    "Version: 1.0.0",
-    "Session started: "+new Date(startedAt).toISOString(),
-    "Current time: "+new Date().toISOString(),
-    "Runtime: "+(typeof window!=="undefined"?"Browser":"Unknown"),
-    "Secure context: "+window.isSecureContext,
-    "Events: "+state.logs.length,
-    "Commands: "+state.commands.length,
-    "Local user entries: "+state.users.length,
-    "Network online: "+navigator.onLine
-  ].join("\n");
-}
-$("saveSettings").addEventListener("click",()=>{
-  state.settings.accent=$("accentSelect").value;
-  state.settings.motion=$("motionSelect").value;
-  document.documentElement.style.setProperty("--green",state.settings.accent);
-  document.documentElement.style.setProperty("--cyan",state.settings.accent);
-  document.documentElement.style.setProperty("--motion",state.settings.motion);
-  if(state.settings.motion==="0"){
-    document.querySelectorAll("*").forEach(el=>el.style.animationDuration="0.001ms");
-  }else{
-    document.querySelectorAll("*").forEach(el=>el.style.animationDuration="");
-  }
-  record("SETTINGS","Appearance settings applied");
-  alert("تم تطبيق إعدادات الواجهة.");
-});
-$("downloadReport").addEventListener("click",()=>{
-  const report={
-    app:"NEXORA CONTROL CENTER",
-    version:"1.0.0",
-    generatedAt:new Date().toISOString(),
-    sessionDurationMs:Date.now()-startedAt,
-    browser:{userAgent:navigator.userAgent,language:navigator.language,online:navigator.onLine},
-    counts:{events:state.logs.length,commands:state.commands.length,users:state.users.length},
-    events:state.logs,
-    commands:state.commands,
-    users:state.users,
-    note:"Local browser session report; not a full operating-system security assessment."
-  };
-  downloadFile("nexora-session-report.json",JSON.stringify(report,null,2),"application/json");
-  record("EXPORT","Session report exported");
-});
+          showPage("games");
+          window.dispatchEvent(new CustomEvent("joker:search", {
+            detail: { query }
+          }));
+        }
+      });
 
-window.addEventListener("resize",()=>{
-  if($("settingsInfo"))renderSettingsInfo();
-});
+      document.getElementById("friendSearchForm").addEventListener("submit", event => {
+        event.preventDefault();
+        const query = document.getElementById("friendSearchInput").value.trim();
+        const result = document.getElementById("friendSearchResults");
 
-function initialize(){
-  refreshStatus();refreshClock();refreshNetwork();renderUsers();renderModules();renderSettingsInfo();
-  addLine("dashTerminal","NEXORA CONTROL CENTER v1.0.0","info");
-  addLine("dashTerminal","Local browser workspace initialized.");
-  addLine("dashTerminal","Type help to list supported commands.","info");
-  addLine("fullTerminal","NEXORA CONTROL CENTER v1.0.0","info");
-  addLine("fullTerminal","Browser-only command interpreter initialized.");
-  addLine("fullTerminal","Type help to list supported commands.","info");
-  record("SYSTEM","Application initialized in local browser session");
-}
-setInterval(refreshClock,1000);
-initialize();
-</script>
+        if (!query) {
+          result.innerHTML = '<p class="inline-status">اكتب اسم اللاعب أو معرّفه أولًا.</p>';
+          return;
+        }
+
+        result.innerHTML = `
+          <div class="empty-state">
+            <span>⌕</span>
+            <h3>البحث عن لاعب</h3>
+            <p>لا يمكن البحث عن حسابات حقيقية قبل توصيل خدمة المستخدمين.</p>
+          </div>
+        `;
+
+        window.dispatchEvent(new CustomEvent("joker:friend-search", {
+          detail: { query }
+        }));
+      });
+
+      document.getElementById("findOpponentButton").addEventListener("click", () => {
+        document.getElementById("matchmakingStatus").textContent =
+          "خدمة المطابقة غير متصلة. لن يتم إنشاء منافس وهمي.";
+
+        window.dispatchEvent(new CustomEvent("joker:find-opponent", {
+          detail: {
+            game: document.getElementById("quickGame").value,
+            mode: document.getElementById("matchType").value
+          }
+        }));
+      });
+
+      document.getElementById("createRoomButton").addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("joker:create-room"));
+        document.getElementById("page-rooms").querySelector(".empty-state p").textContent =
+          "إنشاء الغرف الحقيقية يحتاج إلى خدمة الخادم. لم يتم إنشاء غرفة وهمية.";
+      });
+
+      document.getElementById("openLoginButton").addEventListener("click", () => {
+        showPage("login");
+      });
+
+      document.getElementById("loginForm").addEventListener("submit", event => {
+        event.preventDefault();
+        document.getElementById("authStatus").textContent =
+          "لم يتم تسجيل الدخول: يجب توصيل خدمة مصادقة آمنة أولًا.";
+      });
+
+      document.getElementById("editProfileButton").addEventListener("click", () => {
+        document.getElementById("authStatus").textContent =
+          "تعديل الحساب يحتاج إلى تسجيل الدخول وربط خدمة الحسابات.";
+        showPage("login");
+      });
+
+      document.getElementById("languageSelect").addEventListener("change", event => {
+        if (event.target.value === "en") {
+          document.documentElement.lang = "en";
+          document.documentElement.dir = "ltr";
+          document.getElementById("toastRegion").textContent =
+            "تم تغيير اتجاه الصفحة إلى اليسار؛ ستتم ترجمة النصوص في مرحلة التدويل.";
+        } else {
+          document.documentElement.lang = "ar";
+          document.documentElement.dir = "rtl";
+          document.getElementById("toastRegion").textContent =
+            "تم اختيار العربية.";
+        }
+      });
+
+      document.getElementById("soundToggle").addEventListener("change", event => {
+        window.JOKER_SETTINGS = window.JOKER_SETTINGS || {};
+        window.JOKER_SETTINGS.soundEnabled = event.target.checked;
+      });
+
+      window.JOKER_APP = {
+        showPage,
+        getCurrentPage: () => document.querySelector(".page.active")?.id || null
+      };
+    })();
+  </script>
 </body>
   </html>
