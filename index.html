@@ -2,818 +2,340 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0908">
-  <meta name="description" content="JOKER — منصة الألعاب والتحديات والتواصل الاجتماعي">
-  <title>JOKER 👑 | عالمك، لعبتك، تحديك</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#173c2d">
+  <meta name="description" content="لعبة ألغاز كلمات عربية وصور وتحديات ذهنية تعمل محليًا.">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Orbitron:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <title>تحدي الكلمات</title>
 
-  <link rel="stylesheet" href="joker.css">
-
-  <script src="config.js" defer></script>
-  <script src="games.js" defer></script>
-  <script src="gems.js" defer></script>
-  <script src="joker.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <div class="app-shell" id="appShell">
+  <div id="game-app">
 
-    <aside class="sidebar" id="sidebar">
-      <a class="brand" href="#home" data-page="home" aria-label="JOKER الرئيسية">
-        <span class="brand-crown">♛</span>
-        <span class="brand-text">
-          <strong>JOKER</strong>
-          <small>PLAY YOUR WORLD</small>
-        </span>
-      </a>
+    <header class="top-bar">
+      <button id="settings-button" class="icon-button" type="button" aria-label="الإعدادات">⚙</button>
 
-      <div class="sidebar-profile">
-        <div class="avatar avatar-main" id="sidebarAvatar">J</div>
-        <div class="profile-copy">
-          <strong id="sidebarUsername">زائر جوكر</strong>
-          <span id="sidebarStatus">وضع الاستعراض</span>
-        </div>
-        <span class="status-dot"></span>
-      </div>
-
-      <div class="sidebar-label">القائمة الرئيسية</div>
-
-      <nav class="main-nav" aria-label="القائمة الرئيسية">
-        <button class="nav-item active" data-page="home">
-          <span class="nav-icon">⌂</span><span>الرئيسية</span>
-        </button>
-        <button class="nav-item" data-page="games">
-          <span class="nav-icon">▣</span><span>مركز الألعاب</span>
-        </button>
-        <button class="nav-item" data-page="quickplay">
-          <span class="nav-icon">⚡</span><span>العب الآن</span>
-          <span class="nav-badge">سريع</span>
-        </button>
-        <button class="nav-item" data-page="rooms">
-          <span class="nav-icon">▤</span><span>غرف اللعب</span>
-        </button>
-        <button class="nav-item" data-page="friends">
-          <span class="nav-icon">♙</span><span>الأصدقاء</span>
-        </button>
-        <button class="nav-item" data-page="messages">
-          <span class="nav-icon">▱</span><span>المحادثات</span>
-        </button>
-        <button class="nav-item" data-page="tournaments">
-          <span class="nav-icon">♜</span><span>البطولات</span>
-        </button>
-        <button class="nav-item" data-page="leaderboard">
-          <span class="nav-icon">♛</span><span>المتصدرون</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-label">المكافآت والحساب</div>
-
-      <nav class="main-nav" aria-label="المكافآت والحساب">
-        <button class="nav-item" data-page="gems">
-          <span class="nav-icon">◇</span><span>الجواهر والمتجر</span>
-        </button>
-        <button class="nav-item" data-page="profile">
-          <span class="nav-icon">◎</span><span>ملفي الشخصي</span>
-        </button>
-        <button class="nav-item" data-page="notifications">
-          <span class="nav-icon">♧</span><span>الإشعارات</span>
-        </button>
-        <button class="nav-item" data-page="settings">
-          <span class="nav-icon">⚙</span><span>الإعدادات</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-bottom">
-        <div class="sidebar-promo">
-          <span class="promo-crown">♛</span>
-          <strong>عالم JOKER</strong>
-          <p>اكتشف الألعاب والتحديات المتاحة.</p>
-          <button class="btn btn-gold btn-small" data-page="games">اكتشف الألعاب</button>
-        </div>
-
-        <div class="sidebar-footer">
-          <span>JOKER PLATFORM</span>
-          <span>الإصدار 1.0</span>
+      <div class="brand">
+        <div class="brand-mark">ك</div>
+        <div class="brand-text">
+          <h1>تحدي الكلمات</h1>
+          <span>اختبر ذكاءك</span>
         </div>
       </div>
-    </aside>
 
-    <main class="main-area">
-      <header class="topbar">
-        <button class="icon-button menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
+      <div class="coin-counter" aria-label="رصيد العملات">
+        <span class="coin-icon">●</span>
+        <span id="coin-balance">0</span>
+        <button id="shop-button" type="button" aria-label="متجر العملات">+</button>
+      </div>
+    </header>
 
-        <div class="breadcrumb">
-          <span class="breadcrumb-muted">JOKER</span>
-          <span class="breadcrumb-divider">/</span>
-          <strong id="currentPageTitle">الرئيسية</strong>
+    <main id="main-content">
+
+      <section id="home-screen" class="screen active">
+        <div class="home-hero">
+          <div class="hero-decoration hero-decoration-one"></div>
+          <div class="hero-decoration hero-decoration-two"></div>
+
+          <div class="hero-content">
+            <span class="eyebrow">رحلة من الذكاء والتحدي</span>
+            <h2>هل تستطيع حل اللغز؟</h2>
+            <p>اكتشف الصور، اجمع الحروف، واختبر قوة تفكيرك.</p>
+
+            <div class="progress-summary">
+              <div>
+                <span>المرحلة الحالية</span>
+                <strong id="home-current-level">1</strong>
+              </div>
+              <div>
+                <span>المراحل المكتملة</span>
+                <strong id="home-completed-levels">0</strong>
+              </div>
+            </div>
+
+            <button id="play-button" class="primary-button" type="button">
+              ابدأ اللعب
+              <span aria-hidden="true">←</span>
+            </button>
+
+            <button id="continue-button" class="secondary-button" type="button">
+              استكمال التقدم
+            </button>
+          </div>
         </div>
 
-        <div class="topbar-actions">
-          <label class="global-search">
-            <span>⌕</span>
-            <input id="globalSearch" type="search" placeholder="ابحث عن لعبة أو صديق..." autocomplete="off">
-            <kbd>/</kbd>
-          </label>
-
-          <button class="icon-button notification-button" data-page="notifications" aria-label="الإشعارات">
-            ♧<span class="notification-indicator"></span>
-          </button>
-
-          <button class="wallet-chip" data-page="gems" aria-label="عرض الجواهر">
-            <span class="wallet-gem">◆</span>
-            <span>
-              <small>الجواهر</small>
-              <strong id="headerGemBalance">غير متصل</strong>
-            </span>
-            <b>+</b>
-          </button>
-        </div>
-      </header>
-
-      <div class="page-container">
-
-        <!-- HOME -->
-        <section class="page active" id="page-home" data-title="الرئيسية">
-
-          <div class="welcome-row">
-            <div>
-              <div class="eyebrow"><span class="live-dot"></span> مرحبًا بك في عالم JOKER</div>
-              <h1>اللعبة تبدأ <span class="gold-text">من هنا.</span></h1>
-              <p class="muted">اختر لعبتك، تحدَّ أصدقاءك، واصنع إنجازك القادم.</p>
-            </div>
-
-            <button class="btn btn-outline" data-page="profile">ملفي الشخصي ↗</button>
-          </div>
-
-          <section class="hero-banner">
-            <img
-              class="hero-image"
-              src="https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=85"
-              alt="أجواء منافسات الألعاب الإلكترونية"
-            >
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-              <span class="hero-tag">JOKER GAMING WORLD</span>
-              <h2>كل تحدٍّ له<br><span>بطل جديد.</span></h2>
-              <p>ابدأ بجولة جديدة، أو ابحث عن منافس، أو ادعُ صديقك للعب.</p>
-              <div class="hero-buttons">
-                <button class="btn btn-gold" data-page="games">استكشف الألعاب <span>←</span></button>
-                <button class="btn btn-glass" data-page="quickplay">منافسة سريعة ⚡</button>
-              </div>
-            </div>
-            <div class="hero-mark">♛</div>
-          </section>
-
+        <div class="home-section">
           <div class="section-heading">
             <div>
-              <span class="eyebrow">DISCOVER</span>
-              <h2>اكتشف عالم الألعاب</h2>
+              <h3>رحلتك في عالم الكلمات</h3>
+              <p>تقدم مرحلة بعد مرحلة</p>
             </div>
-            <button class="text-button" data-page="games">كل الألعاب ←</button>
-          </div>
-
-          <div class="category-grid">
-            <button class="category-card" data-category="board">
-              <span class="category-art category-domino">▥</span>
-              <span class="category-info"><strong>ألعاب الطاولة</strong><small>دومينو وشطرنج وداما</small></span>
-              <span class="category-arrow">←</span>
-            </button>
-
-            <button class="category-card" data-category="skill">
-              <span class="category-art category-skill">✦</span>
-              <span class="category-info"><strong>ألعاب المهارة</strong><small>سرعة وذكاء وتركيز</small></span>
-              <span class="category-arrow">←</span>
-            </button>
-
-            <button class="category-card" data-category="puzzle">
-              <span class="category-art category-puzzle">▦</span>
-              <span class="category-info"><strong>الألغاز</strong><small>اختبر قدراتك</small></span>
-              <span class="category-arrow">←</span>
-            </button>
-
-            <button class="category-card" data-category="challenge">
-              <span class="category-art category-challenge">⚡</span>
-              <span class="category-info"><strong>التحديات</strong><small>ابدأ تحديًا جديدًا</small></span>
-              <span class="category-arrow">←</span>
-            </button>
-          </div>
-
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">GAME LIBRARY</span>
-              <h2>ألعاب تستحق التجربة</h2>
-            </div>
-            <button class="text-button" data-page="games">عرض المكتبة ←</button>
-          </div>
-
-          <div class="game-grid" id="homeGames">
-            <article class="game-card">
-              <div class="game-art">
-                <img src="https://images.unsplash.com/photo-1606503153255-59d8b8b82176?auto=format&fit=crop&w=700&q=80" alt="قطع لعبة طاولة" loading="lazy">
-                <span class="game-category">استراتيجية</span>
-              </div>
-              <div class="game-info">
-                <h3>الدومينو</h3>
-                <p>خطط لحركاتك وتحدَّ خصمك.</p>
-                <button class="btn btn-outline btn-block" data-game="domino">فتح اللعبة</button>
-              </div>
-            </article>
-
-            <article class="game-card">
-              <div class="game-art">
-                <img src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?auto=format&fit=crop&w=700&q=80" alt="لوحة شطرنج" loading="lazy">
-                <span class="game-category">ذكاء</span>
-              </div>
-              <div class="game-info">
-                <h3>الشطرنج</h3>
-                <p>فكر في الخطوة القادمة.</p>
-                <button class="btn btn-outline btn-block" data-game="chess">فتح اللعبة</button>
-              </div>
-            </article>
-
-            <article class="game-card">
-              <div class="game-art">
-                <img src="https://images.unsplash.com/photo-1593305841991-05c297ba4575?auto=format&fit=crop&w=700&q=80" alt="معدات ألعاب" loading="lazy">
-                <span class="game-category">مهارة</span>
-              </div>
-              <div class="game-info">
-                <h3>تحدي السرعة</h3>
-                <p>اختبر سرعة استجابتك.</p>
-                <button class="btn btn-outline btn-block" data-game="reaction">فتح اللعبة</button>
-              </div>
-            </article>
-
-            <article class="game-card">
-              <div class="game-art">
-                <img src="https://images.unsplash.com/photo-1611996575749-79a3a250f948?auto=format&fit=crop&w=700&q=80" alt="ألعاب رقمية" loading="lazy">
-                <span class="game-category">ألغاز</span>
-              </div>
-              <div class="game-info">
-                <h3>تحدي الذاكرة</h3>
-                <p>ركز وتذكر أماكن البطاقات.</p>
-                <button class="btn btn-outline btn-block" data-game="memory">فتح اللعبة</button>
-              </div>
-            </article>
-          </div>
-
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">PLAY TOGETHER</span>
-              <h2>العب مع الآخرين</h2>
-            </div>
+            <span class="section-badge">3000 مرحلة مخططة</span>
           </div>
 
           <div class="feature-grid">
-            <button class="feature-card" data-page="quickplay">
-              <span class="feature-icon">⚡</span>
-              <strong>منافسة عشوائية</strong>
-              <p>ابدأ البحث عن منافس عند توفر خدمة المطابقة.</p>
-              <span class="feature-link">ابدأ البحث ←</span>
-            </button>
+            <article class="feature-card">
+              <span class="feature-icon">▧</span>
+              <h4>ألغاز الصور</h4>
+              <p>استنتج الكلمات من تفاصيل الصور.</p>
+            </article>
 
-            <button class="feature-card" data-page="friends">
-              <span class="feature-icon">♙</span>
-              <strong>ابحث عن صديق</strong>
-              <p>ابحث عن اللاعبين وأرسل طلبات الصداقة.</p>
-              <span class="feature-link">البحث عن لاعب ←</span>
-            </button>
+            <article class="feature-card">
+              <span class="feature-icon">✳</span>
+              <h4>تحديات التفكير</h4>
+              <p>اختبر ذكاءك مع ألغاز متدرجة الصعوبة.</p>
+            </article>
 
-            <button class="feature-card" data-page="rooms">
-              <span class="feature-icon">▤</span>
-              <strong>غرف اللعب</strong>
-              <p>استعرض الغرف المتاحة أو أنشئ غرفة.</p>
-              <span class="feature-link">استكشف الغرف ←</span>
+            <article class="feature-card">
+              <span class="feature-icon">◈</span>
+              <h4>المساعدات</h4>
+              <p>استخدم العملات عندما تحتاج إلى تلميح.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="game-screen" class="screen" hidden>
+        <div class="game-toolbar">
+          <button id="home-button" class="icon-button" type="button" aria-label="الرئيسية">⌂</button>
+
+          <div class="level-heading">
+            <span>المرحلة</span>
+            <strong id="level-number">1</strong>
+          </div>
+
+          <button id="hint-button" class="hint-button" type="button">
+            <span aria-hidden="true">✦</span>
+            تلميح
+            <span id="hint-cost">10</span>
+          </button>
+        </div>
+
+        <div class="level-progress-track" aria-label="تقدم المرحلة">
+          <div id="level-progress-bar" class="level-progress-bar"></div>
+        </div>
+
+        <section class="puzzle-card">
+          <div class="puzzle-image-frame">
+            <img
+              id="puzzle-image"
+              src="assets/puzzles/level-001.webp"
+              alt="صورة اللغز"
+              draggable="false"
+            >
+
+            <div id="image-fallback" class="image-fallback" hidden>
+              <span>صورة اللغز غير متاحة</span>
+            </div>
+
+            <span class="puzzle-number" id="puzzle-number">01</span>
+          </div>
+
+          <p id="puzzle-instruction" class="puzzle-instruction">
+            تأمل الصورة واكتشف الكلمة المطلوبة.
+          </p>
+        </section>
+
+        <section class="answer-section">
+          <div class="section-heading answer-heading">
+            <h3>الإجابة</h3>
+            <button id="clear-answer-button" class="text-button" type="button">
+              مسح
             </button>
           </div>
 
+          <div
+            id="answer-slots"
+            class="answer-slots"
+            aria-label="خانات الإجابة"
+            aria-live="polite"
+          ></div>
+
+          <p id="answer-feedback" class="feedback-message" aria-live="polite"></p>
+        </section>
+
+        <section class="letters-section">
           <div class="section-heading">
+            <h3>اختر الحروف</h3>
+            <span id="letters-remaining">0 حرف</span>
+          </div>
+
+          <div
+            id="letter-bank"
+            class="letter-bank"
+            aria-label="الحروف المتاحة"
+          ></div>
+        </section>
+
+        <div class="game-actions">
+          <button id="remove-letters-button" class="secondary-button" type="button">
+            حذف الحروف الزائدة
+          </button>
+
+          <button id="check-answer-button" class="primary-button" type="button">
+            تحقق من الإجابة
+          </button>
+        </div>
+      </section>
+
+      <section id="map-screen" class="screen" hidden>
+        <div class="screen-heading">
+          <button id="map-back-button" class="icon-button" type="button" aria-label="رجوع">→</button>
+          <div>
+            <h2>خريطة المراحل</h2>
+            <p>اختر مرحلة متاحة لمواصلة رحلتك.</p>
+          </div>
+        </div>
+
+        <div class="map-summary">
+          <div>
+            <span>تقدمك</span>
+            <strong id="map-progress-text">0 / 3000</strong>
+          </div>
+          <div>
+            <span>العملات</span>
+            <strong id="map-coins">0</strong>
+          </div>
+        </div>
+
+        <div id="level-map" class="level-map"></div>
+
+        <div class="map-pagination">
+          <button id="previous-level-page" class="secondary-button" type="button">
+            السابق
+          </button>
+          <span id="level-page-label">المجموعة 1</span>
+          <button id="next-level-page" class="secondary-button" type="button">
+            التالي
+          </button>
+        </div>
+      </section>
+
+      <section id="shop-screen" class="screen" hidden>
+        <div class="screen-heading">
+          <button id="shop-back-button" class="icon-button" type="button" aria-label="رجوع">→</button>
+          <div>
+            <h2>المساعدات</h2>
+            <p>استخدم رصيدك لمساعدتك في حل الألغاز.</p>
+          </div>
+        </div>
+
+        <div class="shop-balance">
+          <span>رصيد العملات</span>
+          <strong id="shop-coin-balance">0</strong>
+        </div>
+
+        <div class="shop-items">
+          <article class="shop-item">
             <div>
-              <span class="eyebrow">YOUR ACCOUNT</span>
-              <h2>حسابك في JOKER</h2>
+              <h3>كشف حرف</h3>
+              <p>اكشف حرفًا صحيحًا في الإجابة.</p>
             </div>
-          </div>
+            <button class="purchase-hint-button" data-hint="reveal" type="button">
+              10 عملات
+            </button>
+          </article>
 
-          <div class="account-notice">
-            <div class="notice-icon">i</div>
+          <article class="shop-item">
             <div>
-              <strong>أنت الآن في وضع الاستعراض</strong>
-              <p>يمكنك استكشاف الواجهة. بيانات الحساب والأصدقاء والأرصدة الحقيقية تتطلب تسجيل الدخول وربط الخدمات المناسبة.</p>
+              <h3>حذف الحروف الزائدة</h3>
+              <p>أزل بعض الحروف غير المطلوبة.</p>
             </div>
-            <button class="btn btn-gold btn-small" data-page="profile">الحساب</button>
-          </div>
-        </section>
+            <button class="purchase-hint-button" data-hint="remove" type="button">
+              15 عملة
+            </button>
+          </article>
 
-        <!-- GAMES -->
-        <section class="page" id="page-games" data-title="مركز الألعاب">
-          <div class="page-heading">
+          <article class="shop-item">
             <div>
-              <span class="eyebrow">GAME LIBRARY</span>
-              <h1>مركز <span class="gold-text">الألعاب</span></h1>
-              <p class="muted">اكتشف الألعاب واختر تحديك القادم.</p>
+              <h3>تلميح إضافي</h3>
+              <p>اعرض معلومة تساعدك على التفكير.</p>
             </div>
+            <button class="purchase-hint-button" data-hint="text" type="button">
+              20 عملة
+            </button>
+          </article>
+        </div>
+      </section>
+
+      <section id="settings-screen" class="screen" hidden>
+        <div class="screen-heading">
+          <button id="settings-back-button" class="icon-button" type="button" aria-label="رجوع">→</button>
+          <div>
+            <h2>الإعدادات</h2>
+            <p>خصص تجربة اللعب.</p>
           </div>
+        </div>
 
-          <div class="filter-row" id="gameFilters">
-            <button class="filter-chip active" data-category="all">الكل</button>
-            <button class="filter-chip" data-category="board">ألعاب الطاولة</button>
-            <button class="filter-chip" data-category="skill">المهارة</button>
-            <button class="filter-chip" data-category="puzzle">الألغاز</button>
-            <button class="filter-chip" data-category="challenge">التحديات</button>
-          </div>
+        <div class="settings-list">
+          <label class="setting-row">
+            <span>
+              <strong>المؤثرات الصوتية</strong>
+              <small>أصوات التفاعل وحل الألغاز</small>
+            </span>
+            <input id="sound-toggle" type="checkbox" checked>
+          </label>
 
-          <div class="game-grid" id="allGames">
-            <div class="empty-state">
-              <span>▣</span>
-              <h3>مكتبة الألعاب</h3>
-              <p>سيتم ربط هذه المساحة بكتالوج الألعاب في مرحلة تشغيل المنطق.</p>
-            </div>
-          </div>
-        </section>
+          <label class="setting-row">
+            <span>
+              <strong>الاهتزاز</strong>
+              <small>استجابة خفيفة عند التفاعل</small>
+            </span>
+            <input id="vibration-toggle" type="checkbox">
+          </label>
 
-        <!-- QUICK PLAY -->
-        <section class="page" id="page-quickplay" data-title="العب الآن">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">QUICK MATCH</span>
-              <h1>ابحث عن <span class="gold-text">منافس</span></h1>
-              <p class="muted">اختر اللعبة ونوع المباراة قبل بدء المطابقة.</p>
-            </div>
-          </div>
+          <button id="reset-progress-button" class="danger-button" type="button">
+            إعادة ضبط التقدم
+          </button>
+        </div>
+      </section>
 
-          <div class="panel matchmaking-panel">
-            <div class="matchmaking-emblem">⚡</div>
-            <h2>مستعد للتحدي؟</h2>
-            <p>اختر لعبتك، ثم ابدأ البحث عن لاعب متاح.</p>
-
-            <label class="form-label" for="quickGame">اللعبة</label>
-            <select id="quickGame" class="form-control">
-              <option value="domino">الدومينو</option>
-              <option value="chess">الشطرنج</option>
-              <option value="reaction">تحدي السرعة</option>
-              <option value="memory">تحدي الذاكرة</option>
-            </select>
-
-            <label class="form-label" for="matchType">نوع المباراة</label>
-            <select id="matchType" class="form-control">
-              <option value="casual">ودية</option>
-              <option value="ranked">تنافسية</option>
-            </select>
-
-            <button class="btn btn-gold btn-block" id="findOpponentButton">ابحث عن منافس ⚡</button>
-            <div class="inline-status" id="matchmakingStatus" role="status">خدمة المطابقة غير متصلة بعد.</div>
-          </div>
-        </section>
-
-        <!-- ROOMS -->
-        <section class="page" id="page-rooms" data-title="غرف اللعب">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">GAME ROOMS</span>
-              <h1>غرف <span class="gold-text">اللعب</span></h1>
-              <p class="muted">الغرف المشتركة تحتاج إلى خدمة خادم متصلة.</p>
-            </div>
-            <button class="btn btn-gold" id="createRoomButton">+ إنشاء غرفة</button>
-          </div>
-
-          <div class="panel">
-            <div class="empty-state">
-              <span>▤</span>
-              <h3>الغرف المتاحة</h3>
-              <p>لا توجد غرف حقيقية معروضة حاليًا؛ ستظهر الغرف عند اتصال خدمة الغرف.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- FRIENDS -->
-        <section class="page" id="page-friends" data-title="الأصدقاء">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">SOCIAL</span>
-              <h1>الأصدقاء <span class="gold-text">واللاعبون</span></h1>
-              <p class="muted">ابحث عن لاعب باستخدام اسمه أو معرّفه.</p>
-            </div>
-          </div>
-
-          <div class="panel">
-            <form id="friendSearchForm" class="search-form">
-              <input id="friendSearchInput" class="form-control" type="search" placeholder="اكتب اسم اللاعب أو المعرّف..." autocomplete="off">
-              <button class="btn btn-gold" type="submit">بحث</button>
-            </form>
-            <div id="friendSearchResults" class="results-area" aria-live="polite">
-              <div class="empty-state">
-                <span>♙</span>
-                <h3>ابحث عن أصدقائك</h3>
-                <p>البحث الحقيقي يتطلب اتصالًا بخدمة الحسابات.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-heading">
-            <div><h2>طلبات الصداقة</h2></div>
-          </div>
-
-          <div class="panel">
-            <div class="empty-state">
-              <p>طلبات الصداقة ستظهر هنا بعد اتصال خدمة المستخدمين.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- MESSAGES -->
-        <section class="page" id="page-messages" data-title="المحادثات">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">MESSAGES</span>
-              <h1>المحادثات</h1>
-              <p class="muted">محادثات اللاعبين والأصدقاء.</p>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="empty-state">
-              <span>▱</span>
-              <h3>محادثاتك</h3>
-              <p>لا توجد محادثات محملة. ستحتاج الرسائل بين المستخدمين إلى خدمة خلفية ومصادقة.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- TOURNAMENTS -->
-        <section class="page" id="page-tournaments" data-title="البطولات">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">COMPETITIONS</span>
-              <h1>البطولات <span class="gold-text">والتحديات</span></h1>
-              <p class="muted">استعرض المنافسات عند توفر بياناتها الفعلية.</p>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="empty-state">
-              <span>♜</span>
-              <h3>مركز البطولات</h3>
-              <p>لا توجد بطولات حقيقية محملة حاليًا.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- LEADERBOARD -->
-        <section class="page" id="page-leaderboard" data-title="المتصدرون">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">LEADERBOARD</span>
-              <h1>لوحة <span class="gold-text">المتصدرين</span></h1>
-              <p class="muted">ترتيب يعتمد على نتائج محفوظة فعلية.</p>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="empty-state">
-              <span>♛</span>
-              <h3>ترتيب اللاعبين</h3>
-              <p>سيظهر الترتيب بعد توصيل نظام النتائج والحسابات.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- GEMS -->
-        <section class="page" id="page-gems" data-title="الجواهر والمتجر">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">GEMS & STORE</span>
-              <h1>الجواهر <span class="gold-text">والمتجر</span></h1>
-              <p class="muted">إدارة الرصيد والعناصر والمكافآت.</p>
-            </div>
-          </div>
-
-          <div class="gems-hero panel">
-            <div>
-              <span class="eyebrow">AVAILABLE BALANCE</span>
-              <h2 id="gemsPageBalance">غير متصل</h2>
-              <p>الرصيد الحقيقي يظهر بعد تسجيل الدخول والاتصال بالخدمة.</p>
-            </div>
-            <div class="gems-illustration">◆</div>
-          </div>
-
-          <div class="section-heading"><div><h2>المتجر</h2></div></div>
-          <div class="panel">
-            <div class="empty-state">
-              <span>◇</span>
-              <h3>متجر JOKER</h3>
-              <p>العناصر والأسعار والمشتريات ستُحمّل من إعدادات المتجر الفعلية.</p>
-            </div>
-          </div>
-
-          <div class="section-heading"><div><h2>سجل الحركات</h2></div></div>
-          <div class="panel">
-            <p class="muted">لا يوجد سجل محمل؛ لن يتم إنشاء معاملات وهمية.</p>
-          </div>
-        </section>
-
-        <!-- PROFILE -->
-        <section class="page" id="page-profile" data-title="ملفي الشخصي">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">PLAYER PROFILE</span>
-              <h1>ملفي <span class="gold-text">الشخصي</span></h1>
-            </div>
-          </div>
-
-          <div class="panel profile-panel">
-            <div class="avatar profile-avatar" id="profileAvatar">J</div>
-            <h2 id="profileDisplayName">زائر جوكر</h2>
-            <p class="muted" id="profileId">لم يتم تسجيل الدخول</p>
-            <div class="profile-actions">
-              <button class="btn btn-gold" id="openLoginButton">تسجيل الدخول</button>
-              <button class="btn btn-outline" id="editProfileButton">تعديل البيانات</button>
-            </div>
-            <div class="profile-stats">
-              <div><strong>—</strong><span>المستوى</span></div>
-              <div><strong>—</strong><span>الانتصارات</span></div>
-              <div><strong>—</strong><span>الإنجازات</span></div>
-            </div>
-            <p class="muted">الإحصاءات ستظهر بعد توفر بيانات الحساب ونتائج اللعب.</p>
-          </div>
-        </section>
-
-        <!-- NOTIFICATIONS -->
-        <section class="page" id="page-notifications" data-title="الإشعارات">
-          <div class="page-heading">
-            <div><span class="eyebrow">NOTIFICATIONS</span><h1>الإشعارات</h1></div>
-          </div>
-          <div class="panel">
-            <div class="empty-state">
-              <span>♧</span>
-              <h3>لا توجد إشعارات محملة</h3>
-              <p>ستظهر هنا إشعارات النظام والحساب عند اتصال الخدمة.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- SETTINGS -->
-        <section class="page" id="page-settings" data-title="الإعدادات">
-          <div class="page-heading">
-            <div><span class="eyebrow">PREFERENCES</span><h1>الإعدادات</h1></div>
-          </div>
-
-          <div class="panel settings-list">
-            <div class="setting-row">
-              <div><strong>اللغة</strong><p>لغة واجهة المنصة</p></div>
-              <select id="languageSelect" class="form-control setting-select">
-                <option value="ar">العربية</option>
-                <option value="en">English</option>
-              </select>
-            </div>
-
-            <div class="setting-row">
-              <div><strong>الصوت</strong><p>أصوات الواجهة والألعاب</p></div>
-              <label class="toggle"><input id="soundToggle" type="checkbox" checked><span></span></label>
-            </div>
-
-            <div class="setting-row">
-              <div><strong>الحالة الاجتماعية</strong><p>إعدادات ظهور حالة الاتصال عند توفر الحساب</p></div>
-              <span class="setting-note">تتطلب تسجيل الدخول</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- GAME VIEW -->
-        <section class="page" id="page-game" data-title="اللعبة">
-          <div class="page-heading">
-            <div>
-              <span class="eyebrow">GAME SESSION</span>
-              <h1 id="activeGameTitle">اللعبة</h1>
-            </div>
-            <button class="btn btn-outline" data-page="games">العودة للألعاب</button>
-          </div>
-
-          <div class="panel game-session" id="gameSession">
-            <div class="empty-state">
-              <span>▣</span>
-              <h3>منطقة اللعب</h3>
-              <p>سيتم تشغيل اللعبة المختارة بعد تنفيذ منطقها في ملف games.js.</p>
-            </div>
-          </div>
-        </section>
-
-        <!-- LOGIN -->
-        <section class="page" id="page-login" data-title="تسجيل الدخول">
-          <div class="panel auth-panel">
-            <div class="auth-logo">♛</div>
-            <span class="eyebrow">WELCOME TO JOKER</span>
-            <h1>أهلًا بعودتك</h1>
-            <p class="muted">سجّل الدخول للوصول إلى حسابك.</p>
-
-            <form id="loginForm">
-              <label class="form-label" for="loginEmail">البريد الإلكتروني</label>
-              <input class="form-control" id="loginEmail" type="email" autocomplete="email" required>
-
-              <label class="form-label" for="loginPassword">كلمة المرور</label>
-              <input class="form-control" id="loginPassword" type="password" autocomplete="current-password" required>
-
-              <button class="btn btn-gold btn-block" type="submit">تسجيل الدخول</button>
-            </form>
-
-            <div id="authStatus" class="inline-status" role="status">خدمة المصادقة غير متصلة بعد.</div>
-          </div>
-        </section>
-
-      </div>
-
-      <footer class="main-footer">
-        <span>♛ JOKER</span>
-        <span>عالم الألعاب والتحديات</span>
-        <span>واجهة أولية قيد التطوير</span>
-      </footer>
     </main>
+
+    <nav class="bottom-navigation" aria-label="التنقل الرئيسي">
+      <button class="nav-button active" data-screen="home-screen" type="button">
+        <span aria-hidden="true">⌂</span>
+        <small>الرئيسية</small>
+      </button>
+
+      <button class="nav-button" data-screen="map-screen" type="button">
+        <span aria-hidden="true">◇</span>
+        <small>المراحل</small>
+      </button>
+
+      <button class="nav-button" data-screen="game-screen" type="button">
+        <span aria-hidden="true">✳</span>
+        <small>اللعب</small>
+      </button>
+
+      <button class="nav-button" data-screen="shop-screen" type="button">
+        <span aria-hidden="true">◈</span>
+        <small>المساعدات</small>
+      </button>
+    </nav>
+
+    <div id="dialog-overlay" class="dialog-overlay" hidden>
+      <section
+        id="game-dialog"
+        class="game-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-title"
+      >
+        <h2 id="dialog-title">تنبيه</h2>
+        <p id="dialog-message"></p>
+        <div id="dialog-actions" class="dialog-actions"></div>
+      </section>
+    </div>
+
+    <div id="toast-message" class="toast-message" role="status" aria-live="polite"></div>
+
   </div>
 
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-
-  <nav class="mobile-nav" aria-label="التنقل السريع">
-    <button class="mobile-nav-item active" data-page="home"><span>⌂</span><small>الرئيسية</small></button>
-    <button class="mobile-nav-item" data-page="games"><span>▣</span><small>الألعاب</small></button>
-    <button class="mobile-nav-item" data-page="quickplay"><span>⚡</span><small>العب</small></button>
-    <button class="mobile-nav-item" data-page="friends"><span>♙</span><small>الأصدقاء</small></button>
-    <button class="mobile-nav-item" data-page="profile"><span>◎</span><small>حسابي</small></button>
-  </nav>
-
-  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
-
-  <script>
-    (() => {
-      const pageButtons = document.querySelectorAll("[data-page]");
-      const pages = document.querySelectorAll(".page");
-      const title = document.getElementById("currentPageTitle");
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("mobileOverlay");
-      const shell = document.getElementById("appShell");
-
-      function showPage(name) {
-        const page = document.getElementById("page-" + name);
-        if (!page) return;
-
-        pages.forEach(item => item.classList.toggle("active", item === page));
-
-        const pageTitle = page.dataset.title || "JOKER";
-        title.textContent = pageTitle;
-
-        pageButtons.forEach(button => {
-          const active = button.dataset.page === name;
-          button.classList.toggle("active", active);
-          if (active && button.classList.contains("mobile-nav-item")) {
-            button.setAttribute("aria-current", "page");
-          } else {
-            button.removeAttribute("aria-current");
-          }
-        });
-
-        sidebar.classList.remove("sidebar-open");
-        overlay.classList.remove("visible");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      pageButtons.forEach(button => {
-        button.addEventListener("click", event => {
-          event.preventDefault();
-          showPage(button.dataset.page);
-        });
-      });
-
-      document.getElementById("menuToggle").addEventListener("click", () => {
-        sidebar.classList.toggle("sidebar-open");
-        overlay.classList.toggle("visible");
-      });
-
-      overlay.addEventListener("click", () => {
-        sidebar.classList.remove("sidebar-open");
-        overlay.classList.remove("visible");
-      });
-
-      document.querySelectorAll("[data-category]").forEach(button => {
-        button.addEventListener("click", () => {
-          const gamesPage = document.getElementById("page-games");
-          if (gamesPage) showPage("games");
-
-          document.querySelectorAll("#gameFilters [data-category]").forEach(filter => {
-            filter.classList.toggle(
-              "active",
-              filter.dataset.category === button.dataset.category
-            );
-          });
-
-          window.dispatchEvent(new CustomEvent("joker:category", {
-            detail: { category: button.dataset.category }
-          }));
-        });
-      });
-
-      document.querySelectorAll("[data-game]").forEach(button => {
-        button.addEventListener("click", () => {
-          const game = button.dataset.game;
-          document.getElementById("activeGameTitle").textContent = button.closest(".game-card")?.querySelector("h3")?.textContent || "اللعبة";
-          showPage("game");
-
-          window.dispatchEvent(new CustomEvent("joker:open-game", {
-            detail: { game }
-          }));
-        });
-      });
-
-      document.getElementById("globalSearch").addEventListener("keydown", event => {
-        if (event.key === "Enter") {
-          const query = event.currentTarget.value.trim();
-          if (!query) return;
-
-          showPage("games");
-          window.dispatchEvent(new CustomEvent("joker:search", {
-            detail: { query }
-          }));
-        }
-      });
-
-      document.getElementById("friendSearchForm").addEventListener("submit", event => {
-        event.preventDefault();
-        const query = document.getElementById("friendSearchInput").value.trim();
-        const result = document.getElementById("friendSearchResults");
-
-        if (!query) {
-          result.innerHTML = '<p class="inline-status">اكتب اسم اللاعب أو معرّفه أولًا.</p>';
-          return;
-        }
-
-        result.innerHTML = `
-          <div class="empty-state">
-            <span>⌕</span>
-            <h3>البحث عن لاعب</h3>
-            <p>لا يمكن البحث عن حسابات حقيقية قبل توصيل خدمة المستخدمين.</p>
-          </div>
-        `;
-
-        window.dispatchEvent(new CustomEvent("joker:friend-search", {
-          detail: { query }
-        }));
-      });
-
-      document.getElementById("findOpponentButton").addEventListener("click", () => {
-        document.getElementById("matchmakingStatus").textContent =
-          "خدمة المطابقة غير متصلة. لن يتم إنشاء منافس وهمي.";
-
-        window.dispatchEvent(new CustomEvent("joker:find-opponent", {
-          detail: {
-            game: document.getElementById("quickGame").value,
-            mode: document.getElementById("matchType").value
-          }
-        }));
-      });
-
-      document.getElementById("createRoomButton").addEventListener("click", () => {
-        window.dispatchEvent(new CustomEvent("joker:create-room"));
-        document.getElementById("page-rooms").querySelector(".empty-state p").textContent =
-          "إنشاء الغرف الحقيقية يحتاج إلى خدمة الخادم. لم يتم إنشاء غرفة وهمية.";
-      });
-
-      document.getElementById("openLoginButton").addEventListener("click", () => {
-        showPage("login");
-      });
-
-      document.getElementById("loginForm").addEventListener("submit", event => {
-        event.preventDefault();
-        document.getElementById("authStatus").textContent =
-          "لم يتم تسجيل الدخول: يجب توصيل خدمة مصادقة آمنة أولًا.";
-      });
-
-      document.getElementById("editProfileButton").addEventListener("click", () => {
-        document.getElementById("authStatus").textContent =
-          "تعديل الحساب يحتاج إلى تسجيل الدخول وربط خدمة الحسابات.";
-        showPage("login");
-      });
-
-      document.getElementById("languageSelect").addEventListener("change", event => {
-        if (event.target.value === "en") {
-          document.documentElement.lang = "en";
-          document.documentElement.dir = "ltr";
-          document.getElementById("toastRegion").textContent =
-            "تم تغيير اتجاه الصفحة إلى اليسار؛ ستتم ترجمة النصوص في مرحلة التدويل.";
-        } else {
-          document.documentElement.lang = "ar";
-          document.documentElement.dir = "rtl";
-          document.getElementById("toastRegion").textContent =
-            "تم اختيار العربية.";
-        }
-      });
-
-      document.getElementById("soundToggle").addEventListener("change", event => {
-        window.JOKER_SETTINGS = window.JOKER_SETTINGS || {};
-        window.JOKER_SETTINGS.soundEnabled = event.target.checked;
-      });
-
-      window.JOKER_APP = {
-        showPage,
-        getCurrentPage: () => document.querySelector(".page.active")?.id || null
-      };
-    })();
-  </script>
+  <script src="levels/levels-001.js"></script>
+  <script src="levels-loader.js"></script>
+  <script src="game.js"></script>
 </body>
-  </html>
+              </html>
