@@ -3,6 +3,7 @@
 (() => {
   const TOTAL_LEVELS = 3000;
   const INITIAL_COINS = 100;
+
   const HINT_COSTS = {
     reveal: 10,
     remove: 15,
@@ -52,29 +53,23 @@
     toastMessage: $("#toast-message")
   };
 
-  const defaultSave = () => ({
-    version: 1,
-    coins: INITIAL_COINS,
-    currentLevel: 1,
-    completedLevels: [],
-    claimedRewards: [],
-    soundEnabled: true,
-    vibrationEnabled: false,
-    levelMapPage: 0
-  });
-
-  let save = loadSave();
-  let currentLevelData = null;
-  let selectedLetters = [];
-  let availableLetters = [];
-  let removedLetters = new Set();
-  let locked = false;
-  let toastTimer = null;
-  let imageRequestId = 0;
+  function defaultSave() {
+    return {
+      version: 1,
+      coins: INITIAL_COINS,
+      currentLevel: 1,
+      completedLevels: [],
+      claimedRewards: [],
+      soundEnabled: true,
+      vibrationEnabled: false,
+      levelMapPage: 0
+    };
+  }
 
   function loadSave() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
+
       if (!raw) return defaultSave();
 
       const parsed = JSON.parse(raw);
@@ -94,16 +89,24 @@
 
       return {
         ...base,
+
         coins: Number.isFinite(parsed.coins)
           ? Math.max(0, Math.floor(parsed.coins))
           : base.coins,
+
         currentLevel: Number.isInteger(parsed.currentLevel)
-          ? Math.min(TOTAL_LEVELS, Math.max(1, parsed.currentLevel))
+          ? Math.min(
+              TOTAL_LEVELS,
+              Math.max(1, parsed.currentLevel)
+            )
           : 1,
+
         completedLevels: [...new Set(completed)],
         claimedRewards: [...new Set(claimed)],
+
         soundEnabled: parsed.soundEnabled !== false,
         vibrationEnabled: parsed.vibrationEnabled === true,
+
         levelMapPage: Number.isInteger(parsed.levelMapPage)
           ? Math.max(0, Math.floor(parsed.levelMapPage))
           : 0
@@ -112,6 +115,17 @@
       return defaultSave();
     }
   }
+
+  let save = loadSave();
+
+  let currentLevelData = null;
+  let selectedLetters = [];
+  let availableLetters = [];
+  let removedLetters = new Set();
+  let locked = false;
+
+  let toastTimer = null;
+  let imageRequestId = 0;
 
   function persist() {
     try {
@@ -134,6 +148,17 @@
   }
 
   function getLevel(levelId) {
+    const id = Number(levelId);
+
+    if (
+      window.LevelsLoader &&
+      typeof window.LevelsLoader.getLevel === "function"
+    ) {
+      const loadedLevel = window.LevelsLoader.getLevel(id);
+
+      if (loadedLevel) return loadedLevel;
+    }
+
     const sources = [
       window.WORD_PUZZLE_LEVELS,
       window.GAME_LEVELS,
@@ -142,12 +167,15 @@
 
     for (const source of sources) {
       if (Array.isArray(source)) {
-        const found = source.find((item) => item && item.id === levelId);
+        const found = source.find(
+          (item) => item && Number(item.id) === id
+        );
+
         if (found) return found;
       }
 
-      if (source && typeof source === "object" && source[levelId]) {
-        return source[levelId];
+      if (source && typeof source === "object" && source[id]) {
+        return source[id];
       }
     }
 
@@ -156,11 +184,18 @@
 
   function getAnswer(level) {
     if (!level) return "";
-    return String(level.answer ?? level.answers?.[0] ?? "");
+
+    return String(
+      level.answer ??
+      level.answers?.[0] ??
+      ""
+    );
   }
 
   function getAnswerLetters(answer) {
-    return Array.from(normalizeArabic(answer).replace(/\s/g, ""));
+    return Array.from(
+      normalizeArabic(answer).replace(/\s/g, "")
+    );
   }
 
   function getAvailableLetters(level, answer) {
@@ -177,6 +212,7 @@
 
   function isLevelUnlocked(levelId) {
     if (levelId === 1) return true;
+
     return save.completedLevels.includes(levelId - 1);
   }
 
@@ -191,7 +227,9 @@
 
     screens.forEach((screen) => {
       if (!screen) return;
+
       const active = screen.id === screenId;
+
       screen.hidden = !active;
       screen.classList.toggle("active", active);
     });
@@ -203,20 +241,26 @@
       );
     });
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
 
   function updateBalances() {
     if (elements.coinBalance) {
-      elements.coinBalance.textContent = save.coins.toLocaleString("ar");
+      elements.coinBalance.textContent =
+        save.coins.toLocaleString("ar");
     }
 
     if (elements.shopCoinBalance) {
-      elements.shopCoinBalance.textContent = save.coins.toLocaleString("ar");
+      elements.shopCoinBalance.textContent =
+        save.coins.toLocaleString("ar");
     }
 
     if (elements.mapCoins) {
-      elements.mapCoins.textContent = save.coins.toLocaleString("ar");
+      elements.mapCoins.textContent =
+        save.coins.toLocaleString("ar");
     }
 
     if (elements.homeCurrentLevel) {
@@ -235,7 +279,8 @@
     }
 
     if (elements.hintCost) {
-      elements.hintCost.textContent = HINT_COSTS.reveal.toLocaleString("ar");
+      elements.hintCost.textContent =
+        HINT_COSTS.reveal.toLocaleString("ar");
     }
   }
 
@@ -246,33 +291,51 @@
     elements.toastMessage.classList.add("visible");
 
     clearTimeout(toastTimer);
+
     toastTimer = setTimeout(() => {
       elements.toastMessage.classList.remove("visible");
     }, 2400);
   }
 
   function openDialog(title, message, actions = []) {
-    if (!elements.dialogOverlay) return;
+    if (!elements.dialogOverlay) {
+      showToast(message);
+      return;
+    }
 
-    elements.dialogTitle.textContent = title;
-    elements.dialogMessage.textContent = message;
-    elements.dialogActions.replaceChildren();
+    if (elements.dialogTitle) {
+      elements.dialogTitle.textContent = title;
+    }
 
-    actions.forEach((action) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = action.primary
-        ? "primary-button"
-        : "secondary-button";
-      button.textContent = action.label;
+    if (elements.dialogMessage) {
+      elements.dialogMessage.textContent = message;
+    }
 
-      button.addEventListener("click", () => {
-        closeDialog();
-        if (typeof action.run === "function") action.run();
+    if (elements.dialogActions) {
+      elements.dialogActions.replaceChildren();
+
+      actions.forEach((action) => {
+        const button = document.createElement("button");
+
+        button.type = "button";
+
+        button.className = action.primary
+          ? "primary-button"
+          : "secondary-button";
+
+        button.textContent = action.label;
+
+        button.addEventListener("click", () => {
+          closeDialog();
+
+          if (typeof action.run === "function") {
+            action.run();
+          }
+        });
+
+        elements.dialogActions.appendChild(button);
       });
-
-      elements.dialogActions.appendChild(button);
-    });
+    }
 
     elements.dialogOverlay.hidden = false;
   }
@@ -286,7 +349,10 @@
   function updateProgressBar() {
     if (!elements.levelProgressBar) return;
 
-    const answerLength = getAnswerLetters(getAnswer(currentLevelData)).length;
+    const answerLength = getAnswerLetters(
+      getAnswer(currentLevelData)
+    ).length;
+
     const ratio = answerLength
       ? selectedLetters.length / answerLength
       : 0;
@@ -299,6 +365,7 @@
     if (!elements.answerFeedback) return;
 
     elements.answerFeedback.textContent = message;
+
     elements.answerFeedback.className =
       `feedback-message${type ? ` ${type}` : ""}`;
   }
@@ -308,24 +375,35 @@
 
     elements.answerSlots.replaceChildren();
 
-    const answer = getAnswer(currentLevelData);
-    const answerLetters = getAnswerLetters(answer);
+    const answerLetters = getAnswerLetters(
+      getAnswer(currentLevelData)
+    );
 
     answerLetters.forEach((_, index) => {
       const slot = document.createElement("button");
+
       slot.type = "button";
       slot.className = "answer-slot";
-      slot.setAttribute("aria-label", `خانة الإجابة ${index + 1}`);
+
+      slot.setAttribute(
+        "aria-label",
+        `خانة الإجابة ${index + 1}`
+      );
 
       const selected = selectedLetters[index];
 
       if (selected) {
         slot.textContent = selected.letter;
         slot.classList.add("filled");
-        slot.setAttribute("aria-label", `الحرف ${selected.letter}`);
+
+        slot.setAttribute(
+          "aria-label",
+          `الحرف ${selected.letter}`
+        );
 
         slot.addEventListener("click", () => {
           if (locked) return;
+
           removeSelectedLetter(index);
         });
       }
@@ -341,15 +419,23 @@
 
     elements.letterBank.replaceChildren();
 
-    const usedIds = new Set(selectedLetters.map((item) => item.id));
+    const usedIds = new Set(
+      selectedLetters.map((item) => item.id)
+    );
+
     let remaining = 0;
 
     availableLetters.forEach((item) => {
       const button = document.createElement("button");
+
       button.type = "button";
       button.className = "letter-button";
       button.textContent = item.letter;
-      button.setAttribute("aria-label", `اختيار حرف ${item.letter}`);
+
+      button.setAttribute(
+        "aria-label",
+        `اختيار حرف ${item.letter}`
+      );
 
       const isUsed = usedIds.has(item.id);
       const isRemoved = removedLetters.has(item.id);
@@ -362,7 +448,10 @@
         button.disabled = true;
       } else {
         remaining++;
-        button.addEventListener("click", () => selectLetter(item));
+
+        button.addEventListener("click", () => {
+          selectLetter(item);
+        });
       }
 
       elements.letterBank.appendChild(button);
@@ -376,9 +465,19 @@
 
   function selectLetter(item) {
     if (locked || removedLetters.has(item.id)) return;
-    if (selectedLetters.some((selected) => selected.id === item.id)) return;
 
-    const answerLength = getAnswerLetters(getAnswer(currentLevelData)).length;
+    if (
+      selectedLetters.some(
+        (selected) => selected.id === item.id
+      )
+    ) {
+      return;
+    }
+
+    const answerLength = getAnswerLetters(
+      getAnswer(currentLevelData)
+    ).length;
+
     if (selectedLetters.length >= answerLength) return;
 
     selectedLetters.push(item);
@@ -393,9 +492,16 @@
   }
 
   function removeSelectedLetter(index) {
-    if (locked || index < 0 || index >= selectedLetters.length) return;
+    if (
+      locked ||
+      index < 0 ||
+      index >= selectedLetters.length
+    ) {
+      return;
+    }
 
     selectedLetters.splice(index, 1);
+
     renderAnswerSlots();
     renderLetterBank();
     updateFeedback("");
@@ -405,6 +511,7 @@
     if (locked) return;
 
     selectedLetters = [];
+
     renderAnswerSlots();
     renderLetterBank();
     updateFeedback("");
@@ -420,11 +527,13 @@
     };
 
     const frequency = soundMap[kind];
+
     if (!frequency) return;
 
     try {
       const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
+        window.AudioContext ||
+        window.webkitAudioContext;
 
       if (!AudioContextClass) return;
 
@@ -440,15 +549,17 @@
       gain.connect(audio.destination);
 
       oscillator.start();
+
       gain.gain.exponentialRampToValueAtTime(
         0.001,
         audio.currentTime + 0.12
       );
 
       oscillator.stop(audio.currentTime + 0.12);
+
       oscillator.onended = () => audio.close();
     } catch {
-      // Audio is optional.
+      // الصوت اختياري.
     }
   }
 
@@ -456,9 +567,11 @@
     if (!save.vibrationEnabled) return;
 
     try {
-      if ("vibrate" in navigator) navigator.vibrate(pattern);
+      if ("vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
     } catch {
-      // Vibration is optional.
+      // الاهتزاز اختياري.
     }
   }
 
@@ -470,6 +583,7 @@
 
     elements.puzzleImage.hidden = false;
     elements.puzzleImage.alt = `صورة المرحلة ${level.id}`;
+
     elements.puzzleImage.removeAttribute("src");
 
     if (elements.imageFallback) {
@@ -478,15 +592,19 @@
 
     if (!imagePath) {
       elements.puzzleImage.hidden = true;
+
       if (elements.imageFallback) {
         elements.imageFallback.hidden = false;
       }
+
       return;
     }
 
     elements.puzzleImage.onload = () => {
       if (requestId !== imageRequestId) return;
+
       elements.puzzleImage.hidden = false;
+
       if (elements.imageFallback) {
         elements.imageFallback.hidden = true;
       }
@@ -494,7 +612,9 @@
 
     elements.puzzleImage.onerror = () => {
       if (requestId !== imageRequestId) return;
+
       elements.puzzleImage.hidden = true;
+
       if (elements.imageFallback) {
         elements.imageFallback.hidden = false;
       }
@@ -504,7 +624,14 @@
   }
 
   function loadLevel(levelId, navigate = true) {
-    const safeId = Math.min(TOTAL_LEVELS, Math.max(1, levelId));
+    const requestedId = Number(levelId);
+
+    const safeId = Number.isFinite(requestedId)
+      ? Math.min(
+          TOTAL_LEVELS,
+          Math.max(1, Math.floor(requestedId))
+        )
+      : 1;
 
     if (!isLevelUnlocked(safeId)) {
       showToast("حل المرحلة السابقة أولًا.");
@@ -514,18 +641,40 @@
     const level = getLevel(safeId);
 
     if (!level) {
+      console.error(
+        `بيانات المرحلة ${safeId} غير موجودة.`,
+        {
+          levelsLoaderExists: Boolean(window.LevelsLoader),
+          loadedLevelCount:
+            window.LevelsLoader?.getLoadedCount?.() ?? 0,
+          availableLevels:
+            Array.isArray(window.WORD_PUZZLE_LEVELS)
+              ? window.WORD_PUZZLE_LEVELS.length
+              : 0
+        }
+      );
+
       openDialog(
         "المرحلة غير جاهزة",
-        `بيانات المرحلة ${safeId} غير موجودة في ملفات اللعبة حتى الآن.`,
+        `بيانات المرحلة ${safeId} غير موجودة. تحقق من تحميل ملفات المراحل.`,
         [
-          { label: "العودة للرئيسية", primary: true, run: () => showScreen("home-screen") },
-          { label: "خريطة المراحل", run: () => renderMap() }
+          {
+            label: "العودة للرئيسية",
+            primary: true,
+            run: () => showScreen("home-screen")
+          },
+          {
+            label: "خريطة المراحل",
+            run: () => renderMap()
+          }
         ]
       );
+
       return false;
     }
 
     const answer = getAnswer(level);
+
     if (!normalizeArabic(answer)) {
       showToast("بيانات إجابة هذه المرحلة غير صحيحة.");
       return false;
@@ -539,7 +688,8 @@
     availableLetters = getAvailableLetters(level, answer);
 
     if (elements.levelNumber) {
-      elements.levelNumber.textContent = safeId.toLocaleString("ar");
+      elements.levelNumber.textContent =
+        safeId.toLocaleString("ar");
     }
 
     if (elements.puzzleNumber) {
@@ -549,11 +699,13 @@
 
     if (elements.puzzleInstruction) {
       elements.puzzleInstruction.textContent =
-        level.instruction || "تأمل الصورة واكتشف الكلمة المطلوبة.";
+        level.instruction ||
+        "تأمل الصورة واكتشف الكلمة المطلوبة.";
     }
 
     if (elements.hintCost) {
-      elements.hintCost.textContent = HINT_COSTS.reveal.toLocaleString("ar");
+      elements.hintCost.textContent =
+        HINT_COSTS.reveal.toLocaleString("ar");
     }
 
     loadPuzzleImage(level);
@@ -562,20 +714,32 @@
     updateFeedback("");
     updateBalances();
 
-    if (navigate) showScreen("game-screen");
+    if (navigate) {
+      showScreen("game-screen");
+    }
+
     return true;
   }
 
   function checkAnswer() {
     if (locked || !currentLevelData) return;
 
-    const answer = getAnswerLetters(getAnswer(currentLevelData)).join("");
+    const answer = getAnswerLetters(
+      getAnswer(currentLevelData)
+    ).join("");
+
     const guess = normalizeArabic(
-      selectedLetters.map((item) => item.letter).join("")
+      selectedLetters
+        .map((item) => item.letter)
+        .join("")
     ).replace(/\s/g, "");
 
     if (guess.length !== answer.length) {
-      updateFeedback("أكمل اختيار الحروف أولًا.", "error");
+      updateFeedback(
+        "أكمل اختيار الحروف أولًا.",
+        "error"
+      );
+
       return;
     }
 
@@ -585,14 +749,20 @@
     }
 
     locked = true;
+
     playSound("wrong");
     vibrate([20, 35, 20]);
 
-    updateFeedback("الإجابة غير صحيحة، حاول مرة أخرى.", "error");
+    updateFeedback(
+      "الإجابة غير صحيحة، حاول مرة أخرى.",
+      "error"
+    );
 
-    elements.answerSlots?.querySelectorAll(".answer-slot").forEach((slot) => {
-      slot.classList.add("wrong");
-    });
+    elements.answerSlots
+      ?.querySelectorAll(".answer-slot")
+      .forEach((slot) => {
+        slot.classList.add("wrong");
+      });
 
     setTimeout(() => {
       locked = false;
@@ -601,15 +771,21 @@
   }
 
   function handleCorrectAnswer() {
+    if (!currentLevelData) return;
+
     locked = true;
 
     const levelId = currentLevelData.id;
+
     const reward = Number.isFinite(currentLevelData.reward)
       ? Math.max(0, Math.floor(currentLevelData.reward))
       : 10;
 
-    const alreadyCompleted = save.completedLevels.includes(levelId);
-    const rewardClaimed = save.claimedRewards.includes(levelId);
+    const alreadyCompleted =
+      save.completedLevels.includes(levelId);
+
+    const rewardClaimed =
+      save.claimedRewards.includes(levelId);
 
     if (!alreadyCompleted) {
       save.completedLevels.push(levelId);
@@ -621,31 +797,54 @@
     }
 
     if (levelId < TOTAL_LEVELS) {
-      save.currentLevel = Math.max(save.currentLevel, levelId + 1);
+      save.currentLevel = Math.max(
+        save.currentLevel,
+        levelId + 1
+      );
     }
 
     persist();
     updateBalances();
-    updateFeedback("إجابة صحيحة! أحسنت.", "success");
+
+    updateFeedback(
+      "إجابة صحيحة! أحسنت.",
+      "success"
+    );
+
     playSound("correct");
     vibrate([25, 35, 55]);
 
-    elements.answerSlots?.querySelectorAll(".answer-slot").forEach((slot) => {
-      slot.classList.remove("wrong");
-      slot.classList.add("correct");
-    });
+    elements.answerSlots
+      ?.querySelectorAll(".answer-slot")
+      .forEach((slot) => {
+        slot.classList.remove("wrong");
+        slot.classList.add("correct");
+      });
 
     setTimeout(() => {
+      const isLastLevel = levelId >= TOTAL_LEVELS;
+
       openDialog(
-        "إجابة صحيحة!",
-        `أحسنت! ${rewardClaimed ? "لقد حللت هذه المرحلة من قبل." : `حصلت على ${reward} عملات.`}`,
+        isLastLevel ? "أكملت اللعبة!" : "إجابة صحيحة!",
+        isLastLevel
+          ? "مبروك! وصلت إلى نهاية المراحل المتاحة."
+          : rewardClaimed
+            ? "أحسنت! لقد حللت هذه المرحلة من قبل."
+            : `أحسنت! حصلت على ${reward} عملات.`,
         [
           {
-            label: "المرحلة التالية",
+            label: isLastLevel
+              ? "العودة للرئيسية"
+              : "المرحلة التالية",
             primary: true,
             run: () => {
               locked = false;
-              loadLevel(Math.min(TOTAL_LEVELS, levelId + 1));
+
+              if (isLastLevel) {
+                showScreen("home-screen");
+              } else {
+                loadLevel(levelId + 1);
+              }
             }
           },
           {
@@ -669,24 +868,24 @@
     save.coins -= cost;
     persist();
     updateBalances();
+
     return true;
   }
 
   function revealHint() {
     if (!currentLevelData || locked) return;
 
-    const cost = HINT_COSTS.reveal;
-    if (!spendCoins(cost)) return;
+    const answer = getAnswerLetters(
+      getAnswer(currentLevelData)
+    );
 
-    const answer = getAnswerLetters(getAnswer(currentLevelData));
-    const index = answer.findIndex((letter, i) =>
-      !selectedLetters[i] || selectedLetters[i].letter !== letter
+    const index = answer.findIndex(
+      (letter, i) =>
+        !selectedLetters[i] ||
+        selectedLetters[i].letter !== letter
     );
 
     if (index < 0) {
-      save.coins += cost;
-      persist();
-      updateBalances();
       showToast("كل الحروف الصحيحة موجودة بالفعل.");
       return;
     }
@@ -694,58 +893,81 @@
     const requiredLetter = answer[index];
 
     const existingSelectedIndex = selectedLetters.findIndex(
-      (item, i) => i !== index && item.letter === requiredLetter
+      (item, i) =>
+        i !== index &&
+        item.letter === requiredLetter
     );
 
+    let replacement = null;
+
     if (existingSelectedIndex >= 0) {
-      const existing = selectedLetters[existingSelectedIndex];
-      selectedLetters.splice(existingSelectedIndex, 1);
-      selectedLetters.splice(index, 0, existing);
+      replacement = selectedLetters[existingSelectedIndex];
     } else {
-      const availableIndex = availableLetters.findIndex(
+      replacement = availableLetters.find(
         (item) =>
           item.letter === requiredLetter &&
           !removedLetters.has(item.id) &&
-          !selectedLetters.some((selected) => selected.id === item.id)
+          !selectedLetters.some(
+            (selected) => selected.id === item.id
+          )
       );
 
-      if (availableIndex < 0) {
-        save.coins += cost;
-        persist();
-        updateBalances();
+      if (!replacement) {
         showToast("تعذر العثور على الحرف المطلوب.");
         return;
       }
-
-      const item = availableLetters[availableIndex];
-      selectedLetters.splice(index, 0, item);
     }
+
+    if (!spendCoins(HINT_COSTS.reveal)) return;
+
+    if (existingSelectedIndex >= 0) {
+      selectedLetters.splice(existingSelectedIndex, 1);
+    }
+
+    selectedLetters[index] = replacement;
 
     renderAnswerSlots();
     renderLetterBank();
+
     showToast("تم كشف حرف صحيح.");
   }
 
   function removeExtraLetters() {
     if (!currentLevelData || locked) return;
 
-    const cost = HINT_COSTS.remove;
-    if (!spendCoins(cost)) return;
+    const answerLetters = getAnswerLetters(
+      getAnswer(currentLevelData)
+    );
 
-    const answerLetters = getAnswerLetters(getAnswer(currentLevelData));
     const neededCounts = new Map();
 
     answerLetters.forEach((letter) => {
-      neededCounts.set(letter, (neededCounts.get(letter) || 0) + 1);
+      neededCounts.set(
+        letter,
+        (neededCounts.get(letter) || 0) + 1
+      );
     });
 
     selectedLetters.forEach((item) => {
       const count = neededCounts.get(item.letter) || 0;
-      neededCounts.set(item.letter, Math.max(0, count - 1));
+
+      neededCounts.set(
+        item.letter,
+        Math.max(0, count - 1)
+      );
     });
 
+    const removable = [];
+
     availableLetters.forEach((item) => {
-      if (selectedLetters.some((selected) => selected.id === item.id)) return;
+      if (
+        selectedLetters.some(
+          (selected) => selected.id === item.id
+        )
+      ) {
+        return;
+      }
+
       if (removedLetters.has(item.id)) return;
 
       const count = neededCounts.get(item.letter) || 0;
@@ -753,32 +975,41 @@
       if (count > 0) {
         neededCounts.set(item.letter, count - 1);
       } else {
-        removedLetters.add(item.id);
+        removable.push(item.id);
       }
     });
 
+    if (!removable.length) {
+      showToast("لا توجد حروف زائدة لحذفها.");
+      return;
+    }
+
+    if (!spendCoins(HINT_COSTS.remove)) return;
+
+    removable.forEach((id) => removedLetters.add(id));
+
     renderLetterBank();
+
     showToast("تم حذف الحروف الزائدة.");
   }
 
   function showTextHint() {
     if (!currentLevelData || locked) return;
 
-    const cost = HINT_COSTS.text;
-    if (!spendCoins(cost)) return;
-
     const hint = currentLevelData.hint;
 
     if (!hint) {
-      save.coins += cost;
-      persist();
-      updateBalances();
       showToast("لا يوجد تلميح نصي لهذه المرحلة.");
       return;
     }
 
+    if (!spendCoins(HINT_COSTS.text)) return;
+
     openDialog("تلميح", String(hint), [
-      { label: "متابعة اللعب", primary: true }
+      {
+        label: "متابعة اللعب",
+        primary: true
+      }
     ]);
   }
 
@@ -787,23 +1018,36 @@
 
     if (!elements.levelMap) return;
 
-    const totalPages = Math.ceil(TOTAL_LEVELS / LEVELS_PER_PAGE);
+    const totalPages = Math.ceil(
+      TOTAL_LEVELS / LEVELS_PER_PAGE
+    );
+
     save.levelMapPage = Math.min(
       Math.max(0, save.levelMapPage),
       totalPages - 1
     );
 
-    const start = save.levelMapPage * LEVELS_PER_PAGE + 1;
-    const end = Math.min(TOTAL_LEVELS, start + LEVELS_PER_PAGE - 1);
+    const start =
+      save.levelMapPage * LEVELS_PER_PAGE + 1;
+
+    const end = Math.min(
+      TOTAL_LEVELS,
+      start + LEVELS_PER_PAGE - 1
+    );
 
     elements.levelMap.replaceChildren();
 
     for (let id = start; id <= end; id++) {
       const button = document.createElement("button");
+
       button.type = "button";
       button.className = "map-level";
       button.textContent = id.toLocaleString("ar");
-      button.setAttribute("aria-label", `المرحلة ${id}`);
+
+      button.setAttribute(
+        "aria-label",
+        `المرحلة ${id}`
+      );
 
       const completed = save.completedLevels.includes(id);
       const current = id === save.currentLevel;
@@ -811,11 +1055,16 @@
 
       if (completed) button.classList.add("completed");
       if (current) button.classList.add("current");
+
       if (!unlocked) {
         button.classList.add("locked");
         button.disabled = true;
-        button.textContent = "🔒";
-        button.setAttribute("aria-label", `المرحلة ${id} مقفولة`);
+        button.textContent = "مقفلة";
+
+        button.setAttribute(
+          "aria-label",
+          `المرحلة ${id} مقفولة`
+        );
       }
 
       button.addEventListener("click", () => {
@@ -823,6 +1072,7 @@
           showToast("حل المرحلة السابقة أولًا.");
           return;
         }
+
         loadLevel(id);
       });
 
@@ -837,15 +1087,23 @@
     const previousButton = $("#previous-level-page");
     const nextButton = $("#next-level-page");
 
-    if (previousButton) previousButton.disabled = save.levelMapPage <= 0;
-    if (nextButton) nextButton.disabled = save.levelMapPage >= totalPages - 1;
+    if (previousButton) {
+      previousButton.disabled = save.levelMapPage <= 0;
+    }
+
+    if (nextButton) {
+      nextButton.disabled =
+        save.levelMapPage >= totalPages - 1;
+    }
 
     updateBalances();
     persist();
   }
 
   function changeMapPage(direction) {
-    const totalPages = Math.ceil(TOTAL_LEVELS / LEVELS_PER_PAGE);
+    const totalPages = Math.ceil(
+      TOTAL_LEVELS / LEVELS_PER_PAGE
+    );
 
     save.levelMapPage = Math.min(
       totalPages - 1,
@@ -862,9 +1120,13 @@
       return;
     }
 
-    if (type === "reveal") revealHint();
-    else if (type === "remove") removeExtraLetters();
-    else if (type === "text") showTextHint();
+    if (type === "reveal") {
+      revealHint();
+    } else if (type === "remove") {
+      removeExtraLetters();
+    } else if (type === "text") {
+      showTextHint();
+    }
 
     showScreen("game-screen");
   }
@@ -874,14 +1136,24 @@
       "إعادة ضبط التقدم",
       "هل تريد حذف تقدمك ورصيدك المحفوظ؟ لا يمكن التراجع عن هذه العملية.",
       [
-        { label: "إلغاء" },
+        {
+          label: "إلغاء"
+        },
         {
           label: "إعادة الضبط",
           primary: true,
           run: () => {
             save = defaultSave();
+
             persist();
             updateBalances();
+
+            currentLevelData = null;
+            selectedLetters = [];
+            availableLetters = [];
+            removedLetters = new Set();
+            locked = false;
+
             renderMap();
             showToast("تمت إعادة ضبط التقدم.");
           }
@@ -930,7 +1202,10 @@
 
     $("#check-answer-button")?.addEventListener("click", checkAnswer);
 
-    $("#remove-letters-button")?.addEventListener("click", removeExtraLetters);
+    $("#remove-letters-button")?.addEventListener(
+      "click",
+      removeExtraLetters
+    );
 
     $("#previous-level-page")?.addEventListener("click", () => {
       changeMapPage(-1);
@@ -950,7 +1225,10 @@
       persist();
     });
 
-    $("#reset-progress-button")?.addEventListener("click", resetProgress);
+    $("#reset-progress-button")?.addEventListener(
+      "click",
+      resetProgress
+    );
 
     document.querySelectorAll(".nav-button").forEach((button) => {
       button.addEventListener("click", () => {
@@ -967,6 +1245,7 @@
           } else {
             showScreen("game-screen");
           }
+
           return;
         }
 
@@ -974,18 +1253,24 @@
       });
     });
 
-    document.querySelectorAll(".purchase-hint-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        buyHint(button.dataset.hint);
-      });
-    });
+    document.querySelectorAll(".purchase-hint-button").forEach(
+      (button) => {
+        button.addEventListener("click", () => {
+          buyHint(button.dataset.hint);
+        });
+      }
+    );
 
     elements.dialogOverlay?.addEventListener("click", (event) => {
-      if (event.target === elements.dialogOverlay) closeDialog();
+      if (event.target === elements.dialogOverlay) {
+        closeDialog();
+      }
     });
 
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeDialog();
+      if (event.key === "Escape") {
+        closeDialog();
+      }
 
       if (
         event.key === "Enter" &&
@@ -1000,8 +1285,13 @@
     const soundToggle = $("#sound-toggle");
     const vibrationToggle = $("#vibration-toggle");
 
-    if (soundToggle) soundToggle.checked = save.soundEnabled;
-    if (vibrationToggle) vibrationToggle.checked = save.vibrationEnabled;
+    if (soundToggle) {
+      soundToggle.checked = save.soundEnabled;
+    }
+
+    if (vibrationToggle) {
+      vibrationToggle.checked = save.vibrationEnabled;
+    }
   }
 
   function initialize() {
@@ -1011,9 +1301,24 @@
     showScreen("home-screen");
 
     const firstLevel = getLevel(save.currentLevel);
+
     if (firstLevel) {
       loadLevel(save.currentLevel, false);
       showScreen("home-screen");
+    } else {
+      console.warn(
+        "لم يتم العثور على المرحلة الحالية عند بدء اللعبة.",
+        {
+          currentLevel: save.currentLevel,
+          levelsLoaderExists: Boolean(window.LevelsLoader),
+          loadedLevelCount:
+            window.LevelsLoader?.getLoadedCount?.() ?? 0,
+          availableLevels:
+            Array.isArray(window.WORD_PUZZLE_LEVELS)
+              ? window.WORD_PUZZLE_LEVELS.length
+              : 0
+        }
+      );
     }
   }
 
@@ -1021,7 +1326,8 @@
     loadLevel,
     renderMap,
     showScreen,
-    getSave: () => structuredClone(save),
+    getSave: () =>
+      JSON.parse(JSON.stringify(save)),
     totalLevels: TOTAL_LEVELS
   };
 
