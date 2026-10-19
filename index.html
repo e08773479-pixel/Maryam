@@ -2,226 +2,1265 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080b14">
-<meta name="description" content="MIKA CHAT — مساحة ذكية للمحادثة والإبداع والعمل.">
-<title>MIKA CHAT — ميكا شات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090b12">
+<meta name="description" content="MIKA CHAT — مساحة ذكية للمحادثة والإبداع والتفكير.">
+<title>MIKA CHAT — مساحتك الذكية</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#090b12;
+  --bg2:#0e111b;
+  --panel:#111521;
+  --panel2:#171c2a;
+  --panel3:#202638;
+  --text:#f2f4ff;
+  --muted:#969eb5;
+  --border:rgba(255,255,255,.085);
+  --accent:#8b7bff;
+  --accent2:#51d9ff;
+  --green:#6be6bc;
+  --danger:#ff6d87;
+  --shadow:0 24px 80px rgba(0,0,0,.3);
+  --radius:22px;
+  --sidebar-width:285px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;min-height:100%;font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text)}
+body{overflow:hidden}
+button,input,textarea{font:inherit}
+button{color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
+button:disabled{opacity:.45;cursor:not-allowed}
+svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+button svg{pointer-events:none}
+::selection{background:rgba(139,123,255,.35)}
+.hidden{display:none!important}
+.app{display:flex;width:100%;height:100dvh;min-height:0;background:var(--bg)}
+.sidebar{
+  width:var(--sidebar-width);flex:0 0 var(--sidebar-width);
+  display:flex;flex-direction:column;gap:18px;padding:22px 16px;
+  background:linear-gradient(180deg,#111521,#0d1019);
+  border-left:1px solid var(--border);z-index:20;
+  transition:transform .28s ease;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:3px 5px 15px}
+.brand-mark{
+  width:44px;height:44px;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(140deg,#9d8aff,#6153e8 60%,#39d9ee);
+  box-shadow:0 5px 28px rgba(124,103,255,.28);
+  position:relative;overflow:hidden;
+}
+.brand-mark:before{content:"";position:absolute;width:70px;height:15px;background:#fff;opacity:.18;transform:rotate(-45deg);top:7px;right:-30px}
+.brand-mark svg{width:26px;height:26px;stroke:white;stroke-width:2.1;position:relative}
+.brand-name{font-family:"Inter","Cairo",sans-serif;font-size:20px;font-weight:800;letter-spacing:-.8px;direction:ltr}
+.brand-name span{background:linear-gradient(90deg,#a79bff,#65e5ff);color:transparent;background-clip:text}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1.7px;margin-top:1px;direction:ltr}
+.icon-button,.plain-button{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  border:1px solid var(--border);background:rgba(255,255,255,.035);
+  border-radius:13px;transition:background .2s,border-color .2s,transform .2s;
+}
+.icon-button{width:42px;height:42px;flex-shrink:0}
+.icon-button:hover,.plain-button:hover{background:var(--panel3);border-color:rgba(139,123,255,.45)}
+.icon-button:active,.plain-button:active{transform:scale(.97)}
+.new-chat{
+  width:100%;height:47px;border:1px solid rgba(166,152,255,.27);
+  border-radius:15px;background:linear-gradient(110deg,rgba(139,123,255,.19),rgba(81,217,255,.07));
+  display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;
+}
+.new-chat:hover{background:linear-gradient(110deg,rgba(139,123,255,.3),rgba(81,217,255,.13))}
+.side-search{position:relative}
+.side-search svg{position:absolute;right:12px;top:12px;width:18px;color:var(--muted)}
+.side-search input{
+  width:100%;height:43px;border:1px solid var(--border);border-radius:13px;
+  background:rgba(255,255,255,.035);color:var(--text);padding:0 39px 0 12px;outline:none;
+}
+.side-search input:focus{border-color:rgba(139,123,255,.65)}
+.side-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:0 7px}
+.side-label span:last-child{font-variant-numeric:tabular-nums}
+.history-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:5px}
+.history-list::-webkit-scrollbar,.messages::-webkit-scrollbar{width:5px}
+.history-list::-webkit-scrollbar-thumb,.messages::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:8px}
+.history-empty{padding:25px 10px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}
+.history-item{
+  min-height:44px;display:flex;align-items:center;gap:9px;padding:8px 10px;
+  border:1px solid transparent;border-radius:12px;cursor:pointer;color:#cbd0e1;
+  transition:background .18s;position:relative;
+}
+.history-item:hover,.history-item.active{background:rgba(255,255,255,.055)}
+.history-item.active{border-color:rgba(139,123,255,.18)}
+.history-item>svg{width:17px;height:17px;color:var(--muted)}
+.history-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.history-delete{border:0;background:none;color:var(--muted);padding:3px 6px;opacity:0;font-size:18px;border-radius:7px}
+.history-item:hover .history-delete,.history-item.active .history-delete{opacity:1}
+.history-delete:hover{color:var(--danger);background:rgba(255,109,135,.1)}
+.side-bottom{border-top:1px solid var(--border);padding-top:14px;display:grid;gap:8px}
+.profile-button{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:1px solid transparent;background:transparent;padding:9px;border-radius:14px}
+.profile-button:hover{background:rgba(255,255,255,.04)}
+.avatar{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(140deg,#353052,#222b48);color:#c4c0ff;font-weight:800}
+.profile-info{flex:1;min-width:0}
+.profile-info strong{display:block;font-size:12px}
+.profile-info small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.profile-button>svg{color:var(--muted);width:18px}
+.workspace{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;isolation:isolate}
+.workspace:before{
+  content:"";position:absolute;width:420px;height:420px;top:-260px;left:15%;
+  background:radial-gradient(circle,rgba(112,91,255,.11),transparent 68%);pointer-events:none;z-index:-1
+}
+.topbar{height:76px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid var(--border);gap:15px}
+.topbar-right,.topbar-left{display:flex;align-items:center;gap:12px}
+.mobile-menu{display:none}
+.model-picker{display:flex;align-items:center;gap:9px;background:transparent;border:1px solid transparent;border-radius:13px;padding:8px 12px}
+.model-picker:hover{background:rgba(255,255,255,.04);border-color:var(--border)}
+.model-symbol{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,rgba(139,123,255,.23),rgba(81,217,255,.1));color:#b7adff}
+.model-title{font-size:13px;font-weight:800}
+.model-subtitle{font-size:10px;color:var(--muted);margin-top:1px}
+.status-pill{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);padding:8px 11px;border:1px solid var(--border);border-radius:30px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#e6ba66;box-shadow:0 0 12px rgba(230,186,102,.3)}
+.topbar .icon-button{width:39px;height:39px}
+.main-scroll{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.welcome{
+  width:min(870px,100%);margin:auto;padding:35px 30px 30px;
+  animation:fadeUp .65s ease both;
+}
+.hero-orb{width:84px;height:84px;margin:0 auto 27px;position:relative;display:grid;place-items:center}
+.orb-ring{position:absolute;inset:0;border-radius:28px;transform:rotate(45deg);border:1px solid rgba(160,147,255,.38);animation:orbSpin 18s linear infinite}
+.orb-ring:before,.orb-ring:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#74dfff;box-shadow:0 0 20px #74dfff}
+.orb-ring:before{top:-4px;left:35px}
+.orb-ring:after{bottom:-4px;right:35px;background:#a597ff;box-shadow:0 0 20px #a597ff}
+.orb-core{width:59px;height:59px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,#9586ff,#6455dc 60%,#35c9e6);box-shadow:0 0 55px rgba(139,123,255,.28);position:relative}
+.orb-core svg{width:33px;height:33px;stroke:white;stroke-width:1.8}
+.eyebrow{text-align:center;font-size:11px;letter-spacing:2.4px;color:#aaa0ff;font-weight:700;direction:ltr}
+.hero-title{text-align:center;font-size:clamp(29px,4vw,46px);line-height:1.5;letter-spacing:-1.3px;margin:11px 0 8px;font-weight:800}
+.gradient-text{background:linear-gradient(100deg,#b6aaff 5%,#77dfff 55%,#c5a5ff 95%);background-clip:text;color:transparent}
+.hero-description{text-align:center;color:var(--muted);font-size:13px;line-height:2;max-width:530px;margin:0 auto 32px}
+.suggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 auto 25px;max-width:690px}
+.suggestion-card{
+  min-height:91px;display:flex;align-items:flex-start;gap:13px;padding:17px;
+  border:1px solid var(--border);border-radius:17px;text-align:right;
+  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  transition:transform .22s,border-color .22s,background .22s;
+}
+.suggestion-card:hover{transform:translateY(-3px);border-color:rgba(139,123,255,.4);background:rgba(139,123,255,.055)}
+.suggestion-icon{width:36px;height:36px;display:grid;place-items:center;flex-shrink:0;border-radius:12px;background:rgba(139,123,255,.12);color:#b7adff}
+.suggestion-icon.cyan{background:rgba(81,217,255,.09);color:#75dfff}
+.suggestion-copy strong{display:block;font-size:12px;margin:1px 0 5px}
+.suggestion-copy small{display:block;font-size:10px;color:var(--muted);line-height:1.8}
+.workspace-footer-note{text-align:center;color:#707991;font-size:10px;line-height:1.8}
+.chat-area{width:min(850px,100%);margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column}
+.messages{flex:1;min-height:0;overflow-y:auto;padding:28px 30px 20px;scroll-behavior:smooth}
+.message{display:flex;align-items:flex-start;gap:13px;margin:0 auto 27px;max-width:780px;animation:fadeUp .3s ease both}
+.message.user{flex-direction:row-reverse}
+.message-avatar{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:800}
+.message.assistant .message-avatar{background:linear-gradient(135deg,#8978ff,#43cde7);color:#fff}
+.message.user .message-avatar{background:var(--panel3);color:#e1deff}
+.message-body{min-width:0;flex:1}
+.message-heading{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
+.message-heading strong{font-size:12px}
+.message-heading time{font-size:10px;color:var(--muted)}
+.message-content{font-size:13px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere;color:#e1e5f2}
+.message.user .message-content{background:var(--panel2);border:1px solid var(--border);border-radius:17px 4px 17px 17px;padding:13px 16px;display:inline-block;max-width:100%}
+.message-actions{display:flex;gap:6px;margin-top:11px}
+.message-action{width:31px;height:31px;display:grid;place-items:center;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted)}
+.message-action:hover{background:var(--panel2);color:var(--text)}
+.message-action svg{width:16px;height:16px}
+.message-error{color:var(--danger);font-size:12px;line-height:1.9;margin-top:8px}
+.typing-dots{display:flex;gap:5px;padding:9px 0}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:#a99aff;animation:bounce 1s infinite ease-in-out}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+.composer-wrap{flex-shrink:0;padding:14px 24px max(18px,env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 75%,transparent)}
+.composer{width:min(850px,100%);margin:auto;border:1px solid rgba(172,160,255,.22);background:linear-gradient(145deg,#151927,#10131d);border-radius:23px;box-shadow:0 14px 50px rgba(0,0,0,.16);transition:border-color .2s,box-shadow .2s}
+.composer:focus-within{border-color:rgba(139,123,255,.58);box-shadow:0 14px 50px rgba(0,0,0,.18),0 0 0 3px rgba(139,123,255,.055)}
+.prompt{display:block;width:100%;min-height:62px;max-height:180px;resize:none;outline:none;border:0;background:transparent;color:var(--text);padding:20px 20px 10px;line-height:1.9;font-size:13px}
+.prompt::placeholder{color:#777f97}
+.composer-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px 12px}
+.tool-group{display:flex;align-items:center;gap:6px;min-width:0}
+.tool-button{height:36px;min-width:36px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:11px}
+.tool-button:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.tool-button.active{color:#c2b7ff;background:rgba(139,123,255,.13);border-color:rgba(139,123,255,.2)}
+.tool-button svg{width:18px;height:18px}
+.char-counter{font-size:10px;color:#737b92;direction:ltr;white-space:nowrap}
+.send-button{width:39px;height:39px;display:grid;place-items:center;border:0;border-radius:13px;background:linear-gradient(140deg,#a292ff,#6555e6);color:white;box-shadow:0 5px 17px rgba(115,91,255,.23);transition:transform .2s,filter .2s}
+.send-button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.send-button svg{width:19px;height:19px}
+.disclaimer{text-align:center;font-size:9px;color:#717990;line-height:1.9;margin:9px auto 0;max-width:700px}
+.attachments-preview{display:flex;flex-wrap:wrap;gap:7px;padding:0 15px 10px}
+.attachment-chip{display:flex;align-items:center;gap:7px;max-width:100%;padding:7px 9px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);font-size:10px}
+.attachment-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attachment-chip button{border:0;background:none;color:var(--muted);font-size:17px;padding:0 2px}
+.toast-container{position:fixed;z-index:100;bottom:100px;left:20px;display:grid;gap:8px;pointer-events:none}
+.toast{max-width:min(340px,calc(100vw - 40px));padding:12px 15px;border-radius:13px;background:#202638;border:1px solid var(--border);box-shadow:var(--shadow);font-size:12px;line-height:1.8;animation:fadeUp .2s ease both;pointer-events:auto}
+.toast.error{border-color:rgba(255,109,135,.35)}
+.toast.success{border-color:rgba(107,230,188,.3)}
+.modal-backdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px)}
+.modal{width:min(480px,100%);max-height:85dvh;overflow:auto;padding:23px;border:1px solid var(--border);border-radius:23px;background:var(--panel);box-shadow:var(--shadow);animation:fadeUp .25s ease both}
+.modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.modal-header h2{font-size:18px;margin:0}
+.modal-description{font-size:12px;line-height:1.9;color:var(--muted);margin:0 0 18px}
+.settings-group{display:grid;gap:8px;margin:17px 0}
+.settings-group label{font-size:12px;color:#c7cce0}
+.settings-group input,.settings-group select{width:100%;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--text);padding:0 12px}
+.modal-primary{width:100%;height:45px;margin-top:10px;border:0;border-radius:13px;background:linear-gradient(100deg,#9382ff,#6556e8);font-weight:700}
+.plan-card{padding:14px;border:1px solid var(--border);border-radius:15px;margin-top:10px}
+.plan-card strong{font-size:13px}
+.plan-card p{font-size:11px;color:var(--muted);line-height:1.9;margin:8px 0}
+.plan-card small{color:#a99aff;font-size:10px}
+.mobile-overlay{display:none}
+.light-theme{
+  color-scheme:light;--bg:#f5f6fc;--bg2:#fff;--panel:#fff;--panel2:#f0f1f8;
+  --panel3:#e7e9f4;--text:#1a1d2c;--muted:#727a90;--border:rgba(34,42,70,.11);
+  --shadow:0 24px 80px rgba(34,42,70,.12);
+}
+.light-theme .sidebar{background:linear-gradient(180deg,#fff,#f3f4fa)}
+.light-theme .composer{background:linear-gradient(145deg,#fff,#f8f8fd)}
+.light-theme .message-content{color:#303448}
+.light-theme .hero-description,.light-theme .workspace-footer-note{color:#727a90}
+.light-theme .history-item{color:#363b50}
+.light-theme .toast{background:#fff}
+.light-theme .settings-group input,.light-theme .settings-group select{background:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes orbSpin{to{transform:rotate(405deg)}}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-5px);opacity:1}}
+@media(min-width:1500px){:root{--sidebar-width:315px}.welcome{width:min(950px,100%)}.chat-area{width:min(900px,100%)}}
+@media(max-width:900px){
+  :root{--sidebar-width:285px}
+  .sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-105%);height:100dvh;box-shadow:var(--shadow)}
+  body.sidebar-open .sidebar{transform:translateX(0)}
+  .mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19}
+  body.sidebar-open .mobile-overlay{display:block}
+  .mobile-menu{display:inline-flex}
+  .topbar{padding:0 18px;height:67px}
+  .welcome{padding:30px 20px}
+  .messages{padding:23px 20px}
+}
+@media(max-width:600px){
+  .topbar{padding:0 12px;height:62px;gap:7px}
+  .topbar-right,.topbar-left{gap:6px}
+  .model-picker{padding:5px 7px;gap:7px}
+  .model-symbol{width:29px;height:29px}
+  .model-title{font-size:12px}
+  .model-subtitle{font-size:9px}
+  .status-pill{font-size:0;padding:10px}
+  .status-dot{width:7px;height:7px}
+  .topbar .icon-button{width:36px;height:36px}
+  .welcome{padding:23px 15px 20px}
+  .hero-orb{width:68px;height:68px;margin-bottom:22px}
+  .orb-core{width:49px;height:49px;border-radius:17px}
+  .orb-core svg{width:27px;height:27px}
+  .hero-title{font-size:30px;letter-spacing:-.7px;margin-top:9px}
+  .hero-description{font-size:12px;margin-bottom:24px}
+  .suggestions{gap:8px;margin-bottom:19px}
+  .suggestion-card{min-height:98px;padding:11px;gap:8px;flex-direction:column}
+  .suggestion-icon{width:30px;height:30px;border-radius:10px}
+  .suggestion-icon svg{width:17px;height:17px}
+  .suggestion-copy strong{font-size:11px}
+  .suggestion-copy small{font-size:9px}
+  .messages{padding:20px 13px}
+  .message{gap:9px;margin-bottom:23px}
+  .message-avatar{width:31px;height:31px;border-radius:10px}
+  .message-content{font-size:12px}
+  .composer-wrap{padding:9px 10px max(12px,env(safe-area-inset-bottom))}
+  .composer{border-radius:19px}
+  .prompt{min-height:55px;padding:15px 14px 7px;font-size:13px}
+  .composer-tools{padding:6px 8px 9px}
+  .tool-button{height:34px;min-width:33px;padding:0 7px}
+  .tool-button .tool-label{display:none}
+  .char-counter{font-size:9px}
+  .send-button{width:36px;height:36px}
+  .disclaimer{font-size:9px;margin-top:7px}
+  .toast-container{bottom:95px;left:10px}
+}
+@media(max-height:650px) and (min-width:601px){
+  .welcome{padding-top:15px;padding-bottom:15px}
+  .hero-orb{width:58px;height:58px;margin-bottom:12px}
+  .orb-core{width:43px;height:43px}
+  .hero-title{font-size:30px;margin:6px 0}
+  .hero-description{margin-bottom:15px}
+  .suggestion-card{min-height:72px;padding:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
 </head>
+
 <body>
-
-<div class="app" id="app">
-
-  <aside class="sidebar" id="sidebar">
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="قائمة المحادثات">
     <div class="brand">
-      <div class="brand-logo">
-        <svg viewBox="0 0 48 48" aria-label="MIKA CHAT">
-          <defs>
-            <linearGradient id="brandGradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#72efff"/>
-              <stop offset="52%" stop-color="#8b7bff"/>
-              <stop offset="100%" stop-color="#d77cff"/>
-            </linearGradient>
-          </defs>
-          <path d="M24 3.5 29.2 16l12.3 5.8-12.3 5.4L24 40l-5.2-12.8L6.5 21.8 18.8 16 24 3.5Z" fill="url(#brandGradient)"/>
-          <path d="m34 29 2.6 6.1 6 2.6-6 2.5-2.6 6.2-2.5-6.2-6.1-2.5 6.1-2.6L34 29Z" fill="#72efff" transform="translate(-2 -5) scale(.78)"/>
-        </svg>
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3.2 14.4 9.6 20.8 12l-6.4 2.4L12 20.8l-2.4-6.4L3.2 12l6.4-2.4L12 3.2Z"/><path d="m18.5 3 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
       </div>
-      <div class="brand-copy">
-        <strong>MIKA <span>CHAT</span></strong>
-        <small>YOUR AI SPACE</small>
+      <div>
+        <div class="brand-name">MIKA <span>CHAT</span></div>
+        <div class="brand-sub">YOUR INTELLIGENT SPACE</div>
       </div>
-      <button class="icon-btn sidebar-close" id="closeSidebar" aria-label="إغلاق القائمة">×</button>
     </div>
 
-    <button class="new-chat-btn" id="newChat">
-      <span class="new-chat-symbol">＋</span>
+    <button class="new-chat" id="newChat" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       <span>محادثة جديدة</span>
-      <span class="shortcut">NEW</span>
     </button>
 
-    <div class="sidebar-search">
-      <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-      <input id="searchChats" type="search" placeholder="ابحث عن محادثة..." autocomplete="off">
-      <kbd>/</kbd>
-    </div>
+    <label class="side-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+      <input id="searchChats" type="search" placeholder="ابحث في محادثاتك..." autocomplete="off" aria-label="ابحث في المحادثات">
+    </label>
 
-    <div class="history-heading">
-      <span>مساحة محادثاتك</span>
-      <span class="history-count" id="historyCount">0</span>
-    </div>
-
+    <div class="side-label"><span>محادثاتك</span><span id="historyCount">0</span></div>
     <div class="history-list" id="historyList">
-      <div class="history-empty" id="historyEmpty">
-        <span class="empty-history-icon">◷</span>
-        <p>محادثاتك هتظهر هنا</p>
-        <small>ابدأ محادثة جديدة علشان تنطلق.</small>
-      </div>
+      <div class="history-empty">محادثاتك هتظهر هنا<br>ابدأ محادثة جديدة علشان تنطلق.</div>
     </div>
 
-    <div class="sidebar-bottom">
-      <div class="plan-card">
-        <div class="plan-icon">✧</div>
-        <div>
-          <strong>اكتشف إمكانيات ميكا</strong>
-          <p>مساحة أكبر لأفكارك</p>
-        </div>
-        <button id="openPlans" aria-label="عرض الخطط">↗</button>
-      </div>
-
-      <button class="profile-button" id="openSettings">
-        <div class="avatar">M</div>
-        <div class="profile-info">
-          <strong>ضيف ميكا</strong>
-          <small>تجربة محلية</small>
-        </div>
-        <span class="profile-menu">•••</span>
+    <div class="side-bottom">
+      <button class="profile-button" id="openSettings" type="button">
+        <span class="avatar" id="profileAvatar">م</span>
+        <span class="profile-info"><strong id="profileName">ضيف ميكا</strong><small>الإعدادات والتخصيص</small></span>
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 3.1-.2-.1a1.7 1.7 0 0 0-1.8.1 1.7 1.7 0 0 0-.8 1.5v.2h-3.6v-.2a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.8.3l-.1.1-3.1-1.8.1-.2a1.7 1.7 0 0 0-.1-1.8A1.7 1.7 0 0 0 4 15.8h-.2v-3.6H4a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1L7 6.1l.2.1a1.7 1.7 0 0 0 1.8-.1A1.7 1.7 0 0 0 9.8 4v-.2h3.6V4a1.7 1.7 0 0 0 1.1 1.6 1.7 1.7 0 0 0 1.8-.3l.1-.1 3.1 1.8-.1.2a1.7 1.7 0 0 0 .1 1.8 1.7 1.7 0 0 0 1.5.8h.2v3.6h-.2a1.7 1.7 0 0 0-1.6 1.6Z"/></svg>
       </button>
     </div>
   </aside>
 
-  <main class="main-panel">
+  <div class="mobile-overlay" id="mobileOverlay"></div>
+
+  <main class="workspace">
     <header class="topbar">
       <div class="topbar-right">
-        <button class="icon-btn menu-btn" id="openSidebar" aria-label="فتح القائمة">
+        <button class="icon-button mobile-menu" id="openSidebar" type="button" aria-label="فتح القائمة">
           <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-        <div class="mobile-brand">
-          <div class="mini-logo">
-            <svg viewBox="0 0 48 48"><path d="M24 3.5 29.2 16l12.3 5.8-12.3 5.4L24 40l-5.2-12.8L6.5 21.8 18.8 16 24 3.5Z" fill="url(#miniGradient)"/><defs><linearGradient id="miniGradient"><stop stop-color="#72efff"/><stop offset="1" stop-color="#b27bff"/></linearGradient></defs></svg>
-          </div>
-          <strong>MIKA <span>CHAT</span></strong>
-        </div>
-        <div class="model-selector">
-          <span class="model-dot"></span>
-          <span>ميكا شات</span>
-          <span class="model-badge">AI</span>
-          <span class="chevron">⌄</span>
-        </div>
+        <button class="model-picker" type="button" id="modelInfo" aria-label="معلومات عن ميكا شات">
+          <span class="model-symbol"><svg viewBox="0 0 24 24"><path d="M12 3.2 14.4 9.6 20.8 12l-6.4 2.4L12 20.8l-2.4-6.4L3.2 12l6.4-2.4L12 3.2Z"/></svg></span>
+          <span><span class="model-title">MIKA CHAT</span><span class="model-subtitle" style="display:block">مساعدك الذكي</span></span>
+          <svg viewBox="0 0 24 24" style="width:15px;color:var(--muted)"><path d="m7 10 5 5 5-5"/></svg>
+        </button>
       </div>
       <div class="topbar-left">
-        <div class="connection-status"><span></span> واجهة تجريبية</div>
-        <button class="icon-btn" id="themeToggle" aria-label="تغيير المظهر" title="تغيير المظهر">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+        <span class="status-pill" id="serviceStatus"><span class="status-dot"></span><span id="statusText">الخدمة غير متصلة</span></span>
+        <button class="icon-button" id="themeToggle" type="button" aria-label="تغيير المظهر" title="تغيير المظهر">
+          <svg viewBox="0 0 24 24"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg>
         </button>
-        <button class="share-btn" id="shareChat"><svg viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M5 13v7h14v-7"/></svg><span>مشاركة</span></button>
       </div>
     </header>
 
-    <section class="workspace" id="workspace">
-      <div class="welcome-screen" id="welcomeScreen">
-
-        <div class="welcome-decoration decoration-one"></div>
-        <div class="welcome-decoration decoration-two"></div>
-
-        <div class="welcome-content">
-          <div class="hero-mark">
-            <div class="hero-mark-glow"></div>
-            <svg viewBox="0 0 100 100" role="img" aria-label="شعار ميكا شات">
-              <defs>
-                <linearGradient id="heroGradient" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="#80f2ff"/>
-                  <stop offset="50%" stop-color="#9c8cff"/>
-                  <stop offset="100%" stop-color="#f09bff"/>
-                </linearGradient>
-              </defs>
-              <path d="M50 8 61 36 90 49 61 61 50 91 39 61 10 49 39 36 50 8Z" fill="url(#heroGradient)"/>
-              <path d="M75 11 79 21 89 25 79 29 75 39 71 29 61 25 71 21Z" fill="#c5f8ff"/>
-              <circle cx="50" cy="49" r="6" fill="#fff" opacity=".85"/>
-            </svg>
-          </div>
-
-          <div class="eyebrow"><span></span> مساحة جديدة للأفكار <span></span></div>
-
-          <h1>أهلاً بيك في <span class="gradient-text">ميكا شات</span></h1>
-          <p class="hero-description">كل فكرة ليها بداية. اكتب اللي في بالك، واسأل، واستكشف، وابدأ حوّل أفكارك لحاجة ملموسة.</p>
-
-          <div class="suggestions" id="suggestions">
-            <button class="suggestion-card" data-prompt="ساعدني أتعلم مهارة جديدة من الصفر، واعمل لي خطة بسيطة">
-              <span class="suggestion-icon purple">✧</span>
-              <span class="suggestion-text"><strong>اتعلم حاجة جديدة</strong><small>خطة واضحة خطوة بخطوة</small></span>
-              <span class="suggestion-arrow">↙</span>
-            </button>
-            <button class="suggestion-card" data-prompt="ساعدني أكتب كود لموقع احترافي، واشرح لي طريقة تشغيله">
-              <span class="suggestion-icon cyan">&lt;/&gt;</span>
-              <span class="suggestion-text"><strong>اكتب كود وطور مشروعك</strong><small>من الفكرة للتنفيذ</small></span>
-              <span class="suggestion-arrow">↙</span>
-            </button>
-            <button class="suggestion-card" data-prompt="ساعدني أنظم يومي وأعمل جدول عملي يناسب أهدافي">
-              <span class="suggestion-icon pink">◷</span>
-              <span class="suggestion-text"><strong>نظّم يومك</strong><small>خلي وقتك في صالحك</small></span>
-              <span class="suggestion-arrow">↙</span>
-            </button>
-            <button class="suggestion-card" data-prompt="اقترح عليّ أفكار مشروع رقمي مبتكر، واشرح مميزات كل فكرة">
-              <span class="suggestion-icon green">◇</span>
-              <span class="suggestion-text"><strong>اكتشف أفكار جديدة</strong><small>فكّر بطريقة مختلفة</small></span>
-              <span class="suggestion-arrow">↙</span>
-            </button>
+    <div class="main-scroll">
+      <section class="welcome" id="welcomeScreen">
+        <div class="hero-orb" aria-hidden="true">
+          <div class="orb-ring"></div>
+          <div class="orb-core">
+            <svg viewBox="0 0 24 24"><path d="M12 2.5 14.7 9.3 21.5 12l-6.8 2.7L12 21.5l-2.7-6.8L2.5 12l6.8-2.7L12 2.5Z"/><path d="m18.5 3 .6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z"/></svg>
           </div>
         </div>
-      </div>
+        <div class="eyebrow">A NEW WAY TO THINK</div>
+        <h1 class="hero-title">أهلًا بيك في <span class="gradient-text">ميكا شات</span></h1>
+        <p class="hero-description">مساحتك للأفكار والأسئلة والإبداع. ابدأ من أي نقطة، واكتب اللي في بالك، وخلي رحلتك تبدأ.</p>
 
-      <div class="messages-container hidden" id="messagesContainer">
-        <div class="messages-list" id="messagesList"></div>
-      </div>
-    </section>
+        <div class="suggestions">
+          <button class="suggestion-card" type="button" data-prompt="ساعدني أتعلم مهارة جديدة، وضع لي خطة عملية للمبتدئين.">
+            <span class="suggestion-icon"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3Z"/><path d="M9 22h6M9 16h6"/></svg></span>
+            <span class="suggestion-copy"><strong>اتعلم حاجة جديدة</strong><small>خطة واضحة خطوة بخطوة</small></span>
+          </button>
+          <button class="suggestion-card" type="button" data-prompt="ساعدني أكتب فكرة إبداعية مميزة، وابدأ باقتراحات مختلفة.">
+            <span class="suggestion-icon cyan"><svg viewBox="0 0 24 24"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/><path d="m19 16 .9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/></svg></span>
+            <span class="suggestion-copy"><strong>ابتكر فكرة جديدة</strong><small>حوّل أفكارك لحاجة مميزة</small></span>
+          </button>
+          <button class="suggestion-card" type="button" data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة، مع أمثلة من الحياة اليومية.">
+            <span class="suggestion-icon cyan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 4.3 2c-1.2 1-1.8 1.4-1.8 3"/><path d="M12 17h.01"/></svg></span>
+            <span class="suggestion-copy"><strong>افهم موضوع صعب</strong><small>شرح بسيط وأمثلة مفيدة</small></span>
+          </button>
+          <button class="suggestion-card" type="button" data-prompt="ساعدني أكتب كودًا منظمًا، واشرح لي طريقة عمله واختباره.">
+            <span class="suggestion-icon"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span>
+            <span class="suggestion-copy"><strong>برمجة ومشروعات</strong><small>من الفكرة إلى التنفيذ</small></span>
+          </button>
+        </div>
+        <p class="workspace-footer-note">ابدأ سؤالك من صندوق الكتابة بالأسفل<br>يتم حفظ المحادثات على هذا الجهاز فقط في هذه النسخة.</p>
+      </section>
 
-    <footer class="composer-area">
-      <div class="composer-shell" id="composerShell">
-        <div class="attachment-preview hidden" id="attachmentPreview"></div>
+      <section class="chat-area hidden" id="messagesContainer" aria-label="المحادثة">
+        <div class="messages" id="messagesList" aria-live="polite"></div>
+      </section>
+    </div>
 
-        <textarea id="promptInput" rows="1" maxlength="12000" placeholder="اكتب رسالتك لميكا شات..." aria-label="رسالتك"></textarea>
-
-        <div class="composer-toolbar">
-          <div class="composer-tools">
-            <button class="tool-btn" id="attachButton" title="إرفاق ملف" aria-label="إرفاق ملف">
-              <svg viewBox="0 0 24 24"><path d="m9 12.5 6.8-6.8a4 4 0 0 1 5.7 5.7l-9.2 9.2a6 6 0 0 1-8.5-8.5l9-9"/></svg>
-              <span>إرفاق</span>
+    <footer class="composer-wrap">
+      <form class="composer" id="composerForm">
+        <textarea class="prompt" id="promptInput" rows="1" maxlength="12000" placeholder="اكتب سؤالك هنا... اسأل، فكّر، ابتكر" aria-label="رسالتك" autocomplete="off"></textarea>
+        <div class="attachments-preview hidden" id="attachmentPreview"></div>
+        <div class="composer-tools">
+          <div class="tool-group">
+            <button class="tool-button" type="button" id="attachButton" title="إرفاق ملفات">
+              <svg viewBox="0 0 24 24"><path d="m21 11.5-8.5 8.5a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span class="tool-label">إرفاق</span>
             </button>
-            <input type="file" id="fileInput" hidden multiple accept="image/*,.pdf,.txt,.md,.csv,.json,.doc,.docx">
-            <button class="tool-btn" id="webSearchButton" title="البحث على الإنترنت" aria-label="البحث على الإنترنت">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-              <span>بحث ويب</span>
+            <input id="fileInput" type="file" multiple hidden>
+            <button class="tool-button" type="button" id="webSearchButton" aria-pressed="false" title="تفعيل البحث على الإنترنت">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4M4 11h14M11 4a12 12 0 0 1 0 14M11 4a12 12 0 0 0 0 14"/></svg><span class="tool-label">بحث</span>
             </button>
-            <button class="tool-btn" id="voiceButton" title="الإملاء الصوتي" aria-label="الإملاء الصوتي">
-              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8"/></svg>
-              <span>صوت</span>
+            <button class="tool-button" type="button" id="voiceButton" aria-pressed="false" title="الإملاء الصوتي">
+              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg><span class="tool-label">صوت</span>
             </button>
           </div>
-
-          <div class="composer-actions">
+          <div class="tool-group">
             <span class="char-counter" id="charCounter">0 / 12000</span>
-            <button class="send-btn" id="sendButton" aria-label="إرسال الرسالة" title="إرسال">
-              <svg viewBox="0 0 24 24"><path d="M12 19V5m-7 7 7-7 7 7"/></svg>
+            <button class="send-button" id="sendButton" type="submit" aria-label="إرسال الرسالة" title="إرسال الرسالة">
+              <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="composer-notice">ميكا شات ممكن يغلط أحيانًا. راجع المعلومات المهمة بنفسك.</div>
-      <div class="service-notice" id="serviceNotice" role="status" aria-live="polite"></div>
+      </form>
+      <p class="disclaimer" id="serviceNotice">قد تحتاج بعض الخصائص إلى اتصال بخدمات خارجية. لا تضع كلمات مرور أو بيانات سرية في المحادثة.</p>
     </footer>
   </main>
 </div>
 
-<div class="mobile-overlay hidden" id="mobileOverlay"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-<div class="modal-backdrop hidden" id="modalBackdrop">
-  <section class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-header">
-      <div><span class="modal-kicker">MIKA CHAT</span><h2 id="modalTitle">الإعدادات</h2></div>
-      <button class="icon-btn" id="closeModal" aria-label="إغلاق">×</button>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
+<div class="modal-backdrop hidden" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <section class="modal">
+    <header class="modal-header">
+      <h2 id="modalTitle">الإعدادات</h2>
+      <button class="icon-button" id="closeModal" type="button" aria-label="إغلاق النافذة">
+        <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </header>
+    <div id="modalBody"></div>
   </section>
 </div>
 
-<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+<script>
+"use strict";
 
-<script src="app.js" defer></script>
+(() => {
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+  const el = {
+    body: document.body,
+    sidebar: $("#sidebar"),
+    newChat: $("#newChat"),
+    search: $("#searchChats"),
+    history: $("#historyList"),
+    historyCount: $("#historyCount"),
+    prompt: $("#promptInput"),
+    form: $("#composerForm"),
+    send: $("#sendButton"),
+    welcome: $("#welcomeScreen"),
+    chat: $("#messagesContainer"),
+    messages: $("#messagesList"),
+    theme: $("#themeToggle"),
+    settings: $("#openSettings"),
+    closeModal: $("#closeModal"),
+    backdrop: $("#modalBackdrop"),
+    modalTitle: $("#modalTitle"),
+    modalBody: $("#modalBody"),
+    openSidebar: $("#openSidebar"),
+    overlay: $("#mobileOverlay"),
+    attach: $("#attachButton"),
+    files: $("#fileInput"),
+    attachmentPreview: $("#attachmentPreview"),
+    web: $("#webSearchButton"),
+    voice: $("#voiceButton"),
+    counter: $("#charCounter"),
+    notice: $("#serviceNotice"),
+    toast: $("#toastContainer"),
+    profileName: $("#profileName"),
+    profileAvatar: $("#profileAvatar"),
+    statusText: $("#statusText")
+  };
+
+  const CHAT_KEY = "mika_chat_conversations_v2";
+  const SETTINGS_KEY = "mika_chat_settings_v2";
+  const MAX_CHATS = 100;
+  const MAX_LENGTH = 12000;
+  const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  let conversations = [];
+  let activeId = null;
+  let files = [];
+  let searchEnabled = false;
+  let sending = false;
+  let recognition = null;
+  let listening = false;
+
+  let settings = { theme: "dark", name: "ضيف ميكا" };
+
+  function id() {
+    return crypto.randomUUID ? crypto.randomUUID() :
+      "mika-" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  function toast(message, type = "") {
+    const node = document.createElement("div");
+    node.className = "toast" + (type ? " " + type : "");
+    node.textContent = message;
+    el.toast.appendChild(node);
+    setTimeout(() => {
+      node.style.opacity = "0";
+      setTimeout(() => node.remove(), 250);
+    }, 3500);
+  }
+
+  function setNotice(message) {
+    el.notice.textContent = message ||
+      "قد تحتاج بعض الخصائص إلى اتصال بخدمات خارجية. لا تضع كلمات مرور أو بيانات سرية في المحادثة.";
+  }
+
+  function activeChat() {
+    return conversations.find(c => c.id === activeId) || null;
+  }
+
+  function makeTitle(text) {
+    const value = String(text || "").replace(/\s+/g, " ").trim();
+    return value.length > 38 ? value.slice(0, 38) + "…" : value || "محادثة جديدة";
+  }
+
+  function saveChats() {
+    try {
+      localStorage.setItem(CHAT_KEY, JSON.stringify(conversations.slice(0, MAX_CHATS)));
+    } catch {
+      toast("تعذر حفظ المحادثات. قد تكون مساحة التخزين ممتلئة.", "error");
+    }
+  }
+
+  function loadChats() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+      conversations = Array.isArray(saved) ? saved
+        .filter(c => c && typeof c.id === "string" && Array.isArray(c.messages))
+        .slice(0, MAX_CHATS) : [];
+    } catch {
+      conversations = [];
+    }
+    conversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    renderHistory();
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch {}
+  }
+
+  function loadSettings() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+      settings = {
+        theme: saved.theme === "light" ? "light" : "dark",
+        name: typeof saved.name === "string" ? saved.name.slice(0, 40) : "ضيف ميكا"
+      };
+    } catch {}
+    applyTheme();
+    updateProfile();
+  }
+
+  function applyTheme() {
+    el.body.classList.toggle("light-theme", settings.theme === "light");
+    const meta = $('meta[name="theme-color"]');
+    if (meta) meta.content = settings.theme === "light" ? "#f5f6fc" : "#090b12";
+  }
+
+  function updateProfile() {
+    el.profileName.textContent = settings.name || "ضيف ميكا";
+    el.profileAvatar.textContent = Array.from(settings.name || "م")[0];
+  }
+
+  function createChat() {
+    if (conversations.length >= MAX_CHATS) {
+      toast("وصلت للحد الأقصى للمحادثات المحلية.", "error");
+      return null;
+    }
+
+    const chat = {
+      id: id(),
+      title: "محادثة جديدة",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messages: []
+    };
+
+    conversations.unshift(chat);
+    activeId = chat.id;
+    saveChats();
+    renderHistory();
+    renderChat();
+    closeSidebar();
+    el.prompt.focus();
+    return chat;
+  }
+
+  function getOrCreateChat() {
+    return activeChat() || createChat();
+  }
+
+  function renderHistory() {
+    const query = el.search.value.trim().toLocaleLowerCase("ar");
+    const list = conversations.filter(chat =>
+      !query ||
+      chat.title.toLocaleLowerCase("ar").includes(query) ||
+      chat.messages.some(m => String(m.content || "").toLocaleLowerCase("ar").includes(query))
+    );
+
+    el.historyCount.textContent = conversations.length.toLocaleString("ar-EG");
+    el.history.replaceChildren();
+
+    if (!list.length) {
+      const empty = document.createElement("div");
+      empty.className = "history-empty";
+      empty.textContent = query ? "مفيش نتائج مطابقة لبحثك." :
+        "محادثاتك هتظهر هنا. ابدأ محادثة جديدة علشان تنطلق.";
+      el.history.appendChild(empty);
+      return;
+    }
+
+    list.forEach(chat => {
+      const row = document.createElement("div");
+      row.className = "history-item" + (chat.id === activeId ? " active" : "");
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-label", "فتح " + chat.title);
+
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.innerHTML = '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8v.5Z"/>';
+
+      const title = document.createElement("span");
+      title.className = "history-title";
+      title.textContent = chat.title;
+
+      const remove = document.createElement("button");
+      remove.className = "history-delete";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.title = "حذف المحادثة";
+      remove.setAttribute("aria-label", "حذف المحادثة");
+
+      remove.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!confirm("تحذف المحادثة دي من جهازك؟")) return;
+        conversations = conversations.filter(c => c.id !== chat.id);
+        if (activeId === chat.id) activeId = null;
+        saveChats();
+        renderHistory();
+        renderChat();
+        toast("تم حذف المحادثة.", "success");
+      });
+
+      const open = () => {
+        activeId = chat.id;
+        renderHistory();
+        renderChat();
+        closeSidebar();
+      };
+
+      row.addEventListener("click", open);
+      row.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
+      });
+
+      row.append(icon, title, remove);
+      el.history.appendChild(row);
+    });
+  }
+
+  function renderChat() {
+    const chat = activeChat();
+
+    if (!chat || !chat.messages.length) {
+      el.welcome.classList.remove("hidden");
+      el.chat.classList.add("hidden");
+      el.messages.replaceChildren();
+      return;
+    }
+
+    el.welcome.classList.add("hidden");
+    el.chat.classList.remove("hidden");
+    el.messages.replaceChildren();
+    chat.messages.forEach(message => renderMessage(message, false));
+    scrollBottom();
+  }
+
+  function formatTime(time) {
+    try {
+      return new Intl.DateTimeFormat("ar-EG", {
+        hour: "2-digit", minute: "2-digit"
+      }).format(new Date(time));
+    } catch {
+      return "";
+    }
+  }
+
+  function renderMessage(message, scroll = true) {
+    const row = document.createElement("article");
+    row.className = "message " + message.role;
+
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = message.role === "assistant" ? "M" :
+      Array.from(settings.name || "م")[0];
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+
+    const heading = document.createElement("div");
+    heading.className = "message-heading";
+
+    const name = document.createElement("strong");
+    name.textContent = message.role === "assistant" ? "ميكا شات" : settings.name;
+
+    const time = document.createElement("time");
+    time.textContent = formatTime(message.timestamp || Date.now());
+
+    heading.append(name, time);
+
+    const content = document.createElement("div");
+    content.className = "message-content";
+    content.textContent = message.content;
+
+    body.append(heading, content);
+
+    if (message.attachments?.length) {
+      message.attachments.forEach(file => {
+        const chip = document.createElement("div");
+        chip.className = "attachment-chip";
+        const name = document.createElement("span");
+        name.textContent = "📎 " + file.name;
+        chip.appendChild(name);
+        body.appendChild(chip);
+      });
+    }
+
+    if (message.role === "assistant") {
+      const actions = document.createElement("div");
+      actions.className = "message-actions";
+
+      const copy = document.createElement("button");
+      copy.className = "message-action";
+      copy.type = "button";
+      copy.title = "نسخ الرد";
+      copy.setAttribute("aria-label", "نسخ الرد");
+      copy.innerHTML = '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(message.content);
+          toast("تم نسخ الرد.", "success");
+        } catch {
+          toast("تعذر النسخ من المتصفح.", "error");
+        }
+      });
+
+      actions.appendChild(copy);
+      body.appendChild(actions);
+    }
+
+    row.append(avatar, body);
+    el.messages.appendChild(row);
+    if (scroll) scrollBottom();
+  }
+
+  function scrollBottom() {
+    requestAnimationFrame(() => {
+      el.chat.scrollTop = el.chat.scrollHeight;
+    });
+  }
+
+  function addMessage(role, content, attached = []) {
+    const chat = getOrCreateChat();
+    if (!chat) return null;
+
+    const message = {
+      id: id(),
+      role,
+      content: String(content || ""),
+      timestamp: Date.now(),
+      attachments: attached.map(file => ({
+        name: file.name, size: file.size, type: file.type
+      }))
+    };
+
+    chat.messages.push(message);
+    chat.updatedAt = Date.now();
+
+    if (role === "user" && chat.messages.filter(m => m.role === "user").length === 1) {
+      chat.title = makeTitle(content || attached[0]?.name);
+    }
+
+    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
+    saveChats();
+    renderHistory();
+
+    el.welcome.classList.add("hidden");
+    el.chat.classList.remove("hidden");
+    renderMessage(message);
+    return message;
+  }
+
+  function showTyping() {
+    const row = document.createElement("article");
+    row.className = "message assistant";
+    row.id = "typingIndicator";
+
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = "M";
+
+    const body = document.createElement("div");
+    body.className = "message-body";
+
+    const heading = document.createElement("div");
+    heading.className = "message-heading";
+    const title = document.createElement("strong");
+    title.textContent = "ميكا شات";
+    heading.appendChild(title);
+
+    const dots = document.createElement("div");
+    dots.className = "typing-dots";
+    dots.setAttribute("aria-label", "جاري انتظار الرد من الخادم");
+
+    for (let i = 0; i < 3; i++) dots.appendChild(document.createElement("span"));
+
+    body.append(heading, dots);
+    row.append(avatar, body);
+    el.messages.appendChild(row);
+    scrollBottom();
+  }
+
+  function updateCounter() {
+    el.counter.textContent = `${el.prompt.value.length.toLocaleString("ar-EG")} / 12000`;
+    el.send.disabled = sending || (!el.prompt.value.trim() && !files.length);
+  }
+
+  function resizePrompt() {
+    el.prompt.style.height = "auto";
+    el.prompt.style.height = Math.min(el.prompt.scrollHeight, 180) + "px";
+  }
+
+  function renderFiles() {
+    el.attachmentPreview.replaceChildren();
+    el.attachmentPreview.classList.toggle("hidden", !files.length);
+
+    files.forEach((file, index) => {
+      const chip = document.createElement("div");
+      chip.className = "attachment-chip";
+
+      const label = document.createElement("span");
+      label.textContent = file.name + " (" +
+        (file.size < 1024 * 1024 ?
+          Math.round(file.size / 1024) + " KB" :
+          (file.size / 1024 / 1024).toFixed(1) + " MB") + ")";
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", "إزالة " + file.name);
+      remove.addEventListener("click", () => {
+        files.splice(index, 1);
+        renderFiles();
+        updateCounter();
+      });
+
+      chip.append(label, remove);
+      el.attachmentPreview.appendChild(chip);
+    });
+  }
+
+  function selectFiles(fileList) {
+    for (const file of Array.from(fileList || [])) {
+      if (files.length >= MAX_FILES) {
+        toast("الحد الأقصى 5 ملفات في الرسالة.", "error");
+        break;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast("الملف " + file.name + " أكبر من 10 ميجابايت.", "error");
+        continue;
+      }
+      if (!files.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) {
+        files.push(file);
+      }
+    }
+
+    renderFiles();
+    updateCounter();
+
+    if (files.length) {
+      toast("تم اختيار المرفقات. إرسال محتواها وتحليلها يحتاج خادمًا يدعم الملفات.");
+    }
+  }
+
+  async function sendMessage(event) {
+    if (event) event.preventDefault();
+    if (sending) return;
+
+    const text = el.prompt.value.trim();
+    if (!text && !files.length) return;
+
+    const message = text || "أرفقت ملفات. أريد تحليل محتواها.";
+    const attached = files.slice();
+    const chat = getOrCreateChat();
+    if (!chat) return;
+
+    const history = chat.messages.slice(-20).map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    addMessage("user", message, attached);
+
+    el.prompt.value = "";
+    el.prompt.style.height = "auto";
+    files = [];
+    el.files.value = "";
+    renderFiles();
+
+    sending = true;
+    updateCounter();
+    showTyping();
+
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 120000);
+
+      let response;
+      try {
+        response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          credentials: "same-origin",
+          cache: "no-store",
+          signal: controller.signal,
+          body: JSON.stringify({
+            message,
+            history,
+            conversationId: chat.id,
+            options: {
+              webSearch: searchEnabled,
+              attachments: attached.map(f => ({
+                name: f.name, type: f.type, size: f.size
+              }))
+            }
+          })
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("خادم الذكاء الاصطناعي غير متصل أو لم يرجع JSON. يلزم نشر backend/server.js.");
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(typeof data.message === "string" ? data.message : "الخادم رفض الطلب.");
+      }
+
+      const answer = typeof data.reply === "string" ? data.reply :
+        typeof data.answer === "string" ? data.answer : "";
+
+      if (!answer.trim()) throw new Error("الخادم لم يرجع إجابة صالحة.");
+
+      $("#typingIndicator")?.remove();
+      addMessage("assistant", answer);
+      el.statusText.textContent = "تم الاتصال";
+      setNotice();
+    } catch (error) {
+      $("#typingIndicator")?.remove();
+
+      const reason = error.name === "AbortError"
+        ? "انتهى وقت انتظار الرد."
+        : error.message || "تعذر الاتصال بالخادم.";
+
+      const failure = "مش قادر أجيب رد ذكي حقيقي دلوقتي، لأن خادم الذكاء الاصطناعي مش متصل.\n\n" +
+        "التفاصيل: " + reason + "\n\n" +
+        "رسالتك محفوظة في المحادثة. بعد نشر الخادم وربط مزوّد الذكاء الاصطناعي، هتقدر تجرب تاني.";
+
+      addMessage("assistant", failure);
+      el.statusText.textContent = "الخدمة غير متصلة";
+      setNotice("الواجهة جاهزة، لكن خدمة الذكاء الاصطناعي تحتاج خادمًا فعليًا على /api/chat.");
+      toast("لم يصل رد من خدمة الذكاء الاصطناعي.", "error");
+    } finally {
+      sending = false;
+      updateCounter();
+    }
+  }
+
+  function openModal(title, builder) {
+    el.modalTitle.textContent = title;
+    el.modalBody.replaceChildren();
+    builder(el.modalBody);
+    el.backdrop.classList.remove("hidden");
+    el.closeModal.focus();
+  }
+
+  function closeModal() {
+    el.backdrop.classList.add("hidden");
+  }
+
+  function element(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function openSettings() {
+    openModal("الإعدادات والتخصيص", body => {
+      body.appendChild(element("p", "modal-description",
+        "تُحفظ هذه الإعدادات على جهازك. تسجيل الدخول ومزامنة الحسابات لم يتم تفعيلهما بعد."));
+
+      const nameGroup = element("div", "settings-group");
+      const nameLabel = element("label", "", "الاسم الظاهر");
+      nameLabel.htmlFor = "mikaName";
+
+      const nameInput = element("input");
+      nameInput.id = "mikaName";
+      nameInput.maxLength = 40;
+      nameInput.value = settings.name;
+      nameGroup.append(nameLabel, nameInput);
+
+      const themeGroup = element("div", "settings-group");
+      const themeLabel = element("label", "", "المظهر");
+      themeLabel.htmlFor = "mikaTheme";
+
+      const themeSelect = element("select");
+      themeSelect.id = "mikaTheme";
+
+      [["dark", "داكن"], ["light", "فاتح"]].forEach(([value, label]) => {
+        const option = element("option", "", label);
+        option.value = value;
+        themeSelect.appendChild(option);
+      });
+
+      themeSelect.value = settings.theme;
+      themeGroup.append(themeLabel, themeSelect);
+
+      const save = element("button", "modal-primary", "حفظ التغييرات");
+      save.type = "button";
+      save.addEventListener("click", () => {
+        settings.name = nameInput.value.trim().slice(0, 40) || "ضيف ميكا";
+        settings.theme = themeSelect.value === "light" ? "light" : "dark";
+        saveSettings();
+        applyTheme();
+        updateProfile();
+        renderChat();
+        closeModal();
+        toast("تم حفظ الإعدادات.", "success");
+      });
+
+      body.append(nameGroup, themeGroup, save);
+    });
+  }
+
+  function openInfo() {
+    openModal("عن MIKA CHAT", body => {
+      body.appendChild(element("p", "modal-description",
+        "MIKA CHAT واجهة مساعد ذكي قيد التجهيز. التصميم والمحادثات المحلية يعملان على جهازك، أما الردود الذكية والبحث وتحليل الملفات فتحتاج إلى خادم وخدمات فعلية."));
+      body.appendChild(element("div", "plan-card", "لا توجد هنا بيانات اتصال أو مفاتيح سرية. لن ندّعي أن خدمة غير متصلة تعمل بالفعل."));
+    });
+  }
+
+  function toggleTheme() {
+    settings.theme = settings.theme === "dark" ? "light" : "dark";
+    saveSettings();
+    applyTheme();
+    toast(settings.theme === "dark" ? "تم تفعيل المظهر الداكن." : "تم تفعيل المظهر الفاتح.", "success");
+  }
+
+  function toggleSearch() {
+    searchEnabled = !searchEnabled;
+    el.web.classList.toggle("active", searchEnabled);
+    el.web.setAttribute("aria-pressed", String(searchEnabled));
+
+    if (searchEnabled) {
+      setNotice("تم اختيار البحث للرسالة التالية. تنفيذ البحث يتطلب ربط مزوّد بحث حقيقي بالخادم.");
+      toast("تم اختيار البحث لهذه الرسالة.");
+    } else {
+      setNotice();
+      toast("تم إيقاف البحث.");
+    }
+  }
+
+  function voiceInput() {
+    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Speech) {
+      toast("الإملاء الصوتي غير مدعوم في هذا المتصفح.", "error");
+      return;
+    }
+
+    if (listening && recognition) {
+      recognition.stop();
+      return;
+    }
+
+    recognition = new Speech();
+    recognition.lang = "ar-EG";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    let finalText = "";
+    recognition.onstart = () => {
+      listening = true;
+      el.voice.classList.add("active");
+      el.voice.setAttribute("aria-pressed", "true");
+      toast("اتكلم دلوقتي؛ هحوّل كلامك لنص.");
+    };
+
+    recognition.onresult = event => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const text = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += text;
+        else interim += text;
+      }
+
+      const recognized = [finalText, interim].filter(Boolean).join(" ").trim();
+      if (recognized) {
+        el.prompt.value = recognized;
+        resizePrompt();
+        updateCounter();
+      }
+    };
+
+    recognition.onerror = event => {
+      if (!["no-speech", "aborted"].includes(event.error)) {
+        toast("تعذر الإملاء الصوتي: " + event.error, "error");
+      }
+    };
+
+    recognition.onend = () => {
+      listening = false;
+      el.voice.classList.remove("active");
+      el.voice.setAttribute("aria-pressed", "false");
+    };
+
+    try { recognition.start(); }
+    catch { toast("تعذر بدء الإملاء الصوتي.", "error"); }
+  }
+
+  function openSidebar() {
+    document.body.classList.add("sidebar-open");
+  }
+
+  function closeSidebar() {
+    document.body.classList.remove("sidebar-open");
+  }
+
+  function bindEvents() {
+    el.newChat.addEventListener("click", createChat);
+    el.search.addEventListener("input", renderHistory);
+    el.form.addEventListener("submit", sendMessage);
+
+    el.prompt.addEventListener("input", () => {
+      resizePrompt();
+      updateCounter();
+    });
+
+    el.prompt.addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+        event.preventDefault();
+        sendMessage();
+      }
+    });
+
+    $$(".suggestion-card").forEach(button => {
+      button.addEventListener("click", () => {
+        el.prompt.value = button.dataset.prompt || "";
+        resizePrompt();
+        updateCounter();
+        el.prompt.focus();
+      });
+    });
+
+    el.theme.addEventListener("click", toggleTheme);
+    el.settings.addEventListener("click", openSettings);
+    $("#modelInfo").addEventListener("click", openInfo);
+    el.closeModal.addEventListener("click", closeModal);
+
+    el.backdrop.addEventListener("click", event => {
+      if (event.target === el.backdrop) closeModal();
+    });
+
+    el.openSidebar.addEventListener("click", openSidebar);
+    el.overlay.addEventListener("click", closeSidebar);
+
+    el.attach.addEventListener("click", () => el.files.click());
+    el.files.addEventListener("change", event => selectFiles(event.target.files));
+    el.web.addEventListener("click", toggleSearch);
+    el.voice.addEventListener("click", voiceInput);
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeModal();
+        closeSidebar();
+      }
+
+      const tag = document.activeElement?.tagName;
+      const typing = tag === "INPUT" || tag === "TEXTAREA";
+
+      if (event.key === "/" && !typing && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        el.search.focus();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        createChat();
+      }
+    });
+  }
+
+  async function checkService() {
+    try {
+      const response = await fetch("/api/health", {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        credentials: "same-origin",
+        cache: "no-store",
+        signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
+      });
+
+      if (!response.ok) throw new Error("offline");
+      const data = await response.json();
+
+      if (data.status === "ok") {
+        el.statusText.textContent = "الخدمة متصلة";
+        return;
+      }
+    } catch {}
+
+    el.statusText.textContent = "الخدمة غير متصلة";
+  }
+
+  function initialize() {
+    loadSettings();
+    loadChats();
+    bindEvents();
+    updateCounter();
+    renderChat();
+    checkService();
+
+    window.MIKA_CHAT = Object.freeze({
+      newConversation: createChat,
+      getConversations: () => JSON.parse(JSON.stringify(conversations)),
+      getActiveConversation: () => {
+        const chat = activeChat();
+        return chat ? JSON.parse(JSON.stringify(chat)) : null;
+      }
+    });
+
+    console.info("MIKA CHAT initialized.");
+  }
+
+  initialize();
+})();
+</script>
 </body>
   </html>
