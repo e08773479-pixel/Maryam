@@ -1,984 +1,396 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080912">
-<meta name="description" content="MIKA CHAT — مساحة ذكية للأفكار والإبداع والمحادثات الصوتية">
-<title>MIKA CHAT — مساحتك الذكية</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="MIKA CHAT — مساعدك الذكي للمحادثة والإبداع والبرمجة.">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>MIKA CHAT — مساعدك الذكي</title>
 
-<style>
-:root{
-  --bg:#080912;
-  --panel:#10111c;
-  --panel2:#151624;
-  --border:rgba(255,255,255,.085);
-  --text:#f4f3ff;
-  --muted:#9293aa;
-  --purple:#9274ff;
-  --blue:#54c8ff;
-  --gradient:linear-gradient(120deg,#58d7ff,#9274ff 58%,#c28aff);
-  --shadow:0 18px 70px rgba(0,0,0,.28);
-  --side:280px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;min-height:100%;font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text)}
-body{overflow:hidden}
-button,input,textarea{font:inherit}
-button{color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
-button:disabled{opacity:.45;cursor:not-allowed}
-::selection{background:#8c73ff66}
-.hidden{display:none!important}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-/* Brand symbol */
-.brand-symbol{
- width:48px;height:48px;display:grid;place-items:center;flex-shrink:0;
- border-radius:16px;background:linear-gradient(145deg,#8f79ff,#596cff 60%,#44cfff);
- box-shadow:0 0 34px #8871ff38,inset 0 1px 1px #ffffff75;
- position:relative;overflow:hidden
-}
-.brand-symbol svg{width:31px;height:31px;filter:drop-shadow(0 2px 5px #1a174a55)}
-.brand-symbol:after{content:"";position:absolute;inset:0;border:1px solid #ffffff30;border-radius:inherit;pointer-events:none}
-.brand-name{font-weight:900;letter-spacing:-.7px;font-size:19px}
-.brand-name span{background:var(--gradient);background-clip:text;-webkit-background-clip:text;color:transparent}
-.mini-label{font-size:11px;color:var(--muted);letter-spacing:1.5px}
-
-/* Splash */
-#splash{
- position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
- background:radial-gradient(ellipse at 50% 42%,#242043 0%,#11111f 34%,#080912 75%);
- transition:opacity .55s ease,visibility .55s ease;
-}
-#splash.done{opacity:0;visibility:hidden;pointer-events:none}
-.splash-content{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px;animation:appear .8s ease both}
-.splash-logo{width:100px;height:100px;border-radius:31px;animation:float 3s ease-in-out infinite}
-.splash-logo .brand-symbol{width:100px;height:100px;border-radius:31px}
-.splash-logo .brand-symbol svg{width:64px;height:64px}
-.splash-ring{position:absolute;inset:-13px;border:1px solid #a38aff35;border-radius:39px;animation:ring 4s linear infinite}
-.splash-mark{position:relative}
-.splash-title{margin-top:29px;font-size:32px;font-weight:900;letter-spacing:-1px}
-.splash-title span{background:var(--gradient);background-clip:text;-webkit-background-clip:text;color:transparent}
-.splash-sub{margin-top:5px;color:#a3a2bb;font-size:13px}
-.splash-progress{width:145px;height:3px;background:#ffffff12;border-radius:10px;margin-top:32px;overflow:hidden}
-.splash-progress i{display:block;height:100%;width:35%;background:var(--gradient);border-radius:10px;animation:loading 1.35s ease-in-out infinite}
-.splash-status{font-size:11px;color:#8e8ca8;margin-top:13px}
-@keyframes loading{0%{transform:translateX(220%)}100%{transform:translateX(-350%)}}
-@keyframes appear{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes ring{to{transform:rotate(360deg)}}
-
-/* App layout */
-#app{height:100dvh;display:flex;opacity:0;transition:opacity .4s ease}
-#app.ready{opacity:1}
-.sidebar{
- width:var(--side);height:100%;flex-shrink:0;border-left:1px solid var(--border);
- background:#0c0d16;display:flex;flex-direction:column;padding:20px 15px;gap:20px;
- transition:transform .25s ease;z-index:50
-}
-.side-brand{display:flex;align-items:center;gap:12px;padding:4px 5px 18px}
-.side-brand .brand-symbol{width:43px;height:43px;border-radius:14px}
-.side-brand .brand-symbol svg{width:27px;height:27px}
-.side-top{display:flex;align-items:center;justify-content:space-between}
-.icon-btn{
- border:1px solid var(--border);background:#ffffff06;width:42px;height:42px;
- border-radius:14px;display:grid;place-items:center;transition:.2s
-}
-.icon-btn:hover{background:#ffffff12;border-color:#9274ff70;transform:translateY(-1px)}
-.icon-btn svg{width:19px;height:19px}
-.primary-btn{
- border:0;background:var(--gradient);color:white;border-radius:14px;padding:12px 14px;
- display:flex;align-items:center;justify-content:center;gap:9px;font-weight:800;
- box-shadow:0 8px 25px #7764ff22;transition:.2s
-}
-.primary-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.primary-btn svg{width:18px;height:18px}
-.sidebar-search{position:relative}
-.sidebar-search input{
- width:100%;background:#ffffff06;border:1px solid var(--border);border-radius:13px;
- padding:11px 38px 11px 12px;color:var(--text);font-size:12px
-}
-.sidebar-search svg{position:absolute;right:12px;top:12px;width:16px;height:16px;color:var(--muted)}
-.section-caption{font-size:11px;color:#85859c;padding:0 5px;margin-bottom:10px}
-.history-list{display:flex;flex-direction:column;gap:5px;overflow:auto;min-height:0;flex:1}
-.history-item{display:flex;align-items:center;gap:8px;border-radius:12px;padding:10px 9px;cursor:pointer;color:#c6c5d8;border:1px solid transparent}
-.history-item:hover,.history-item.active{background:#ffffff08;border-color:var(--border)}
-.history-item .history-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-.history-item .delete-chat{border:0;background:transparent;color:#77768c;font-size:17px;opacity:0;padding:0 4px}
-.history-item:hover .delete-chat{opacity:1}
-.history-item .delete-chat:hover{color:#ff828e}
-.empty-history{text-align:center;padding:24px 10px;color:var(--muted);font-size:12px;line-height:2}
-.sidebar-bottom{border-top:1px solid var(--border);padding-top:14px}
-.profile-card{display:flex;align-items:center;gap:11px;padding:9px;border-radius:13px}
-.avatar{width:37px;height:37px;border-radius:13px;background:linear-gradient(140deg,#3a355d,#232a46);display:grid;place-items:center;color:#c5bdff;font-weight:800}
-.profile-text{flex:1;min-width:0}
-.profile-text strong{font-size:12px;display:block}
-.profile-text small{font-size:10px;color:var(--muted)}
-
-/* Main */
-.main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;position:relative}
-.topbar{
- height:76px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
- gap:12px;padding:0 25px;border-bottom:1px solid var(--border);background:#090a12e8;
-}
-.top-left,.top-right{display:flex;align-items:center;gap:12px}
-.top-brand{display:flex;align-items:center;gap:11px}
-.top-brand .brand-symbol{width:37px;height:37px;border-radius:12px}
-.top-brand .brand-symbol svg{width:23px;height:23px}
-.top-status{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:50px;padding:8px 12px;font-size:11px;color:var(--muted)}
-.status-dot{width:7px;height:7px;border-radius:50%;background:#f2c66d;box-shadow:0 0 10px #f2c66d50}
-.status-dot.online{background:#50dba5;box-shadow:0 0 10px #50dba550}
-.top-title{font-size:14px;font-weight:800}
-.top-subtitle{font-size:10px;color:var(--muted);margin-top:1px}
-.menu-btn{display:none}
-.content-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth}
-#conversation{max-width:900px;width:100%;margin:0 auto;padding:28px 28px 35px;min-height:100%;display:flex;flex-direction:column}
-.welcome{margin:auto 0;display:flex;flex-direction:column;align-items:center;text-align:center;padding:38px 0 25px}
-.welcome-logo{position:relative;margin-bottom:27px}
-.welcome-logo .brand-symbol{width:76px;height:76px;border-radius:25px}
-.welcome-logo .brand-symbol svg{width:48px;height:48px}
-.welcome-logo:before{content:"";position:absolute;inset:-12px;border:1px solid #9b83ff28;border-radius:31px;transform:rotate(9deg)}
-.welcome-kicker{font-size:11px;font-weight:800;letter-spacing:2px;color:#b3a0ff;text-transform:uppercase}
-.welcome h1{font-size:clamp(28px,4vw,42px);font-weight:900;line-height:1.5;margin:10px 0 7px;letter-spacing:-1px}
-.welcome h1 span{background:var(--gradient);background-clip:text;-webkit-background-clip:text;color:transparent}
-.welcome-desc{font-size:14px;line-height:2;color:#9999b1;max-width:540px;margin:0 auto}
-.suggestion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;margin-top:35px}
-.suggestion{
- display:flex;align-items:center;text-align:right;gap:13px;padding:18px 16px;min-height:91px;
- background:linear-gradient(145deg,#ffffff07,#ffffff03);border:1px solid var(--border);
- border-radius:19px;transition:.22s
-}
-.suggestion:hover{transform:translateY(-3px);background:#ffffff0b;border-color:#9274ff60}
-.suggestion-icon{width:43px;height:43px;border-radius:14px;display:grid;place-items:center;flex-shrink:0;background:#65caff13;color:#70d7ff}
-.suggestion:nth-child(2) .suggestion-icon{background:#a184ff17;color:#b9a1ff}
-.suggestion:nth-child(3) .suggestion-icon{background:#a184ff17;color:#b9a1ff}
-.suggestion:nth-child(4) .suggestion-icon{background:#65caff13;color:#70d7ff}
-.suggestion-icon svg{width:22px;height:22px}
-.suggestion strong{font-size:13px;display:block}
-.suggestion small{font-size:11px;color:var(--muted);display:block;margin-top:4px}
-.welcome-note{font-size:11px;color:#77778f;line-height:1.9;margin-top:25px}
-
-/* Messages */
-.messages{display:flex;flex-direction:column;gap:24px;padding:12px 0 35px}
-.message{display:flex;gap:12px;align-items:flex-start;animation:appear .24s ease}
-.message.user{flex-direction:row-reverse}
-.message-avatar{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:#191a2b;border:1px solid var(--border)}
-.message-avatar .brand-symbol{width:32px;height:32px;border-radius:10px}
-.message-avatar .brand-symbol svg{width:21px;height:21px}
-.message.user .message-avatar{background:#26203f;color:#c6b7ff;font-size:12px;font-weight:800}
-.message-body{max-width:min(720px,88%);min-width:0}
-.message.user .message-body{text-align:right}
-.message-author{font-size:11px;color:#aaa8c4;font-weight:700;margin:0 0 7px}
-.message-text{font-size:14px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere;color:#e6e5f2}
-.message.user .message-text{display:inline-block;text-align:right;background:#18182a;border:1px solid #ffffff0b;border-radius:18px 5px 18px 18px;padding:12px 15px}
-.message-actions{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
-.message.user .message-actions{justify-content:flex-start}
-.message-action{font-size:10px;color:#8d8da6;background:transparent;border:1px solid transparent;border-radius:8px;padding:5px 8px}
-.message-action:hover{border-color:var(--border);background:#ffffff08;color:#ddd9ff}
-.typing-indicator{display:flex;gap:5px;padding:12px}
-.typing-indicator i{width:6px;height:6px;background:#9b8aff;border-radius:50%;animation:typing .8s infinite alternate}
-.typing-indicator i:nth-child(2){animation-delay:.2s}
-.typing-indicator i:nth-child(3){animation-delay:.4s}
-@keyframes typing{to{opacity:.25;transform:translateY(-4px)}}
-
-/* Composer */
-.composer-area{padding:12px 22px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 78%,transparent);flex-shrink:0}
-.composer-wrap{max-width:900px;margin:auto}
-.composer{
- border:1px solid #ffffff1b;background:linear-gradient(145deg,#151624,#10111c);
- border-radius:23px;padding:12px;box-shadow:0 12px 55px #0005,0 0 0 1px #8d76ff08;
- transition:border-color .2s
-}
-.composer:focus-within{border-color:#8875ff85;box-shadow:0 12px 55px #0005,0 0 22px #8d76ff0b}
-#promptInput{display:block;width:100%;resize:none;min-height:48px;max-height:170px;border:0;outline:0;background:transparent;color:var(--text);font-size:14px;line-height:1.9;padding:7px 8px}
-#promptInput::placeholder{color:#85859c}
-.composer-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.tool-btn{height:37px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 11px;background:#ffffff05;border:1px solid var(--border);border-radius:12px;font-size:11px;color:#b7b5ca;transition:.2s}
-.tool-btn svg{width:16px;height:16px}
-.tool-btn:hover,.tool-btn.selected{background:#8d77ff17;border-color:#9274ff66;color:#c9beff}
-.tool-spacer{flex:1}
-.char-counter{font-size:10px;color:#77778d;padding:0 4px}
-.send-btn{width:39px;height:39px;border:0;border-radius:13px;background:var(--gradient);display:grid;place-items:center;box-shadow:0 5px 20px #7b68ff2b}
-.send-btn svg{width:20px;height:20px}
-.composer-disclaimer{text-align:center;font-size:10px;color:#77768c;margin-top:9px;line-height:1.8}
-#fileInput{display:none}
-.file-chip{display:flex;align-items:center;gap:8px;background:#8e79ff12;border:1px solid #8e79ff40;border-radius:10px;padding:7px 10px;font-size:11px;margin:3px 0 9px}
-.file-chip button{border:0;background:none;color:#ff9aa7}
-
-/* Voice modal */
-.modal-backdrop{position:fixed;inset:0;z-index:100;background:#03040bd9;backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:18px}
-.modal{width:min(490px,100%);background:#11121f;border:1px solid #ffffff17;border-radius:26px;box-shadow:var(--shadow);padding:24px;animation:appear .22s ease}
-.modal-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.modal-header h2{font-size:18px;margin:0}
-.modal-desc{color:var(--muted);font-size:12px;line-height:1.9;margin:10px 0 22px}
-.voice-stage{display:flex;align-items:center;justify-content:center;min-height:165px;position:relative}
-.voice-orbit{position:absolute;width:155px;height:155px;border:1px solid #9274ff32;border-radius:50%;animation:ring 18s linear infinite}
-.voice-orbit:before,.voice-orbit:after{content:"";position:absolute;width:8px;height:8px;background:var(--blue);border-radius:50%;top:16px;left:24px;box-shadow:0 0 16px var(--blue)}
-.voice-orbit:after{top:auto;left:auto;bottom:20px;right:20px;background:var(--purple);box-shadow:0 0 16px var(--purple)}
-.voice-core{width:94px;height:94px;border-radius:31px;display:grid;place-items:center;background:linear-gradient(145deg,#8b77ff,#536dff);box-shadow:0 0 55px #8d76ff42;position:relative;z-index:1}
-.voice-core svg{width:45px;height:45px}
-.voice-core.listening{animation:voicePulse 1.2s ease-in-out infinite}
-@keyframes voicePulse{50%{box-shadow:0 0 0 19px #9274ff12,0 0 65px #8d76ff70;transform:scale(1.04)}}
-.voice-status{text-align:center;color:#c6c1e2;font-size:12px;min-height:25px;margin-top:15px}
-.voice-transcript{font-size:12px;line-height:1.9;color:#b6b4cb;max-height:100px;overflow:auto;text-align:center;margin:8px 0}
-.voice-controls{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
-.voice-main-btn{border:0;border-radius:14px;padding:12px 17px;background:var(--gradient);font-weight:800;font-size:12px;display:flex;align-items:center;gap:8px}
-.voice-secondary-btn{border:1px solid var(--border);background:#ffffff07;border-radius:14px;padding:12px 15px;font-size:12px}
-.modal-input{width:100%;background:#ffffff07;border:1px solid var(--border);border-radius:13px;color:var(--text);padding:12px;margin-top:12px}
-.modal-label{display:block;font-size:12px;color:#aaa8c0;margin-top:15px}
-.modal-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
-
-/* Light theme */
-body.light{
- --bg:#f5f5fc;--panel:#fff;--panel2:#f0eff9;--border:rgba(32,29,67,.12);
- --text:#222137;--muted:#77758d;--shadow:0 18px 70px #24213c12
-}
-body.light .sidebar{background:#fff}
-body.light .topbar{background:#ffffffed}
-body.light .composer{background:linear-gradient(145deg,#fff,#f5f3ff);box-shadow:0 12px 40px #2620470c}
-body.light .suggestion{background:#fff}
-body.light .message.user .message-text{background:#efedfc;color:#292441}
-body.light .message-text{color:#333149}
-body.light .history-item{color:#49465f}
-body.light .modal{background:#fff}
-body.light .modal-backdrop{background:#1d1b31a8}
-body.light .modal-input{background:#f6f5fb;color:#242139}
-
-/* Toast */
-#toastContainer{position:fixed;bottom:25px;left:20px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:#1b1c2b;border:1px solid #ffffff1c;border-radius:13px;padding:12px 16px;max-width:300px;font-size:12px;box-shadow:var(--shadow);animation:appear .2s ease}
-.toast.error{border-color:#ff7e904d}
-.toast.success{border-color:#61d9b34d}
-
-/* Responsive */
-@media(min-width:1300px){#conversation{padding-top:38px}.welcome{padding-top:50px}}
-@media(max-width:850px){
- :root{--side:275px}
- .sidebar{position:fixed;right:0;top:0;bottom:0;height:100dvh;transform:translateX(105%);box-shadow:var(--shadow)}
- .sidebar.open{transform:translateX(0)}
- .menu-btn{display:grid}
- .topbar{padding:0 14px;height:67px}
- .top-status{font-size:10px;padding:7px 9px}
- #conversation{padding:19px 17px 24px}
- .composer-area{padding:10px 12px calc(9px + env(safe-area-inset-bottom))}
-}
-@media(max-width:560px){
- .topbar{gap:8px;padding:0 10px}
- .top-left,.top-right{gap:7px}
- .top-brand{gap:8px}
- .top-brand .brand-symbol{width:34px;height:34px}
- .top-title{font-size:12px}
- .top-subtitle{font-size:9px}
- .top-status{max-width:120px;font-size:9px;gap:5px;padding:7px}
- .top-status .status-dot{width:6px;height:6px}
- .icon-btn{width:37px;height:37px;border-radius:12px}
- .welcome{padding:25px 0}
- .welcome-logo .brand-symbol{width:65px;height:65px;border-radius:21px}
- .welcome-logo .brand-symbol svg{width:42px;height:42px}
- .welcome h1{font-size:28px}
- .welcome-desc{font-size:12px;line-height:2}
- .suggestion-grid{gap:8px;margin-top:25px}
- .suggestion{padding:12px 10px;min-height:92px;gap:9px;border-radius:15px}
- .suggestion-icon{width:35px;height:35px;border-radius:11px}
- .suggestion-icon svg{width:19px;height:19px}
- .suggestion strong{font-size:11px}
- .suggestion small{font-size:9px;line-height:1.8}
- .welcome-note{font-size:10px;margin-top:20px}
- .composer{padding:8px;border-radius:19px}
- #promptInput{font-size:13px;min-height:44px;padding:6px}
- .tool-btn{height:34px;padding:0 8px;font-size:10px;gap:5px}
- .tool-btn svg{width:14px;height:14px}
- .send-btn{width:36px;height:36px}
- .char-counter{font-size:9px}
- .composer-disclaimer{font-size:9px}
- .message-text{font-size:13px}
- .message-body{max-width:87%}
- .message-avatar{width:31px;height:31px;border-radius:10px}
- .modal{padding:19px;border-radius:22px}
-}
-@media(max-height:720px){
- .welcome{padding:10px 0}
- .welcome-logo{margin-bottom:15px}
- .welcome-logo .brand-symbol{width:58px;height:58px}
- .welcome h1{font-size:27px;margin:5px 0}
- .welcome-desc{font-size:12px}
- .suggestion-grid{margin-top:18px}
- .suggestion{min-height:75px;padding:10px}
- .welcome-note{margin-top:12px}
-}
-</style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
- <symbol id="mika-mark" viewBox="0 0 64 64">
-  <path d="M32 5.5 38.8 24.8 58 32 38.8 39.2 32 58.5 25.2 39.2 6 32 25.2 24.8Z" fill="none" stroke="white" stroke-width="3.2" stroke-linejoin="round"/>
-  <path d="m47 7 2.8 8.2L58 18l-8.2 2.8L47 29l-2.8-8.2L36 18l8.2-2.8Z" fill="white" opacity=".96"/>
-  <circle cx="32" cy="32" r="4.2" fill="white"/>
- </symbol>
- <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
- <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
- <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.8 8.8 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
- <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
- <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4.2 4.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
- <symbol id="i-send" viewBox="0 0 24 24"><path d="m21 3-7.3 18-3.5-7.2L3 10.3 21 3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10.2 13.8 15 9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
- <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 2.7 6.8L22 12l-7.3 3.2L12 22l-2.7-6.8L2 12l7.3-3.2L12 2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m19 2 .9 2.1L22 5l-2.1.9L19 8l-.9-2.1L16 5l2.1-.9L19 2Z" fill="currentColor"/></symbol>
- <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4m-2-19a7 7 0 0 0-4.2 12.6c.9.7 1.2 1.3 1.2 2.4h6c0-1.1.3-1.7 1.2-2.4A7 7 0 0 0 12 2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
- <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-5 4 5 4m8-8 5 4-5 4m-3-12-2 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
- <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.6 9a2.5 2.5 0 1 1 4.5 1.5c-1.3 1.2-2.1 1.5-2.1 3m0 3h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
- <symbol id="i-attach" viewBox="0 0 24 24"><path d="m8 12.5 7.7-7.7a4 4 0 0 1 5.7 5.7L10.2 21.7a6 6 0 0 1-8.5-8.5L12.5 2.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
- <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4m-4 0h8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
- <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
- <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
- <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1 1.2.9-1.5 2.6-1.4-.6a8 8 0 0 1-1.8 1l-.2 1.5h-3l-.3-1.5a8 8 0 0 1-1.8-1l-1.4.6-1.5-2.6 1.2-.9a8 8 0 0 1 0-2.1l-1.2-.9 1.5-2.6 1.4.6a8 8 0 0 1 1.8-1l.3-1.5h3l.2 1.5a8 8 0 0 1 1.8 1l1.4-.6 1.5 2.6-1.2.9a8 8 0 0 1 0 2Z" transform="translate(-1 -1) scale(1.08)" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
-</svg>
 
-<div id="splash" aria-label="جاري تشغيل ميكا شات">
- <div class="splash-content">
-  <div class="splash-mark">
-   <div class="splash-logo"><div class="brand-symbol"><svg><use href="#mika-mark"/></svg></div></div>
-   <div class="splash-ring"></div>
-  </div>
-  <div class="splash-title">MIKA <span>CHAT</span></div>
-  <div class="splash-sub">مساحتك الذكية للأفكار والإبداع</div>
-  <div class="splash-progress"><i></i></div>
-  <div class="splash-status">نجهّز مساحتك...</div>
- </div>
-</div>
+<div class="app-shell">
 
-<div id="app">
- <aside class="sidebar" id="sidebar">
-  <div class="side-top">
-   <div class="side-brand">
-    <div class="brand-symbol"><svg><use href="#mika-mark"/></svg></div>
-    <div><div class="brand-name">MIKA <span>CHAT</span></div><div class="mini-label">YOUR AI SPACE</div></div>
-   </div>
-   <button class="icon-btn" id="closeSidebar" aria-label="إغلاق القائمة"><svg><use href="#i-close"/></svg></button>
-  </div>
+  <aside class="sidebar" id="sidebar">
 
-  <button class="primary-btn" id="newChat"><svg><use href="#i-plus"/></svg> محادثة جديدة</button>
+    <div class="brand-row">
 
-  <div class="sidebar-search">
-   <svg><use href="#i-search"/></svg>
-   <input id="searchChats" type="search" placeholder="ابحث في محادثاتك..." aria-label="البحث في المحادثات">
-  </div>
+      <div class="brand-mark">
+        <span>m</span>
+        <i></i>
+      </div>
 
-  <div style="display:flex;flex-direction:column;flex:1;min-height:0">
-   <div class="section-caption">محادثاتك الأخيرة</div>
-   <div class="history-list" id="historyList"></div>
-  </div>
+      <div class="brand-copy">
+        <strong>MIKA <span>CHAT</span></strong>
+        <small>فكرتك تبدأ هنا</small>
+      </div>
 
-  <div class="sidebar-bottom">
-   <div class="profile-card">
-    <div class="avatar" id="profileAvatar">م</div>
-    <div class="profile-text"><strong id="profileName">ضيف ميكا</strong><small>مساحتك الشخصية</small></div>
-    <button class="icon-btn" id="openSettings" aria-label="الإعدادات"><svg><use href="#i-settings"/></svg></button>
-   </div>
-  </div>
- </aside>
+      <button class="icon-btn mobile-close" id="closeSidebar" aria-label="إغلاق القائمة">
+        ×
+      </button>
 
- <main class="main">
-  <header class="topbar">
-   <div class="top-left">
-    <button class="icon-btn menu-btn" id="openSidebar" aria-label="فتح القائمة"><svg><use href="#i-menu"/></svg></button>
-    <button class="icon-btn" id="themeToggle" aria-label="تغيير المظهر"><svg><use href="#i-moon"/></svg></button>
-    <div class="top-status"><span class="status-dot"></span><span id="connectionText">الواجهة جاهزة</span></div>
-   </div>
-   <div class="top-right">
-    <div class="top-brand">
-     <div class="brand-symbol"><svg><use href="#mika-mark"/></svg></div>
-     <div><div class="top-title">MIKA CHAT</div><div class="top-subtitle">مساعدك الذكي</div></div>
     </div>
-   </div>
-  </header>
 
-  <div class="content-scroll" id="contentScroll">
-   <section id="conversation">
-    <div class="welcome" id="welcomeScreen">
-     <div class="welcome-logo"><div class="brand-symbol"><svg><use href="#mika-mark"/></svg></div></div>
-     <div class="welcome-kicker">A NEW WAY TO THINK</div>
-     <h1>أهلًا بيك في <span>ميكا شات</span></h1>
-     <p class="welcome-desc">مساحتك للأفكار والأسئلة والإبداع. ابدأ من أي نقطة، واكتب اللي في بالك، وخلي رحلتك تبدأ.</p>
+    <button class="new-chat-btn" id="newChat">
+      <span class="plus">＋</span>
+      <span>محادثة جديدة</span>
+      <kbd>Ctrl K</kbd>
+    </button>
 
-     <div class="suggestion-grid">
-      <button class="suggestion" data-prompt="ساعدني أبتكر فكرة جديدة ومميزة لمشروع.">
-       <span class="suggestion-icon"><svg><use href="#i-spark"/></svg></span>
-       <span><strong>ابتكر فكرة جديدة</strong><small>حوّل أفكارك لحاجة مميزة</small></span>
+    <div class="side-section">
+
+      <div class="section-label">مساحة العمل</div>
+
+      <button class="side-link active" data-view="chat">
+        <span class="side-icon">✳</span>
+        الدردشة
+        <span class="link-dot"></span>
       </button>
-      <button class="suggestion" data-prompt="علّمني مهارة جديدة خطوة بخطوة مع أمثلة عملية.">
-       <span class="suggestion-icon"><svg><use href="#i-bulb"/></svg></span>
-       <span><strong>اتعلم حاجة جديدة</strong><small>خطة واضحة خطوة بخطوة</small></span>
+
+      <button class="side-link" data-action="image">
+        <span class="side-icon">▧</span>
+        أفكار الصور
+        <span class="mini-tag">تحتاج ربطًا</span>
       </button>
-      <button class="suggestion" data-prompt="ساعدني أبدأ مشروع برمجي، واشرح لي خطوات التنفيذ.">
-       <span class="suggestion-icon"><svg><use href="#i-code"/></svg></span>
-       <span><strong>برمجة ومشروعات</strong><small>من الفكرة إلى التنفيذ</small></span>
+
+      <button class="side-link" data-action="voice">
+        <span class="side-icon">♫</span>
+        المحادثة الصوتية
       </button>
-      <button class="suggestion" data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة وبأمثلة مفيدة.">
-       <span class="suggestion-icon"><svg><use href="#i-help"/></svg></span>
-       <span><strong>افهم موضوع صعب</strong><small>شرح بسيط وأمثلة مفيدة</small></span>
-      </button>
-     </div>
-     <div class="welcome-note">ابدأ سؤالك من صندوق الكتابة بالأسفل<br>تُحفظ المحادثات على هذا الجهاز في هذه النسخة.</div>
+
     </div>
-    <div class="messages hidden" id="messagesList"></div>
-   </section>
-  </div>
 
-  <div class="composer-area">
-   <div class="composer-wrap">
-    <div class="composer">
-     <div id="attachmentPreview"></div>
-     <textarea id="promptInput" rows="1" maxlength="12000" placeholder="اكتب سؤالك هنا... اسأل، ابتكر، واكتشف" aria-label="اكتب رسالتك"></textarea>
-     <div class="composer-tools">
-      <button class="tool-btn" id="attachButton"><svg><use href="#i-attach"/></svg><span>إرفاق</span></button>
-      <input id="fileInput" type="file" multiple>
-      <button class="tool-btn" id="webSearchButton" title="البحث على الويب"><svg><use href="#i-globe"/></svg><span>بحث</span></button>
-      <button class="tool-btn" id="voiceButton" title="بدء المحادثة الصوتية"><svg><use href="#i-mic"/></svg><span>صوت</span></button>
-      <span class="tool-spacer"></span>
-      <span class="char-counter" id="charCounter">0 / 12000</span>
-      <button class="send-btn" id="sendButton" aria-label="إرسال الرسالة"><svg><use href="#i-send"/></svg></button>
-     </div>
+    <div class="history-head">
+      <span>المحادثات الأخيرة</span>
+      <button class="tiny-icon" id="clearHistory" title="مسح المحادثات">⌫</button>
     </div>
-    <div class="composer-disclaimer">قد تحتاج إجابات الذكاء الاصطناعي إلى ربط خادم فعلي. لا تُعرض إجابات تجريبية على أنها إجابات حقيقية.</div>
-   </div>
-  </div>
- </main>
+
+    <div class="chat-history" id="chatHistory">
+      <div class="history-empty">
+        محادثاتك الجديدة هتظهر هنا.
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+
+      <div class="profile-card">
+
+        <div class="avatar user-avatar">م</div>
+
+        <div class="profile-info">
+          <strong>مساحة شخصية</strong>
+          <small>محادثات على جهازك</small>
+        </div>
+
+        <button class="tiny-icon" id="settingsButton" aria-label="الإعدادات">
+          ⚙
+        </button>
+
+      </div>
+
+      <div class="sidebar-foot">
+        MIKA CHAT <span>•</span> مساحة أفكارك
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <main class="main-panel">
+
+    <header class="topbar">
+
+      <div class="topbar-start">
+
+        <button class="icon-btn menu-toggle" id="openSidebar" aria-label="فتح القائمة">
+          ☰
+        </button>
+
+        <div class="mobile-brand">
+          <div class="brand-mark small">
+            <span>m</span>
+            <i></i>
+          </div>
+
+          <strong>MIKA <span>CHAT</span></strong>
+        </div>
+
+        <div class="model-picker-wrap">
+
+          <button class="model-picker" id="modelPicker">
+            <span class="status-pip"></span>
+            <span id="modelLabel">MIKA الذكي</span>
+            <span class="chevron">⌄</span>
+          </button>
+
+          <div class="model-menu hidden" id="modelMenu">
+
+            <button data-model="auto">
+              <b>✳ MIKA الذكي</b>
+              <small>النموذج المحدد في إعدادات الخادم</small>
+            </button>
+
+            <button data-model="fast">
+              <b>ϟ إجابة سريعة</b>
+              <small>يستخدم النموذج الذي تحدده للخدمة السريعة</small>
+            </button>
+
+            <button data-model="reasoning">
+              <b>◈ تفكير متعمق</b>
+              <small>حسب النموذج المتاح لحسابك</small>
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="topbar-actions">
+
+        <button class="icon-btn" id="themeToggle" title="تبديل المظهر">
+          ☼
+        </button>
+
+        <button class="share-btn" id="shareButton">
+          <span>↗</span>
+          مشاركة
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <section class="conversation" id="conversation" aria-live="polite">
+
+      <div class="welcome" id="welcome">
+
+        <div class="welcome-orb">
+
+          <div class="orb-core">m</div>
+
+          <span class="orb-ring ring-one"></span>
+          <span class="orb-ring ring-two"></span>
+
+          <span class="orb-spark spark-one">✦</span>
+          <span class="orb-spark spark-two">✧</span>
+
+        </div>
+
+        <div class="eyebrow">
+          <span class="eyebrow-line"></span>
+          مساحة أفكارك الذكية
+          <span class="eyebrow-line"></span>
+        </div>
+
+        <h1>
+          أهلًا بيك،
+          <em>نفكّر سوا؟</em>
+        </h1>
+
+        <p class="welcome-desc">
+          اسأل، اكتشف، اكتب، حلّل، وابدأ من أي فكرة مهما كانت كبيرة.
+        </p>
+
+        <div class="suggestion-grid">
+
+          <button class="suggestion-card"
+                  data-prompt="ساعدني أعمل خطة واضحة لمشروع جديد من الفكرة لحد التنفيذ.">
+
+            <span class="suggestion-icon purple">✧</span>
+
+            <span>
+              <b>خطط لمشروعك</b>
+              <small>حوّل الفكرة لخطوات عملية</small>
+            </span>
+
+            <i>↙</i>
+
+          </button>
+
+          <button class="suggestion-card"
+                  data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة، مع أمثلة واقعية.">
+
+            <span class="suggestion-icon blue">◉</span>
+
+            <span>
+              <b>افهم أي موضوع</b>
+              <small>شرح واضح بأمثلة</small>
+            </span>
+
+            <i>↙</i>
+
+          </button>
+
+          <button class="suggestion-card"
+                  data-prompt="اكتب لي كودًا منظمًا واحترافيًا واشرح طريقة تشغيله واختباره.">
+
+            <span class="suggestion-icon green">{ }</span>
+
+            <span>
+              <b>اكتب كودًا</b>
+              <small>ابنِ وراجع وطوّر</small>
+            </span>
+
+            <i>↙</i>
+
+          </button>
+
+          <button class="suggestion-card"
+                  data-prompt="اقترح أفكارًا إبداعية وغير تقليدية لمحتوى أو مشروع رقمي.">
+
+            <span class="suggestion-icon orange">✳</span>
+
+            <span>
+              <b>أطلق إبداعك</b>
+              <small>أفكار جديدة من زوايا مختلفة</small>
+            </span>
+
+            <i>↙</i>
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="messages hidden" id="messages"></div>
+
+    </section>
+
+
+    <footer class="composer-area">
+
+      <div class="composer-wrap">
+
+        <div class="attachment-preview hidden" id="attachmentPreview"></div>
+
+        <textarea
+          id="promptInput"
+          rows="1"
+          placeholder="اكتب سؤالك هنا... اسأل MIKA أي حاجة"
+          aria-label="اكتب رسالتك"></textarea>
+
+        <div class="composer-tools">
+
+          <div class="tools-left">
+
+            <label class="tool-btn" for="imageInput" title="إرفاق صورة">
+              ＋ <span>إرفاق صورة</span>
+            </label>
+
+            <input type="file" id="imageInput" accept="image/*" hidden>
+
+            <button class="tool-btn" id="voiceInput" title="الإملاء الصوتي">
+              ♩ <span>إملاء صوتي</span>
+            </button>
+
+          </div>
+
+          <div class="tools-right">
+
+            <span class="composer-hint">
+              Enter للإرسال · Shift + Enter لسطر جديد
+            </span>
+
+            <button class="send-btn" id="sendButton" aria-label="إرسال الرسالة">
+              ↑
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="disclaimer">
+        قد يخطئ MIKA أحيانًا. راجع المعلومات المهمة قبل الاعتماد عليها.
+      </div>
+
+    </footer>
+
+  </main>
+
 </div>
 
-<div class="modal-backdrop hidden" id="modalBackdrop">
- <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <div class="modal-header"><h2 id="modalTitle">الإعدادات</h2><button class="icon-btn" id="closeModal" aria-label="إغلاق"><svg><use href="#i-close"/></svg></button></div>
-  <div id="modalBody"></div>
- </section>
+
+<div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+
+<div class="modal-backdrop hidden" id="settingsModal">
+
+  <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+
+    <div class="modal-head">
+
+      <div>
+        <span class="modal-kicker">تخصيص تجربتك</span>
+        <h2 id="settingsTitle">إعدادات MIKA</h2>
+      </div>
+
+      <button class="icon-btn" id="closeSettings" aria-label="إغلاق">
+        ×
+      </button>
+
+    </div>
+
+    <div class="setting-row">
+
+      <div>
+        <b>المظهر</b>
+        <small>اختار الشكل المريح ليك</small>
+      </div>
+
+      <select id="themeSelect">
+        <option value="dark">داكن</option>
+        <option value="light">فاتح</option>
+        <option value="system">حسب الجهاز</option>
+      </select>
+
+    </div>
+
+    <div class="setting-row">
+
+      <div>
+        <b>حفظ المحادثات</b>
+        <small>حفظ محلي داخل المتصفح الحالي</small>
+      </div>
+
+      <label class="switch">
+        <input type="checkbox" id="saveChats" checked>
+        <span></span>
+      </label>
+
+    </div>
+
+    <div class="setting-note">
+      <b>الخصوصية:</b>
+      المحادثات المحفوظة هنا موجودة في تخزين المتصفح على جهازك.
+      لا تضع معلومات شديدة الحساسية.
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" id="exportChats">تصدير المحادثات</button>
+      <button class="primary-btn" id="doneSettings">تم</button>
+    </div>
+
+  </section>
+
 </div>
 
-<div class="modal-backdrop hidden" id="voiceBackdrop">
- <section class="modal" role="dialog" aria-modal="true" aria-labelledby="voiceTitle">
-  <div class="modal-header"><h2 id="voiceTitle">المحادثة الصوتية</h2><button class="icon-btn" id="closeVoice" aria-label="إغلاق"><svg><use href="#i-close"/></svg></button></div>
-  <p class="modal-desc">اتكلم، وسيحاول المتصفح تحويل كلامك إلى نص. تقدر تسمع قراءة الردود إذا كانت ميزة الصوت متاحة.</p>
-  <div class="voice-stage">
-   <div class="voice-orbit"></div>
-   <div class="voice-core" id="voiceCore"><svg><use href="#i-mika-mark"/></svg></div>
-  </div>
-  <div class="voice-status" id="voiceStatus">اضغط على زر الميكروفون وابدأ الكلام</div>
-  <div class="voice-transcript" id="voiceTranscript"></div>
-  <div class="voice-controls">
-   <button class="voice-main-btn" id="startListening"><svg width="18" height="18"><use href="#i-mic"/></svg> ابدأ الاستماع</button>
-   <button class="voice-secondary-btn" id="stopSpeaking">إيقاف الصوت</button>
-  </div>
- </section>
-</div>
 
-<div id="toastContainer" aria-live="polite"></div>
+<script src="config.js"></script>
+<script src="app.js"></script>
 
-<script>
-(function(){
-"use strict";
-
-const $ = id => document.getElementById(id);
-const STORE_KEY = "mika_chat_conversations_v3";
-const SETTINGS_KEY = "mika_chat_settings_v1";
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const state = {
- chats:[], currentId:null, attachments:[], search:false,
- recognition:null, listening:false, lastVoiceText:"", pending:false
-};
-
-const icons = {
- brand:'<span class="brand-symbol"><svg><use href="#mika-mark"></use></svg></span>',
- close:'<svg width="15" height="15"><use href="#i-close"></use></svg>'
-};
-
-function makeId(){
- return "mika-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8);
-}
-function escapeHTML(value){
- return String(value).replace(/[&<>"']/g, ch => ({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[ch]));
-}
-function toast(message,type=""){
- const node=document.createElement("div");
- node.className="toast "+type;
- node.textContent=message;
- $("toastContainer").appendChild(node);
- setTimeout(()=>node.remove(),3400);
-}
-function save(){
- try{
-  localStorage.setItem(STORE_KEY,JSON.stringify(state.chats));
- }catch(e){
-  toast("تعذر حفظ البيانات على الجهاز. قد تكون مساحة التخزين ممتلئة.","error");
- }
-}
-function load(){
- try{
-  const parsed=JSON.parse(localStorage.getItem(STORE_KEY)||"[]");
-  if(Array.isArray(parsed)){
-   state.chats=parsed.filter(c=>c&&c.id&&Array.isArray(c.messages)).slice(0,100);
-  }
- }catch(e){state.chats=[]}
- try{
-  const settings=JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}");
-  if(settings.name){
-   $("profileName").textContent=settings.name;
-   $("profileAvatar").textContent=settings.name.trim().charAt(0)||"م";
-  }
-  if(settings.theme==="light")document.body.classList.add("light");
- }catch(e){}
-}
-function getCurrent(){
- return state.chats.find(c=>c.id===state.currentId)||null;
-}
-function createChat(){
- const chat={id:makeId(),title:"محادثة جديدة",createdAt:Date.now(),updatedAt:Date.now(),messages:[]};
- state.chats.unshift(chat);
- state.currentId=chat.id;
- save();
- renderHistory();
- renderConversation();
- closeSidebar();
- $("promptInput").focus();
-}
-function openChat(id){
- if(!state.chats.some(c=>c.id===id))return;
- state.currentId=id;
- renderHistory();
- renderConversation();
- closeSidebar();
-}
-function deleteChat(id){
- const chat=state.chats.find(c=>c.id===id);
- if(!chat)return;
- state.chats=state.chats.filter(c=>c.id!==id);
- if(state.currentId===id)state.currentId=state.chats[0]?.id||null;
- save();
- renderHistory();
- renderConversation();
- toast("تم حذف المحادثة من هذا الجهاز.","success");
-}
-function renderHistory(){
- const host=$("historyList");
- const query=$("searchChats").value.trim().toLowerCase();
- const list=state.chats.filter(c=>c.title.toLowerCase().includes(query));
- host.innerHTML="";
- if(!list.length){
-  const empty=document.createElement("div");
-  empty.className="empty-history";
-  empty.textContent=query?"مفيش محادثات مطابقة للبحث.":"محادثاتك الجديدة هتظهر هنا.";
-  host.appendChild(empty);
-  return;
- }
- list.forEach(chat=>{
-  const row=document.createElement("div");
-  row.className="history-item"+(chat.id===state.currentId?" active":"");
-  const title=document.createElement("span");
-  title.className="history-title";
-  title.textContent=chat.title;
-  title.addEventListener("click",()=>openChat(chat.id));
-  const del=document.createElement("button");
-  del.className="delete-chat";
-  del.type="button";
-  del.textContent="×";
-  del.title="حذف المحادثة";
-  del.setAttribute("aria-label","حذف "+chat.title);
-  del.addEventListener("click",e=>{e.stopPropagation();deleteChat(chat.id)});
-  row.append(title,del);
-  row.addEventListener("click",()=>openChat(chat.id));
-  host.appendChild(row);
- });
-}
-function renderConversation(){
- const chat=getCurrent();
- const welcome=$("welcomeScreen"),messages=$("messagesList");
- messages.innerHTML="";
- if(!chat||!chat.messages.length){
-  welcome.classList.remove("hidden");
-  messages.classList.add("hidden");
-  return;
- }
- welcome.classList.add("hidden");
- messages.classList.remove("hidden");
- chat.messages.forEach((message,index)=>{
-  const row=document.createElement("article");
-  row.className="message "+(message.role==="user"?"user":"assistant");
-  const avatar=document.createElement("div");
-  avatar.className="message-avatar";
-  if(message.role==="user"){
-   avatar.textContent=$("profileAvatar").textContent||"م";
-  }else{
-   avatar.innerHTML=icons.brand;
-  }
-  const body=document.createElement("div");
-  body.className="message-body";
-  const author=document.createElement("div");
-  author.className="message-author";
-  author.textContent=message.role==="user"?"أنت":"MIKA";
-  const text=document.createElement("div");
-  text.className="message-text";
-  text.textContent=message.content||"";
-  body.append(author,text);
-  if(message.role==="assistant"){
-   const actions=document.createElement("div");
-   actions.className="message-actions";
-   const copy=document.createElement("button");
-   copy.className="message-action";
-   copy.textContent="نسخ الرد";
-   copy.addEventListener("click",()=>copyText(message.content));
-   const speak=document.createElement("button");
-   speak.className="message-action";
-   speak.textContent="استمع للرد";
-   speak.addEventListener("click",()=>speakText(message.content));
-   actions.append(copy,speak);
-   body.appendChild(actions);
-  }
-  row.append(avatar,body);
-  messages.appendChild(row);
- });
- requestAnimationFrame(scrollBottom);
-}
-function scrollBottom(){
- const scroll=$("contentScroll");
- scroll.scrollTop=scroll.scrollHeight;
-}
-function setBusy(busy){
- state.pending=busy;
- $("sendButton").disabled=busy;
- $("sendButton").style.opacity=busy?".55":"1";
- $("connectionText").textContent=busy?"جاري المعالجة":"الواجهة جاهزة";
-}
-function showTyping(){
- const row=document.createElement("div");
- row.className="message assistant";
- row.id="typingIndicator";
- row.innerHTML=icons.brand+'<div class="message-body"><div class="message-author">MIKA</div><div class="typing-indicator"><i></i><i></i><i></i></div></div>';
- $("messagesList").appendChild(row);
- requestAnimationFrame(scrollBottom);
-}
-function removeTyping(){
- $("typingIndicator")?.remove();
-}
-function addMessage(role,content,extra={}){
- let chat=getCurrent();
- if(!chat){createChat();chat=getCurrent()}
- const message={role,content:String(content),createdAt:Date.now(),...extra};
- chat.messages.push(message);
- chat.updatedAt=Date.now();
- if(role==="user"&&chat.title==="محادثة جديدة"){
-  chat.title=String(content).replace(/\s+/g," ").slice(0,42)||"محادثة جديدة";
- }
- state.chats.sort((a,b)=>b.updatedAt-a.updatedAt);
- save();
- renderHistory();
- renderConversation();
- return message;
-}
-async function sendMessage(overrideText){
- if(state.pending)return;
- const input=$("promptInput");
- const content=(overrideText??input.value).trim();
- if(!content&&!state.attachments.length)return;
- if(content.length>12000){toast("الرسالة طويلة جدًا.","error");return}
- if(!getCurrent())createChat();
-
- const attachments=state.attachments.map(f=>({name:f.name,type:f.type,size:f.size}));
- const searchEnabled=$("webSearchButton").classList.contains("selected");
- const userText=content+(attachments.length?"\n\nالمرفقات: "+attachments.map(f=>f.name).join("، "):"");
- if(!userText.trim())return;
- input.value="";
- autoResize();
- $("charCounter").textContent="0 / 12000";
- clearAttachments();
- addMessage("user",userText);
- setBusy(true);
- showTyping();
-
- try{
-  const result=await requestAssistant({
-   message:content,
-   history:getCurrent().messages.slice(-20).map(m=>({role:m.role,content:m.content})),
-   search:searchEnabled,
-   attachments
-  });
-  removeTyping();
-  addMessage("assistant",result);
- }catch(error){
-  removeTyping();
-  const notice=error?.message||"الخدمة غير متصلة حاليًا.";
-  addMessage("assistant","تعذّر الحصول على رد من الذكاء الاصطناعي.\n\n"+notice+"\n\nالمحادثة محفوظة على جهازك، لكن للحصول على إجابات فعلية لازم توصيل خادم ذكاء اصطناعي آمن بالموقع.");
- }finally{
-  setBusy(false);
- }
-}
-async function requestAssistant(payload){
- const controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),45000);
- try{
-  const response=await fetch("/api/chat",{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify(payload),
-   signal:controller.signal
-  });
-  const data=await response.json().catch(()=>({}));
-  if(!response.ok){
-   if(response.status===404)throw new Error("لم يتم إعداد مسار /api/chat بعد. الواجهة جاهزة، لكن يلزم توصيل خادم الذكاء الاصطناعي.");
-   throw new Error(data.error||"الخادم أعاد خطأ رقم "+response.status+".");
-  }
-  const answer=data.reply||data.message||data.content;
-  if(typeof answer!=="string"||!answer.trim())throw new Error("الخادم لم يُرجع نص إجابة صالحًا.");
-  return answer.trim();
- }catch(error){
-  if(error.name==="AbortError")throw new Error("انتهت مهلة الاتصال بالخادم. حاول مرة أخرى.");
-  if(error instanceof TypeError)throw new Error("تعذر الوصول إلى خادم الذكاء الاصطناعي. تأكد من إعداد الاتصال.");
-  throw error;
- }finally{
-  clearTimeout(timer);
- }
-}
-function autoResize(){
- const input=$("promptInput");
- input.style.height="auto";
- input.style.height=Math.min(input.scrollHeight,170)+"px";
-}
-async function copyText(text){
- try{
-  await navigator.clipboard.writeText(text);
-  toast("تم نسخ النص.","success");
- }catch(e){
-  const temp=document.createElement("textarea");
-  temp.value=text;document.body.appendChild(temp);temp.select();
-  const ok=document.execCommand("copy");temp.remove();
-  toast(ok?"تم نسخ النص.":"تعذر النسخ على هذا المتصفح.",ok?"success":"error");
- }
-}
-function speakText(text){
- if(!("speechSynthesis" in window)){toast("ميزة قراءة النص غير مدعومة في هذا المتصفح.","error");return}
- window.speechSynthesis.cancel();
- const utterance=new SpeechSynthesisUtterance(text);
- utterance.lang="ar-EG";
- utterance.rate=1;
- window.speechSynthesis.speak(utterance);
-}
-function clearAttachments(){
- state.attachments=[];
- $("attachmentPreview").innerHTML="";
- $("fileInput").value="";
-}
-function renderAttachments(){
- const host=$("attachmentPreview");
- host.innerHTML="";
- state.attachments.forEach((file,index)=>{
-  const chip=document.createElement("div");
-  chip.className="file-chip";
-  const name=document.createElement("span");
-  name.textContent=file.name+" ("+Math.max(1,Math.round(file.size/1024))+" KB)";
-  const remove=document.createElement("button");
-  remove.type="button";remove.textContent="×";remove.setAttribute("aria-label","إزالة الملف");
-  remove.addEventListener("click",()=>{state.attachments.splice(index,1);renderAttachments()});
-  chip.append(name,remove);host.appendChild(chip);
- });
-}
-function openModal(title,html){
- $("modalTitle").textContent=title;
- $("modalBody").innerHTML=html;
- $("modalBackdrop").classList.remove("hidden");
-}
-function closeModal(){$("modalBackdrop").classList.add("hidden")}
-function openSettings(){
- const currentName=$("profileName").textContent;
- openModal("الإعدادات",`
-  <label class="modal-label" for="displayName">الاسم الظاهر</label>
-  <input class="modal-input" id="displayName" maxlength="35" value="${escapeHTML(currentName)}" placeholder="اكتب اسمك">
-  <label class="modal-label">المظهر</label>
-  <button class="tool-btn" id="settingsTheme" style="margin-top:9px">تغيير المظهر الفاتح / الداكن</button>
-  <p class="modal-desc" style="margin-bottom:0">هذه الإعدادات محفوظة على هذا الجهاز فقط. تسجيل الدخول والمزامنة بين الأجهزة يحتاجان إلى خادم وحسابات فعلية.</p>
-  <div class="modal-footer"><button class="primary-btn" id="saveSettings">حفظ التغييرات</button></div>
- `);
- $("saveSettings").addEventListener("click",()=>{
-  const name=$("displayName").value.trim()||"ضيف ميكا";
-  $("profileName").textContent=name;
-  $("profileAvatar").textContent=name.charAt(0);
-  saveSettings();
-  closeModal();
-  toast("تم حفظ الإعدادات.","success");
- });
- $("settingsTheme").addEventListener("click",toggleTheme);
-}
-function saveSettings(){
- try{
-  localStorage.setItem(SETTINGS_KEY,JSON.stringify({
-   name:$("profileName").textContent,
-   theme:document.body.classList.contains("light")?"light":"dark"
-  }));
- }catch(e){}
-}
-function toggleTheme(){
- document.body.classList.toggle("light");
- const symbol=document.body.classList.contains("light")?"i-sun":"i-moon";
- $("themeToggle").innerHTML='<svg><use href="#'+symbol+'"/></svg>';
- saveSettings();
-}
-function closeSidebar(){$("sidebar").classList.remove("open")}
-function openVoice(){
- $("voiceBackdrop").classList.remove("hidden");
- $("voiceStatus").textContent="اضغط على زر الميكروفون وابدأ الكلام";
- $("voiceTranscript").textContent="";
-}
-function stopListening(){
- if(state.recognition){
-  try{state.recognition.stop()}catch(e){}
- }
- state.listening=false;
- $("voiceCore").classList.remove("listening");
-}
-function startListening(){
- const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SpeechRecognition){
-  $("voiceStatus").textContent="المتصفح لا يدعم التعرف على الكلام. جرّب متصفحًا يدعم الميزة.";
-  toast("التعرف على الكلام غير مدعوم هنا. يمكنك استخدام لوحة المفاتيح.","error");
-  return;
- }
- stopListening();
- const recognition=new SpeechRecognition();
- recognition.lang="ar-EG";
- recognition.interimResults=true;
- recognition.continuous=false;
- state.recognition=recognition;
- state.lastVoiceText="";
- recognition.onstart=()=>{
-  state.listening=true;
-  $("voiceCore").classList.add("listening");
-  $("voiceStatus").textContent="سامعك... اتكلم دلوقتي";
- };
- recognition.onresult=event=>{
-  let interim="";
-  let finalText="";
-  for(let i=event.resultIndex;i<event.results.length;i++){
-   if(event.results[i].isFinal)finalText+=event.results[i][0].transcript;
-   else interim+=event.results[i][0].transcript;
-  }
-  state.lastVoiceText=(state.lastVoiceText+" "+finalText).trim();
-  $("voiceTranscript").textContent=(state.lastVoiceText+" "+interim).trim();
- };
- recognition.onerror=event=>{
-  $("voiceStatus").textContent=event.error==="not-allowed"?"اسمح للمتصفح باستخدام الميكروفون من إعدادات الموقع.":"تعذر الاستماع: "+event.error;
- };
- recognition.onend=()=>{
-  state.listening=false;
-  $("voiceCore").classList.remove("listening");
-  if(state.lastVoiceText.trim()){
-   $("promptInput").value=state.lastVoiceText.trim();
-   autoResize();
-   $("charCounter").textContent=$("promptInput").value.length+" / 12000";
-   $("voiceStatus").textContent="تم تحويل كلامك إلى نص. تقدر تبعته للمساعد.";
-   $("voiceTranscript").textContent=state.lastVoiceText.trim();
-  }else if(state.voiceCancelled!==true){
-   $("voiceStatus").textContent="انتهى الاستماع. تقدر تحاول مرة تانية.";
-  }
- };
- try{recognition.start()}catch(e){toast("تعذر تشغيل الميكروفون.","error")}
-}
-function closeVoice(){
- stopListening();
- $("voiceBackdrop").classList.add("hidden");
-}
-function bindEvents(){
- $("newChat").addEventListener("click",createChat);
- $("searchChats").addEventListener("input",renderHistory);
- $("promptInput").addEventListener("input",()=>{
-  autoResize();
-  $("charCounter").textContent=$("promptInput").value.length+" / 12000";
- });
- $("promptInput").addEventListener("keydown",event=>{
-  if(event.key==="Enter"&&!event.shiftKey){
-   event.preventDefault();
-   sendMessage();
-  }
- });
- $("sendButton").addEventListener("click",()=>sendMessage());
- document.querySelectorAll(".suggestion").forEach(button=>{
-  button.addEventListener("click",()=>{
-   $("promptInput").value=button.dataset.prompt||"";
-   autoResize();
-   $("charCounter").textContent=$("promptInput").value.length+" / 12000";
-   $("promptInput").focus();
-  });
- });
- $("themeToggle").addEventListener("click",toggleTheme);
- $("openSettings").addEventListener("click",openSettings);
- $("closeModal").addEventListener("click",closeModal);
- $("modalBackdrop").addEventListener("click",e=>{if(e.target===$("modalBackdrop"))closeModal()});
- $("openSidebar").addEventListener("click",()=>$("sidebar").classList.add("open"));
- $("closeSidebar").addEventListener("click",closeSidebar);
- $("attachButton").addEventListener("click",()=>$("fileInput").click());
- $("fileInput").addEventListener("change",event=>{
-  const incoming=Array.from(event.target.files||[]);
-  for(const file of incoming){
-   if(state.attachments.length>=5){toast("الحد الأقصى 5 ملفات في الرسالة.","error");break}
-   if(file.size>MAX_FILE_SIZE){toast("الملف "+file.name+" أكبر من 10 ميجابايت.","error");continue}
-   if(state.attachments.some(f=>f.name===file.name&&f.size===file.size)){continue}
-   state.attachments.push(file);
-  }
-  renderAttachments();
- });
- $("webSearchButton").addEventListener("click",()=>{
-  const button=$("webSearchButton");
-  button.classList.toggle("selected");
-  const enabled=button.classList.contains("selected");
-  toast(enabled?"تم تفعيل خيار طلب البحث. يحتاج نتائج ويب فعلية إلى خادم يدعم البحث.":"تم إيقاف خيار طلب البحث.");
- });
- $("voiceButton").addEventListener("click",openVoice);
- $("closeVoice").addEventListener("click",closeVoice);
- $("voiceBackdrop").addEventListener("click",e=>{if(e.target===$("voiceBackdrop"))closeVoice()});
- $("startListening").addEventListener("click",startListening);
- $("stopSpeaking").addEventListener("click",()=>{
-  if("speechSynthesis" in window)window.speechSynthesis.cancel();
-  stopListening();
-  $("voiceStatus").textContent="تم إيقاف الصوت.";
- });
- $("voiceBackdrop").addEventListener("keydown",e=>{if(e.key==="Escape")closeVoice()});
- document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeModal();closeVoice();closeSidebar()}
- });
-}
-function launch(){
- load();
- bindEvents();
- renderHistory();
- if(state.chats.length){
-  state.currentId=state.chats[0].id;
- }
- renderConversation();
- if(document.body.classList.contains("light")){
-  $("themeToggle").innerHTML='<svg><use href="#i-sun"/></svg>';
- }
- /* لا نربط الانتقال بنجاح الشبكة أو الذكاء الاصطناعي */
- setTimeout(()=>{
-  $("splash").classList.add("done");
-  $("app").classList.add("ready");
-  setTimeout(()=>$("splash")?.remove(),700);
- },1700);
-}
-window.addEventListener("error",event=>{
- console.error("MIKA UI error:",event.message);
-});
-window.addEventListener("unhandledrejection",event=>{
- console.error("MIKA async error:",event.reason);
-});
-/* تشغيل مضمون حتى لو تعطل جزء اختياري */
-try{launch()}catch(error){
- console.error(error);
- $("splash").classList.add("done");
- $("app").classList.add("ready");
- setTimeout(()=>$("splash")?.remove(),700);
- toast("تم تشغيل الواجهة مع وجود خطأ جزئي. حدّث الصفحة إذا لزم الأمر.","error");
-}
-})();
-</script>
 </body>
-  </html>
+          </html>
