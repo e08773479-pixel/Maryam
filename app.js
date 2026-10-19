@@ -1,262 +1,106 @@
-"use strict";
-
 (() => {
+  "use strict";
+
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-  const elements = {
-    body: document.body,
-    newChat: $("#newChat"),
-    searchChats: $("#searchChats"),
-    historyList: $("#historyList"),
-    historyEmpty: $("#historyEmpty"),
-    historyCount: $("#historyCount"),
-    promptInput: $("#promptInput"),
-    sendButton: $("#sendButton"),
-    welcomeScreen: $("#welcomeScreen"),
-    messagesContainer: $("#messagesContainer"),
-    messagesList: $("#messagesList"),
-    themeToggle: $("#themeToggle"),
-    openSettings: $("#openSettings"),
-    openPlans: $("#openPlans"),
-    closeModal: $("#closeModal"),
-    modalBackdrop: $("#modalBackdrop"),
-    modalTitle: $("#modalTitle"),
-    modalBody: $("#modalBody"),
-    openSidebar: $("#openSidebar"),
-    closeSidebar: $("#closeSidebar"),
-    mobileOverlay: $("#mobileOverlay"),
-    attachButton: $("#attachButton"),
-    fileInput: $("#fileInput"),
-    attachmentPreview: $("#attachmentPreview"),
-    webSearchButton: $("#webSearchButton"),
-    voiceButton: $("#voiceButton"),
-    charCounter: $("#charCounter"),
-    shareChat: $("#shareChat"),
-    serviceNotice: $("#serviceNotice"),
-    toastContainer: $("#toastContainer")
+  const config = window.MIKA_CONFIG || {
+    apiEndpoint: "/api/chat",
+    maxImageSizeMB: 8,
+    maxHistoryMessages: 24
   };
 
-  const STORAGE_KEY = "mika_chat_conversations_v1";
-  const SETTINGS_KEY = "mika_chat_settings_v1";
-  const MAX_CONVERSATIONS = 100;
-  const MAX_MESSAGE_LENGTH = 12000;
-  const MAX_FILES = 5;
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const STORAGE_KEY = "mika-chat-conversations-v1";
+  const THEME_KEY = "mika-chat-theme-v1";
 
   let conversations = [];
-  let activeConversationId = null;
-  let pendingFiles = [];
-  let webSearchEnabled = false;
-  let recognition = null;
-  let isListening = false;
+  let activeId = null;
+  let pendingImage = null;
   let isSending = false;
-  let toastSequence = 0;
+  let abortController = null;
+  let selectedMode = "auto";
+  let recognition = null;
 
-  const defaultSettings = {
-    theme: "dark",
-    displayName: "ضيف ميكا"
+  const els = {
+    sidebar: $("#sidebar"),
+    history: $("#chatHistory"),
+    welcome: $("#welcome"),
+    messages: $("#messages"),
+    input: $("#promptInput"),
+    send: $("#sendButton"),
+    attachmentPreview: $("#attachmentPreview"),
+    imageInput: $("#imageInput"),
+    toastRegion: $("#toastRegion"),
+    modelMenu: $("#modelMenu"),
+    modelLabel: $("#modelLabel"),
+    settingsModal: $("#settingsModal"),
+    themeSelect: $("#themeSelect"),
+    saveChats: $("#saveChats")
   };
 
-  let settings = { ...defaultSettings };
-
   function makeId() {
-    if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
-      return globalThis.crypto.randomUUID();
-    }
+    return crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  }
 
-    return "mika-" + Date.now().toString(36) + "-" +
-      Math.random().toString(36).slice(2, 10);
+  function toast(message) {
+    const node = document.createElement("div");
+    node.className = "toast";
+    node.textContent = message;
+    els.toastRegion.append(node);
+
+    setTimeout(() => node.remove(), 3200);
   }
 
   function escapeHTML(value) {
-    return String(value ?? "").replace(/[&<>"']/g, character => ({
+    return String(value).replace(/[&<>"']/g, char => ({
       "&": "&amp;",
       "<": "&lt;",
       ">": "&gt;",
       '"': "&quot;",
       "'": "&#39;"
-    })[character]);
+    })[char]);
   }
 
-  function formatTime(timestamp) {
-    const date = new Date(timestamp);
-
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-
-    return new Intl.DateTimeFormat("ar-EG", {
-      hour: "2-digit",
-      minute: "2-digit"
-    }).format(date);
-  }
-
-  function showToast(message, type = "normal", duration = 3200) {
-    const toast = document.createElement("div");
-    toast.className = "toast" + (type === "normal" ? "" : " " + type);
-    toast.textContent = message;
-    toast.dataset.toastId = String(++toastSequence);
-
-    elements.toastContainer.appendChild(toast);
-
-    window.setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateY(6px)";
-
-      window.setTimeout(() => toast.remove(), 220);
-    }, duration);
-  }
-
-  function setServiceNotice(message = "") {
-    elements.serviceNotice.textContent = message;
-  }
-
-  function loadSettings() {
+  function load() {
     try {
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-
-      if (saved && typeof saved === "object") {
-        settings = {
-          ...defaultSettings,
-          ...saved
-        };
-      }
-    } catch {
-      settings = { ...defaultSettings };
-    }
-
-    applyTheme(false);
-    updateProfile();
-  }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    } catch {
-      showToast("تعذر حفظ الإعدادات على هذا الجهاز.", "error");
-    }
-  }
-
-  function applyTheme(showMessage = false) {
-    const light = settings.theme === "light";
-
-    elements.body.classList.toggle("light-theme", light);
-
-    const metaTheme = $('meta[name="theme-color"]');
-
-    if (metaTheme) {
-      metaTheme.content = light ? "#f4f6fc" : "#080b14";
-    }
-
-    if (showMessage) {
-      showToast(light ? "تم تفعيل المظهر الفاتح." : "تم تفعيل المظهر الداكن.", "success");
-    }
-  }
-
-  function updateProfile() {
-    const name = String(settings.displayName || "ضيف ميكا").trim() || "ضيف ميكا";
-    const nameElement = $(".profile-info strong");
-    const avatarElement = $(".profile-button .avatar");
-
-    if (nameElement) {
-      nameElement.textContent = name;
-    }
-
-    if (avatarElement) {
-      avatarElement.textContent = Array.from(name)[0] || "M";
-    }
-  }
-
-  function normalizeConversation(raw) {
-    if (!raw || typeof raw !== "object") {
-      return null;
-    }
-
-    if (typeof raw.id !== "string" || !Array.isArray(raw.messages)) {
-      return null;
-    }
-
-    const messages = raw.messages
-      .filter(message =>
-        message &&
-        typeof message.id === "string" &&
-        ["user", "assistant"].includes(message.role) &&
-        typeof message.content === "string"
-      )
-      .map(message => ({
-        id: message.id,
-        role: message.role,
-        content: message.content.slice(0, MAX_MESSAGE_LENGTH),
-        timestamp: Number(message.timestamp) || Date.now(),
-        attachments: Array.isArray(message.attachments)
-          ? message.attachments
-              .filter(file => file && typeof file.name === "string")
-              .slice(0, MAX_FILES)
-              .map(file => ({
-                name: file.name.slice(0, 240),
-                size: Number(file.size) || 0,
-                type: String(file.type || "").slice(0, 120)
-              }))
-          : [],
-        webSearch: Boolean(message.webSearch)
-      }));
-
-    return {
-      id: raw.id,
-      title: typeof raw.title === "string"
-        ? raw.title.slice(0, 100)
-        : "محادثة جديدة",
-      createdAt: Number(raw.createdAt) || Date.now(),
-      updatedAt: Number(raw.updatedAt) || Date.now(),
-      messages
-    };
-  }
-
-  function loadConversations() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-
-      conversations = Array.isArray(saved)
-        ? saved.map(normalizeConversation).filter(Boolean).slice(0, MAX_CONVERSATIONS)
-        : [];
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+      conversations = Array.isArray(parsed) ? parsed : [];
     } catch {
       conversations = [];
     }
 
-    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
+    const theme = localStorage.getItem(THEME_KEY) || "dark";
+    applyTheme(theme);
+
+    els.saveChats.checked = localStorage.getItem("mika-save-chats") !== "false";
+
     renderHistory();
-  }
 
-  function saveConversations() {
-    try {
-      const compact = conversations.slice(0, MAX_CONVERSATIONS);
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
-
-      return true;
-    } catch {
-      showToast(
-        "مساحة التخزين المحلية قد تكون ممتلئة. جرّب حذف محادثات قديمة.",
-        "error",
-        4500
-      );
-
-      return false;
+    if (conversations.length) {
+      openConversation(conversations[0].id);
+    } else {
+      showWelcome();
     }
   }
 
-  function getActiveConversation() {
-    return conversations.find(item => item.id === activeConversationId) || null;
+  function persist() {
+    if (!els.saveChats.checked) return;
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+    } catch {
+      toast("مساحة التخزين ممتلئة؛ صدّر محادثاتك أو امسح بعضها.");
+    }
+  }
+
+  function activeConversation() {
+    return conversations.find(item => item.id === activeId);
   }
 
   function createConversation() {
-    if (conversations.length >= MAX_CONVERSATIONS) {
-      showToast("وصلت للحد المحلي للمحادثات. احذف محادثة قديمة أولًا.", "error");
-      return null;
-    }
-
-    const conversation = {
+    const chat = {
       id: makeId(),
       title: "محادثة جديدة",
       createdAt: Date.now(),
@@ -264,976 +108,696 @@
       messages: []
     };
 
-    conversations.unshift(conversation);
-    activeConversationId = conversation.id;
+    conversations.unshift(chat);
+    activeId = chat.id;
 
-    saveConversations();
+    persist();
     renderHistory();
-    renderActiveConversation();
-    closeSidebar();
-
-    elements.promptInput.focus();
-
-    return conversation;
+    showWelcome();
+    closeSidebarMobile();
+    els.input.focus();
   }
 
-  function getOrCreateConversation() {
-    return getActiveConversation() || createConversation();
+  function showWelcome() {
+    els.welcome.classList.remove("hidden");
+    els.messages.classList.add("hidden");
+    els.messages.replaceChildren();
   }
 
-  function makeConversationTitle(content) {
-    const normalized = String(content || "")
-      .replace(/\s+/g, " ")
-      .trim();
+  function openConversation(chatId) {
+    const chat = conversations.find(item => item.id === chatId);
+    if (!chat) return;
 
-    if (!normalized) {
-      return "محادثة جديدة";
-    }
+    activeId = chat.id;
+    els.welcome.classList.add("hidden");
+    els.messages.classList.remove("hidden");
+    els.messages.replaceChildren();
 
-    return normalized.length > 38
-      ? normalized.slice(0, 38).trim() + "…"
-      : normalized;
+    chat.messages.forEach(message => {
+      appendMessage(message.role, message.content, {
+        imageData: message.imageData,
+        skipAction: message.role === "user"
+      });
+    });
+
+    renderHistory();
+    closeSidebarMobile();
+    scrollBottom();
   }
 
   function renderHistory() {
-    const query = elements.searchChats.value.trim().toLocaleLowerCase("ar");
-    const visibleConversations = conversations.filter(conversation => {
-      if (!query) {
-        return true;
-      }
+    els.history.replaceChildren();
 
-      return conversation.title.toLocaleLowerCase("ar").includes(query) ||
-        conversation.messages.some(message =>
-          message.content.toLocaleLowerCase("ar").includes(query)
-        );
-    });
-
-    elements.historyCount.textContent = String(conversations.length);
-
-    const existingEmpty = elements.historyList.querySelector(".history-empty");
-    if (existingEmpty) {
-      existingEmpty.remove();
-    }
-
-    elements.historyList.replaceChildren();
-
-    if (visibleConversations.length === 0) {
+    if (!conversations.length) {
       const empty = document.createElement("div");
       empty.className = "history-empty";
-
-      const icon = document.createElement("span");
-      icon.className = "empty-history-icon";
-      icon.textContent = query ? "⌕" : "◷";
-
-      const title = document.createElement("p");
-      title.textContent = query ? "مفيش نتائج مطابقة" : "محادثاتك هتظهر هنا";
-
-      const description = document.createElement("small");
-      description.textContent = query
-        ? "جرّب كلمات بحث مختلفة."
-        : "ابدأ محادثة جديدة علشان تنطلق.";
-
-      empty.append(icon, title, description);
-      elements.historyList.appendChild(empty);
+      empty.textContent = "محادثاتك الجديدة هتظهر هنا.";
+      els.history.append(empty);
       return;
     }
 
-    visibleConversations.forEach(conversation => {
-      const row = document.createElement("div");
-      row.className = "history-item" +
-        (conversation.id === activeConversationId ? " active" : "");
-      row.dataset.conversationId = conversation.id;
-
-      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      icon.setAttribute("viewBox", "0 0 24 24");
-      icon.innerHTML = '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8v.5Z"/>';
+    conversations.slice(0, 80).forEach(chat => {
+      const row = document.createElement("button");
+      row.className = `history-item${chat.id === activeId ? " active" : ""}`;
+      row.type = "button";
 
       const title = document.createElement("span");
-      title.className = "history-item-title";
-      title.textContent = conversation.title;
+      title.className = "history-title";
+      title.textContent = chat.title || "محادثة جديدة";
 
-      const deleteButton = document.createElement("button");
-      deleteButton.className = "history-delete";
-      deleteButton.type = "button";
-      deleteButton.textContent = "×";
-      deleteButton.title = "حذف المحادثة";
-      deleteButton.setAttribute("aria-label", "حذف المحادثة");
+      const del = document.createElement("span");
+      del.className = "delete-one";
+      del.textContent = "×";
+      del.title = "حذف المحادثة";
 
-      deleteButton.addEventListener("click", event => {
+      del.addEventListener("click", event => {
         event.stopPropagation();
-        deleteConversation(conversation.id);
+        deleteConversation(chat.id);
       });
 
-      row.append(icon, title, deleteButton);
-
-      row.addEventListener("click", () => {
-        openConversation(conversation.id);
-      });
-
-      elements.historyList.appendChild(row);
+      row.append(title, del);
+      row.addEventListener("click", () => openConversation(chat.id));
+      els.history.append(row);
     });
   }
 
-  function openConversation(id) {
-    const conversation = conversations.find(item => item.id === id);
+  function deleteConversation(chatId) {
+    conversations = conversations.filter(chat => chat.id !== chatId);
 
-    if (!conversation) {
-      showToast("المحادثة المطلوبة مش موجودة.", "error");
-      return;
+    if (activeId === chatId) {
+      activeId = null;
+
+      if (conversations.length) {
+        openConversation(conversations[0].id);
+      } else {
+        showWelcome();
+      }
     }
 
-    activeConversationId = id;
-
+    persist();
     renderHistory();
-    renderActiveConversation();
-    closeSidebar();
   }
 
-  function deleteConversation(id) {
-    const conversation = conversations.find(item => item.id === id);
-
-    if (!conversation) {
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `هل تريد حذف المحادثة "${conversation.title}"؟`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    conversations = conversations.filter(item => item.id !== id);
-
-    if (activeConversationId === id) {
-      activeConversationId = null;
-    }
-
-    saveConversations();
-    renderHistory();
-    renderActiveConversation();
-
-    showToast("تم حذف المحادثة من التخزين المحلي.", "success");
-  }
-
-  function clearMessages() {
-    elements.messagesList.replaceChildren();
-  }
-
-  function renderActiveConversation() {
-    const conversation = getActiveConversation();
-
-    if (!conversation || conversation.messages.length === 0) {
-      elements.welcomeScreen.classList.remove("hidden");
-      elements.messagesContainer.classList.add("hidden");
-      clearMessages();
-      return;
-    }
-
-    elements.welcomeScreen.classList.add("hidden");
-    elements.messagesContainer.classList.remove("hidden");
-
-    clearMessages();
-
-    conversation.messages.forEach(message => {
-      renderMessage(message, false);
-    });
-
-    scrollMessagesToBottom();
-  }
-
-  function renderMessage(message, shouldScroll = true) {
-    const row = document.createElement("article");
-    row.className = "message " + message.role;
-    row.dataset.messageId = message.id;
+  function appendMessage(role, content, options = {}) {
+    const wrap = document.createElement("article");
+    wrap.className = `message ${role === "user" ? "user" : "assistant"}`;
 
     const avatar = document.createElement("div");
     avatar.className = "message-avatar";
-    avatar.textContent = message.role === "assistant" ? "M" : (
-      Array.from(settings.displayName || "M")[0] || "M"
-    );
+    avatar.textContent = role === "user" ? "م" : "m";
 
     const body = document.createElement("div");
     body.className = "message-body";
 
-    const heading = document.createElement("div");
-    heading.className = "message-heading";
+    const contentNode = document.createElement("div");
+    contentNode.className = "message-content";
 
-    const name = document.createElement("strong");
-    name.textContent = message.role === "assistant"
-      ? "ميكا شات"
-      : (settings.displayName || "أنت");
+    if (options.typing) {
+      contentNode.innerHTML =
+        '<div class="typing-dots"><span></span><span></span><span></span></div>';
 
-    const time = document.createElement("time");
-    time.textContent = formatTime(message.timestamp);
-    time.dateTime = new Date(message.timestamp).toISOString();
+      wrap.dataset.typing = "true";
+    } else {
+      contentNode.innerHTML = renderMarkdown(content || "");
 
-    heading.append(name, time);
+      if (options.imageData) {
+        const img = document.createElement("img");
+        img.src = options.imageData;
+        img.alt = "الصورة المرفقة";
+        img.style.cssText =
+          "max-width:240px;max-height:220px;display:block;border-radius:10px;margin-top:8px";
 
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.textContent = message.content;
-
-    body.append(heading, content);
-
-    if (message.attachments && message.attachments.length) {
-      const attachments = document.createElement("div");
-      attachments.className = "message-attachments";
-
-      message.attachments.forEach(file => {
-        const chip = document.createElement("div");
-        chip.className = "message-attachment";
-
-        const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        icon.setAttribute("viewBox", "0 0 24 24");
-        icon.innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>';
-
-        const filename = document.createElement("span");
-        filename.textContent = file.name;
-
-        chip.append(icon, filename);
-        attachments.appendChild(chip);
-      });
-
-      body.appendChild(attachments);
+        contentNode.append(img);
+      }
     }
 
-    if (message.role === "assistant") {
+    body.append(contentNode);
+
+    if (!options.typing && role === "assistant" && !options.skipAction) {
       const actions = document.createElement("div");
       actions.className = "message-actions";
+      actions.innerHTML =
+        '<button data-act="copy">نسخ</button>' +
+        '<button data-act="speak">استماع</button>' +
+        '<button data-act="regenerate">إعادة الإجابة</button>';
 
-      const copy = document.createElement("button");
-      copy.className = "message-action";
-      copy.type = "button";
-      copy.title = "نسخ الرد";
-      copy.setAttribute("aria-label", "نسخ الرد");
-      copy.innerHTML = '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
+      actions.addEventListener("click", event => {
+        const button = event.target.closest("button");
+        if (!button) return;
 
-      copy.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(message.content);
-          showToast("تم نسخ الرد.", "success");
-        } catch {
-          showToast("المتصفح منع النسخ. حدّد النص وانسخه يدويًا.", "error");
+        if (button.dataset.act === "copy") {
+          copyText(content).then(() => toast("اتنسخ الرد."));
         }
+
+        if (button.dataset.act === "speak") speak(content);
+
+        if (button.dataset.act === "regenerate") regenerate();
       });
 
-      actions.appendChild(copy);
-      body.appendChild(actions);
+      body.append(actions);
     }
 
-    row.append(avatar, body);
-    elements.messagesList.appendChild(row);
+    wrap.append(avatar, body);
+    els.messages.append(wrap);
 
-    if (shouldScroll) {
-      scrollMessagesToBottom();
-    }
+    return wrap;
   }
 
-  function scrollMessagesToBottom() {
+  function renderMarkdown(text) {
+    const escaped = escapeHTML(text);
+    const codeBlocks = [];
+
+    let output = escaped.replace(
+      /```([\w-]*)\n?([\s\S]*?)```/g,
+      (_, language, code) => {
+        const token = `MIKACODEBLOCK${codeBlocks.length}TOKEN`;
+        codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
+        return token;
+      }
+    );
+
+    output = output
+      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/^\s*[-*] (.+)$/gm, "• $1")
+      .replace(/\n/g, "<br>");
+
+    codeBlocks.forEach((block, index) => {
+      output = output.replace(`MIKACODEBLOCK${index}TOKEN`, block);
+    });
+
+    return output
+      .split(/<br><br>/)
+      .map(part => part.trim() ? `<p>${part}</p>` : "")
+      .join("");
+  }
+
+  function scrollBottom() {
     requestAnimationFrame(() => {
-      elements.messagesContainer.scrollTop =
-        elements.messagesContainer.scrollHeight;
+      const conversation = $(".conversation");
+      conversation.scrollTop = conversation.scrollHeight;
     });
   }
 
-  function addMessage(role, content, attachments = [], options = {}) {
-    const conversation = getOrCreateConversation();
+  function setBusy(busy) {
+    isSending = busy;
 
-    if (!conversation) {
-      return null;
+    els.send.textContent = busy ? "■" : "↑";
+    els.send.title = busy ? "إيقاف الرد" : "إرسال الرسالة";
+    els.send.setAttribute(
+      "aria-label",
+      busy ? "إيقاف الرد" : "إرسال الرسالة"
+    );
+
+    els.input.disabled = busy;
+  }
+
+  async function sendMessage(overrideText) {
+    if (isSending) {
+      abortController?.abort();
+      return;
     }
 
-    const message = {
-      id: makeId(),
-      role,
-      content: String(content || "").slice(0, MAX_MESSAGE_LENGTH),
-      timestamp: Date.now(),
-      attachments: attachments.map(file => ({
-        name: file.name,
-        size: file.size,
-        type: file.type
-      })),
-      webSearch: Boolean(options.webSearch)
+    const text = (overrideText ?? els.input.value).trim();
+
+    if (!text && !pendingImage) return;
+
+    if (!activeConversation()) createConversation();
+
+    const chat = activeConversation();
+    const imageData = pendingImage?.data || null;
+
+    const userMessage = {
+      role: "user",
+      content: text || "حلّل الصورة المرفقة.",
+      ...(imageData ? { imageData } : {})
     };
 
-    conversation.messages.push(message);
-    conversation.updatedAt = Date.now();
+    chat.messages.push(userMessage);
 
-    if (role === "user" && conversation.messages.filter(item => item.role === "user").length === 1) {
-      conversation.title = makeConversationTitle(content || attachments[0]?.name);
+    if (chat.title === "محادثة جديدة") {
+      chat.title = (text || "صورة مرفقة").slice(0, 36);
     }
 
-    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
+    chat.updatedAt = Date.now();
+    persist();
 
-    saveConversations();
+    els.welcome.classList.add("hidden");
+    els.messages.classList.remove("hidden");
+
+    appendMessage("user", userMessage.content, { imageData });
+
+    els.input.value = "";
+    autoResize();
+    clearAttachment();
     renderHistory();
+    scrollBottom();
 
-    elements.welcomeScreen.classList.add("hidden");
-    elements.messagesContainer.classList.remove("hidden");
+    const typing = appendMessage("assistant", "", { typing: true });
+    scrollBottom();
 
-    renderMessage(message);
-
-    return message;
-  }
-
-  function showTypingIndicator() {
-    const row = document.createElement("article");
-    row.className = "message assistant";
-    row.id = "typingIndicator";
-
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = "M";
-
-    const body = document.createElement("div");
-    body.className = "message-body";
-
-    const heading = document.createElement("div");
-    heading.className = "message-heading";
-
-    const title = document.createElement("strong");
-    title.textContent = "ميكا شات";
-
-    heading.appendChild(title);
-
-    const indicator = document.createElement("div");
-    indicator.className = "typing-indicator";
-    indicator.setAttribute("aria-label", "جاري تجهيز الرد");
-
-    for (let i = 0; i < 3; i++) {
-      indicator.appendChild(document.createElement("span"));
-    }
-
-    body.append(heading, indicator);
-    row.append(avatar, body);
-    elements.messagesList.appendChild(row);
-
-    scrollMessagesToBottom();
-  }
-
-  function removeTypingIndicator() {
-    $("#typingIndicator")?.remove();
-  }
-
-  function updateCharCounter() {
-    const length = elements.promptInput.value.length;
-
-    elements.charCounter.textContent =
-      `${length.toLocaleString("ar-EG")} / ${MAX_MESSAGE_LENGTH.toLocaleString("ar-EG")}`;
-
-    elements.sendButton.disabled = isSending || (
-      !elements.promptInput.value.trim() && pendingFiles.length === 0
-    );
-  }
-
-  function resizeTextarea() {
-    elements.promptInput.style.height = "auto";
-    elements.promptInput.style.height =
-      Math.min(elements.promptInput.scrollHeight, 180) + "px";
-  }
-
-  function clearPendingFiles() {
-    pendingFiles = [];
-    elements.fileInput.value = "";
-    renderPendingFiles();
-  }
-
-  function renderPendingFiles() {
-    elements.attachmentPreview.replaceChildren();
-
-    if (pendingFiles.length === 0) {
-      elements.attachmentPreview.classList.add("hidden");
-      return;
-    }
-
-    elements.attachmentPreview.classList.remove("hidden");
-
-    pendingFiles.forEach((file, index) => {
-      const chip = document.createElement("div");
-      chip.className = "attachment-chip";
-
-      const icon = document.createElement("span");
-      icon.textContent = file.type.startsWith("image/") ? "▧" : "▤";
-
-      const name = document.createElement("span");
-      name.textContent = `${file.name} (${formatBytes(file.size)})`;
-
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "×";
-      remove.setAttribute("aria-label", "إزالة الملف");
-
-      remove.addEventListener("click", () => {
-        pendingFiles.splice(index, 1);
-        renderPendingFiles();
-        updateCharCounter();
-      });
-
-      chip.append(icon, name, remove);
-      elements.attachmentPreview.appendChild(chip);
-    });
-  }
-
-  function formatBytes(bytes) {
-    if (bytes < 1024) {
-      return `${bytes} B`;
-    }
-
-    if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  }
-
-  function handleFileSelection(fileList) {
-    const incoming = Array.from(fileList || []);
-
-    if (!incoming.length) {
-      return;
-    }
-
-    for (const file of incoming) {
-      if (pendingFiles.length >= MAX_FILES) {
-        showToast(`الحد الأقصى ${MAX_FILES} ملفات في الرسالة الواحدة.`, "error");
-        break;
-      }
-
-      if (file.size > MAX_FILE_SIZE) {
-        showToast(`الملف "${file.name}" أكبر من 10 ميجابايت.`, "error");
-        continue;
-      }
-
-      if (pendingFiles.some(existing =>
-        existing.name === file.name &&
-        existing.size === file.size &&
-        existing.lastModified === file.lastModified
-      )) {
-        continue;
-      }
-
-      pendingFiles.push(file);
-    }
-
-    renderPendingFiles();
-    updateCharCounter();
-
-    if (pendingFiles.length) {
-      showToast("تم اختيار الملفات. تحليل محتواها يحتاج خدمة خلفية متصلة.", "normal", 3800);
-    }
-  }
-
-  async function sendMessage() {
-    if (isSending) {
-      return;
-    }
-
-    const content = elements.promptInput.value.trim();
-
-    if (!content && pendingFiles.length === 0) {
-      elements.promptInput.focus();
-      return;
-    }
-
-    if (content.length > MAX_MESSAGE_LENGTH) {
-      showToast("الرسالة أطول من الحد المسموح.", "error");
-      return;
-    }
-
-    const filesForMessage = pendingFiles.slice();
-    const requestedWebSearch = webSearchEnabled;
-
-    const userMessage = content || (
-      filesForMessage.length
-        ? "أرفقت ملفات. حلّل محتواها من فضلك."
-        : ""
-    );
-
-    const conversation = getOrCreateConversation();
-
-    if (!conversation) {
-      return;
-    }
-
-    addMessage("user", userMessage, filesForMessage, {
-      webSearch: requestedWebSearch
-    });
-
-    elements.promptInput.value = "";
-    elements.promptInput.style.height = "auto";
-    clearPendingFiles();
-
-    isSending = true;
-    updateCharCounter();
-
-    elements.sendButton.disabled = true;
-    showTypingIndicator();
+    setBusy(true);
+    abortController = new AbortController();
 
     try {
-      if (!window.MikaServices || typeof window.MikaServices.chat !== "function") {
-        throw new Error(
-          "الخدمة غير متصلة بعد. جهّزنا الواجهة، لكننا نحتاج ربط نموذج ذكاء اصطناعي حقيقي."
-        );
-      }
-
-      const result = await window.MikaServices.chat({
-        conversationId: conversation.id,
-        message: userMessage,
-        webSearch: requestedWebSearch,
-        attachments: filesForMessage.map(file => ({
-          name: file.name,
-          size: file.size,
-          type: file.type
-        })),
-        history: conversation.messages.slice(-20).map(message => ({
+      const history = chat.messages
+        .slice(-config.maxHistoryMessages)
+        .map(message => ({
           role: message.role,
-          content: message.content
-        }))
+          content: message.content,
+          ...(message.imageData ? { imageData: message.imageData } : {})
+        }));
+
+      const response = await fetch(config.apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: history,
+          mode: selectedMode
+        }),
+        signal: abortController.signal
       });
 
-      removeTypingIndicator();
+      const data = await response.json().catch(() => ({}));
 
-      const answer = typeof result === "string"
-        ? result
-        : result && typeof result.answer === "string"
-          ? result.answer
-          : "";
-
-      if (!answer.trim()) {
-        throw new Error("الخدمة لم تُرجع إجابة صالحة.");
+      if (!response.ok) {
+        throw new Error(data.error || `حصل خطأ من الخادم (${response.status}).`);
       }
 
-      addMessage("assistant", answer);
-      setServiceNotice("");
+      const answer = data.reply || data.output || "وصل رد فارغ من الخدمة.";
+
+      typing.remove();
+
+      chat.messages.push({
+        role: "assistant",
+        content: answer
+      });
+
+      chat.updatedAt = Date.now();
+
+      persist();
+      appendMessage("assistant", answer);
+      renderHistory();
+      scrollBottom();
 
     } catch (error) {
-      removeTypingIndicator();
+      typing.remove();
 
-      const message = error && error.message
-        ? error.message
-        : "تعذر الاتصال بخدمة الذكاء الاصطناعي.";
+      if (error.name === "AbortError") {
+        toast("تم إيقاف الطلب.");
+      } else {
+        appendMessage(
+          "assistant",
+          `**مش قادر أوصل لخدمة الذكاء الاصطناعي.**\n\n${error.message}\n\nتأكد إن الخادم شغال وإن مفتاح API مضبوط في ملف البيئة \`.env\`.`
+        );
 
-      const failedConversation = getActiveConversation();
-
-      if (failedConversation) {
-        failedConversation.messages.push({
-          id: makeId(),
-          role: "assistant",
-          content: "تعذر الحصول على إجابة من نموذج الذكاء الاصطناعي.\n\n" +
-            message +
-            "\n\nرسالتك محفوظة محليًا. بعد توصيل خدمة الذكاء الاصطناعي الحقيقية، جرّب إرسالها مرة أخرى.",
-          timestamp: Date.now(),
-          attachments: [],
-          webSearch: false
-        });
-
-        failedConversation.updatedAt = Date.now();
-        saveConversations();
-        renderHistory();
-        renderActiveConversation();
+        toast("راجع اتصال الخادم وإعدادات API.");
       }
 
-      setServiceNotice("خدمة الذكاء الاصطناعي غير متصلة حاليًا.");
-      showToast("لم يصل رد من خدمة الذكاء الاصطناعي.", "error", 4000);
+      scrollBottom();
 
     } finally {
-      isSending = false;
-      updateCharCounter();
-      elements.promptInput.focus();
+      setBusy(false);
+      abortController = null;
     }
   }
 
-  function toggleWebSearch() {
-    webSearchEnabled = !webSearchEnabled;
+  function autoResize() {
+    els.input.style.height = "auto";
+    els.input.style.height = `${Math.min(els.input.scrollHeight, 180)}px`;
+  }
 
-    elements.webSearchButton.classList.toggle("active", webSearchEnabled);
-    elements.webSearchButton.setAttribute("aria-pressed", String(webSearchEnabled));
+  function clearAttachment() {
+    pendingImage = null;
+    els.attachmentPreview.classList.add("hidden");
+    els.attachmentPreview.replaceChildren();
+    els.imageInput.value = "";
+  }
 
-    if (webSearchEnabled) {
-      setServiceNotice("تم اختيار البحث للرسالة التالية. يلزم ربط خدمة بحث حقيقية لتشغيله.");
-      showToast("تم تفعيل خيار البحث لهذه الرسالة.", "success");
+  function applyTheme(theme) {
+    let actual = theme;
+
+    if (theme === "system") {
+      actual = matchMedia("(prefers-color-scheme: light)").matches
+        ? "light"
+        : "dark";
+    }
+
+    document.body.classList.toggle("light", actual === "light");
+
+    localStorage.setItem(THEME_KEY, theme);
+    els.themeSelect.value = theme;
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.append(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+  }
+
+  function speak(text) {
+    if (!("speechSynthesis" in window)) {
+      return toast("ميزة القراءة الصوتية مش مدعومة في المتصفح ده.");
+    }
+
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ar-EG";
+    speechSynthesis.speak(utterance);
+  }
+
+  async function regenerate() {
+    const chat = activeConversation();
+
+    if (!chat || isSending) return;
+
+    const lastAssistantIndex = chat.messages
+      .map(message => message.role)
+      .lastIndexOf("assistant");
+
+    if (lastAssistantIndex >= 0) {
+      chat.messages.splice(lastAssistantIndex, 1);
+    }
+
+    persist();
+    openConversation(chat.id);
+
+    await requestAnswer(chat);
+  }
+
+  async function requestAnswer(chat) {
+    const typing = appendMessage("assistant", "", { typing: true });
+
+    setBusy(true);
+    abortController = new AbortController();
+
+    try {
+      const response = await fetch(config.apiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: chat.messages.slice(-config.maxHistoryMessages),
+          mode: selectedMode
+        }),
+        signal: abortController.signal
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر إعادة الإجابة.");
+      }
+
+      typing.remove();
+
+      const answer = data.reply || data.output || "";
+      chat.messages.push({ role: "assistant", content: answer });
+
+      persist();
+      appendMessage("assistant", answer);
+      scrollBottom();
+
+    } catch (error) {
+      typing.remove();
+      appendMessage("assistant", `تعذر إعادة الإجابة: ${error.message}`);
+
+    } finally {
+      setBusy(false);
+      abortController = null;
+    }
+  }
+
+  function closeSidebarMobile() {
+    if (innerWidth <= 760) {
+      els.sidebar.classList.remove("open");
+    }
+  }
+
+  function exportChats() {
+    const blob = new Blob(
+      [JSON.stringify({
+        app: "MIKA CHAT",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        conversations
+      }, null, 2)],
+      { type: "application/json" }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "mika-chat-conversations.json";
+    anchor.click();
+
+    URL.revokeObjectURL(url);
+    toast("تم تجهيز ملف التصدير.");
+  }
+
+  $("#newChat").addEventListener("click", createConversation);
+
+  $("#sendButton").addEventListener("click", () => sendMessage());
+
+  els.input.addEventListener("input", autoResize);
+
+  els.input.addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  $$(".suggestion-card").forEach(button => {
+    button.addEventListener("click", () => {
+      els.input.value = button.dataset.prompt;
+      autoResize();
+      els.input.focus();
+    });
+  });
+
+  $("#openSidebar").addEventListener("click", () => {
+    els.sidebar.classList.add("open");
+  });
+
+  $("#closeSidebar").addEventListener("click", closeSidebarMobile);
+
+  $("#themeToggle").addEventListener("click", () => {
+    applyTheme(document.body.classList.contains("light") ? "dark" : "light");
+  });
+
+  $("#modelPicker").addEventListener("click", () => {
+    els.modelMenu.classList.toggle("hidden");
+  });
+
+  $$("#modelMenu button").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedMode = button.dataset.model;
+
+      els.modelLabel.textContent = button
+        .querySelector("b")
+        .textContent
+        .replace(/^[✳ϟ◈]\s*/, "");
+
+      els.modelMenu.classList.add("hidden");
+
+      toast("تم تغيير وضع الواجهة. النموذج الفعلي يتحدد من إعدادات الخادم.");
+    });
+  });
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".model-picker-wrap")) {
+      els.modelMenu.classList.add("hidden");
+    }
+  });
+
+  $("#settingsButton").addEventListener("click", () => {
+    els.settingsModal.classList.remove("hidden");
+  });
+
+  $("#closeSettings").addEventListener("click", () => {
+    els.settingsModal.classList.add("hidden");
+  });
+
+  $("#doneSettings").addEventListener("click", () => {
+    els.settingsModal.classList.add("hidden");
+  });
+
+  els.settingsModal.addEventListener("click", event => {
+    if (event.target === els.settingsModal) {
+      els.settingsModal.classList.add("hidden");
+    }
+  });
+
+  els.themeSelect.addEventListener("change", () => {
+    applyTheme(els.themeSelect.value);
+  });
+
+  els.saveChats.addEventListener("change", () => {
+    localStorage.setItem("mika-save-chats", String(els.saveChats.checked));
+
+    if (!els.saveChats.checked) {
+      localStorage.removeItem(STORAGE_KEY);
     } else {
-      setServiceNotice("");
-      showToast("تم إيقاف خيار البحث.");
+      persist();
     }
-  }
 
-  function setupVoiceRecognition() {
+    toast(
+      els.saveChats.checked
+        ? "الحفظ المحلي اتفعّل."
+        : "الحفظ المحلي اتوقف واتمسح السجل المحفوظ."
+    );
+  });
+
+  $("#exportChats").addEventListener("click", exportChats);
+
+  $("#clearHistory").addEventListener("click", () => {
+    if (!conversations.length) {
+      return toast("سجل المحادثات فاضي.");
+    }
+
+    if (confirm("متأكد إنك عايز تمسح كل المحادثات المحفوظة؟")) {
+      conversations = [];
+      activeId = null;
+      persist();
+      renderHistory();
+      showWelcome();
+      toast("تم مسح المحادثات.");
+    }
+  });
+
+  els.imageInput.addEventListener("change", async () => {
+    const file = els.imageInput.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      return toast("اختار ملف صورة صالح.");
+    }
+
+    if (file.size > config.maxImageSizeMB * 1024 * 1024) {
+      els.imageInput.value = "";
+      return toast(`حجم الصورة لازم يكون أقل من ${config.maxImageSizeMB} ميجابايت.`);
+    }
+
+    const data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    pendingImage = { data, name: file.name };
+
+    const img = document.createElement("img");
+    img.src = data;
+    img.alt = "";
+
+    const name = document.createElement("span");
+    name.textContent = file.name;
+
+    const remove = document.createElement("button");
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", "إزالة الصورة");
+    remove.onclick = clearAttachment;
+
+    els.attachmentPreview.replaceChildren(img, name, remove);
+    els.attachmentPreview.classList.remove("hidden");
+  });
+
+  $("#voiceInput").addEventListener("click", () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      showToast("الإملاء الصوتي غير مدعوم في هذا المتصفح. جرّب متصفحًا يدعمه.", "error", 4000);
-      return;
+      return toast("الإملاء الصوتي مش مدعوم في المتصفح ده. جرّب Chrome.");
     }
 
-    if (isListening && recognition) {
+    if (recognition) {
       recognition.stop();
+      recognition = null;
       return;
     }
 
     recognition = new SpeechRecognition();
     recognition.lang = "ar-EG";
     recognition.interimResults = true;
-    recognition.continuous = false;
-
-    let finalTranscript = "";
-
-    recognition.onstart = () => {
-      isListening = true;
-      elements.voiceButton.classList.add("active");
-      elements.voiceButton.setAttribute("aria-pressed", "true");
-      showToast("اتكلم دلوقتي؛ المتصفح بيحوّل صوتك لنص.", "normal");
-    };
 
     recognition.onresult = event => {
-      let interimTranscript = "";
+      let transcript = "";
 
-      for (let index = event.resultIndex; index < event.results.length; index++) {
-        const transcript = event.results[index][0].transcript;
-
-        if (event.results[index].isFinal) {
-          finalTranscript += transcript;
-        } else {
-          interimTranscript += transcript;
-        }
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
       }
 
-      const currentText = [finalTranscript, interimTranscript]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
-
-      if (currentText) {
-        const existing = elements.promptInput.value.trim();
-        elements.promptInput.value = [existing, currentText]
-          .filter(Boolean)
-          .join(existing ? " " : "");
-
-        resizeTextarea();
-        updateCharCounter();
-      }
+      els.input.value = transcript;
+      autoResize();
     };
 
-    recognition.onerror = event => {
-      if (event.error !== "no-speech" && event.error !== "aborted") {
-        showToast("حصلت مشكلة في الإملاء الصوتي: " + event.error, "error");
-      }
-    };
+    recognition.onerror = () => toast("ما قدرناش نسمع الكلام بوضوح.");
+    recognition.onend = () => { recognition = null; };
 
-    recognition.onend = () => {
-      isListening = false;
-      elements.voiceButton.classList.remove("active");
-      elements.voiceButton.setAttribute("aria-pressed", "false");
-    };
+    recognition.start();
+    toast("اتكلم دلوقتي...");
+  });
 
-    try {
-      recognition.start();
-    } catch {
-      showToast("تعذر بدء الإملاء الصوتي. جرّب مرة أخرى.", "error");
-    }
-  }
+  $("#shareButton").addEventListener("click", async () => {
+    const chat = activeConversation();
 
-  function openModal(title, contentBuilder) {
-    elements.modalTitle.textContent = title;
-    elements.modalBody.replaceChildren();
-    contentBuilder(elements.modalBody);
-
-    elements.modalBackdrop.classList.remove("hidden");
-    elements.closeModal.focus();
-  }
-
-  function closeModal() {
-    elements.modalBackdrop.classList.add("hidden");
-  }
-
-  function makeElement(tag, className, text) {
-    const element = document.createElement(tag);
-
-    if (className) {
-      element.className = className;
+    if (!chat || !chat.messages.length) {
+      return toast("ابدأ محادثة الأول علشان تشاركها.");
     }
 
-    if (text !== undefined) {
-      element.textContent = text;
-    }
-
-    return element;
-  }
-
-  function openSettingsModal() {
-    openModal("الإعدادات", body => {
-      const description = makeElement(
-        "p",
-        "modal-description",
-        "خصص تجربتك على هذا الجهاز. الإعدادات الحالية محلية وليست مرتبطة بحساب مستخدم."
-      );
-
-      const nameGroup = makeElement("div", "settings-group");
-      const nameLabel = makeElement("label", "", "الاسم الظاهر");
-      nameLabel.htmlFor = "settingsDisplayName";
-
-      const nameInput = makeElement("input");
-      nameInput.id = "settingsDisplayName";
-      nameInput.type = "text";
-      nameInput.maxLength = 40;
-      nameInput.value = settings.displayName || "ضيف ميكا";
-
-      nameGroup.append(nameLabel, nameInput);
-
-      const themeGroup = makeElement("div", "settings-group");
-      const themeLabel = makeElement("label", "", "المظهر");
-      themeLabel.htmlFor = "settingsTheme";
-
-      const themeSelect = makeElement("select");
-      themeSelect.id = "settingsTheme";
-
-      [
-        ["dark", "المظهر الداكن"],
-        ["light", "المظهر الفاتح"]
-      ].forEach(([value, label]) => {
-        const option = makeElement("option", "", label);
-        option.value = value;
-        themeSelect.appendChild(option);
-      });
-
-      themeSelect.value = settings.theme;
-      themeGroup.append(themeLabel, themeSelect);
-
-      const saveButton = makeElement("button", "modal-primary", "حفظ الإعدادات");
-      saveButton.type = "button";
-
-      saveButton.addEventListener("click", () => {
-        settings.displayName = nameInput.value.trim().slice(0, 40) || "ضيف ميكا";
-        settings.theme = themeSelect.value === "light" ? "light" : "dark";
-
-        saveSettings();
-        applyTheme();
-        updateProfile();
-        renderActiveConversation();
-        closeModal();
-        showToast("تم حفظ الإعدادات على جهازك.", "success");
-      });
-
-      body.append(description, nameGroup, themeGroup, saveButton);
-    });
-  }
-
-  function openPlansModal() {
-    openModal("خطط ميكا شات", body => {
-      body.appendChild(makeElement(
-        "p",
-        "modal-description",
-        "دي واجهة تعريفية فقط. مفيش اشتراكات أو مدفوعات فعلية مفعّلة في النسخة الحالية."
-      ));
-
-      const plans = [
-        {
-          name: "MIKA Free",
-          description: "تجربة الواجهة والمحادثات المحلية. استخدام الذكاء الاصطناعي يحتاج اتصال الخدمة.",
-          status: "النسخة الحالية"
-        },
-        {
-          name: "MIKA Plus",
-          description: "خطة مستقبلية يمكن ربطها بحدود استخدام أعلى وأدوات إضافية بعد تجهيز الخادم ونظام الحسابات.",
-          status: "غير متاحة حاليًا"
-        },
-        {
-          name: "MIKA Pro",
-          description: "خطة مستقبلية للاستخدام المتقدم، بعد تحديد الخدمات والتكلفة وآلية الاشتراك.",
-          status: "غير متاحة حاليًا"
-        }
-      ];
-
-      plans.forEach(plan => {
-        const card = makeElement("div", "plan-option");
-        const title = makeElement("strong", "", plan.name);
-        const description = makeElement("p", "", plan.description);
-        const status = makeElement("span", "plan-status", plan.status);
-
-        card.append(title, description, status);
-        body.appendChild(card);
-      });
-    });
-  }
-
-  async function shareConversation() {
-    const conversation = getActiveConversation();
-
-    if (!conversation || conversation.messages.length === 0) {
-      showToast("ابدأ محادثة قبل محاولة مشاركتها.", "error");
-      return;
-    }
-
-    const text = [
-      "MIKA CHAT — " + conversation.title,
-      "",
-      ...conversation.messages.map(message =>
-        (message.role === "user" ? "أنت: " : "ميكا شات: ") + message.content
-      )
-    ].join("\n\n");
+    const text = chat.messages
+      .map(message => `${message.role === "user" ? "أنت" : "MIKA"}: ${message.content}`)
+      .join("\n\n");
 
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: conversation.title,
-          text
-        });
+        await navigator.share({ title: chat.title, text });
+      } catch {}
+    } else {
+      await copyText(text);
+      toast("نسخت المحادثة؛ تقدر تبعتها لأي حد.");
+    }
+  });
 
-        return;
-      } catch (error) {
-        if (error && error.name === "AbortError") {
-          return;
-        }
+  $$("[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      if (button.dataset.action === "image") {
+        toast("توليد الصور يحتاج ربط مزوّد توليد صور.");
       }
-    }
 
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast("تم نسخ نص المحادثة. تقدر تشاركه بنفسك.", "success");
-    } catch {
-      showToast("المتصفح لا يسمح بالمشاركة أو النسخ في السياق الحالي.", "error");
-    }
-  }
+      if (button.dataset.action === "voice") {
+        toast("المتاح حاليًا الإملاء الصوتي وقراءة الرد؛ الصوت المباشر يحتاج خدمة إضافية.");
+      }
+    });
+  });
 
-  function openSidebar() {
-    elements.body.classList.add("sidebar-open");
-  }
-
-  function closeSidebar() {
-    elements.body.classList.remove("sidebar-open");
-  }
-
-  function setupEvents() {
-    elements.newChat.addEventListener("click", () => {
+  document.addEventListener("keydown", event => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
       createConversation();
-      setServiceNotice("");
-    });
+    }
 
-    elements.searchChats.addEventListener("input", renderHistory);
+    if (event.key === "Escape") {
+      els.settingsModal.classList.add("hidden");
+      closeSidebarMobile();
+      els.modelMenu.classList.add("hidden");
+    }
+  });
 
-    elements.sendButton.addEventListener("click", sendMessage);
-
-    elements.promptInput.addEventListener("input", () => {
-      resizeTextarea();
-      updateCharCounter();
-    });
-
-    elements.promptInput.addEventListener("keydown", event => {
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        !event.isComposing
-      ) {
-        event.preventDefault();
-        sendMessage();
-      }
-    });
-
-    $$(".suggestion-card").forEach(button => {
-      button.addEventListener("click", () => {
-        elements.promptInput.value = button.dataset.prompt || "";
-        resizeTextarea();
-        updateCharCounter();
-        elements.promptInput.focus();
-      });
-    });
-
-    elements.themeToggle.addEventListener("click", () => {
-      settings.theme = settings.theme === "light" ? "dark" : "light";
-      saveSettings();
-      applyTheme(true);
-    });
-
-    elements.openSettings.addEventListener("click", openSettingsModal);
-    elements.openPlans.addEventListener("click", openPlansModal);
-    elements.closeModal.addEventListener("click", closeModal);
-
-    elements.modalBackdrop.addEventListener("click", event => {
-      if (event.target === elements.modalBackdrop) {
-        closeModal();
-      }
-    });
-
-    elements.openSidebar.addEventListener("click", openSidebar);
-    elements.closeSidebar.addEventListener("click", closeSidebar);
-    elements.mobileOverlay.addEventListener("click", closeSidebar);
-
-    elements.attachButton.addEventListener("click", () => {
-      elements.fileInput.click();
-    });
-
-    elements.fileInput.addEventListener("change", event => {
-      handleFileSelection(event.target.files);
-    });
-
-    elements.webSearchButton.addEventListener("click", toggleWebSearch);
-    elements.voiceButton.addEventListener("click", setupVoiceRecognition);
-    elements.shareChat.addEventListener("click", shareConversation);
-
-    document.addEventListener("keydown", event => {
-      const activeTag = document.activeElement?.tagName;
-      const isTyping = activeTag === "INPUT" || activeTag === "TEXTAREA";
-
-      if (
-        event.key === "/" &&
-        !isTyping &&
-        !event.ctrlKey &&
-        !event.metaKey &&
-        !event.altKey
-      ) {
-        event.preventDefault();
-        elements.searchChats.focus();
-      }
-
-      if (event.key === "Escape") {
-        closeModal();
-        closeSidebar();
-      }
-
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        createConversation();
-      }
-    });
-
-    window.addEventListener("storage", event => {
-      if (event.key === STORAGE_KEY) {
-        loadConversations();
-        renderActiveConversation();
-      }
-
-      if (event.key === SETTINGS_KEY) {
-        loadSettings();
-      }
-    });
-  }
-
-  function initialize() {
-    loadSettings();
-    loadConversations();
-    setupEvents();
-    updateCharCounter();
-    renderActiveConversation();
-
-    window.MIKA_CHAT = {
-      newConversation: createConversation,
-      openConversation,
-      getConversations: () => JSON.parse(JSON.stringify(conversations)),
-      getActiveConversation: () => {
-        const active = getActiveConversation();
-        return active ? JSON.parse(JSON.stringify(active)) : null;
-      },
-      refresh: () => {
-        loadConversations();
-        renderActiveConversation();
-      }
-    };
-
-    console.info("MIKA CHAT interface initialized.");
-  }
-
-  initialize();
+  load();
 })();
