@@ -2,1265 +2,1280 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#090b12">
-<meta name="description" content="MIKA CHAT — مساحة ذكية للمحادثة والإبداع والتفكير.">
-<title>MIKA CHAT — مساحتك الذكية</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080910">
+<meta name="description" content="MIKA CHAT — مساحة ذكية للتفكير والإبداع والمحادثة.">
+<title>MIKA CHAT — مساحة تفكيرك</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<link id="appIcon" rel="icon" type="image/svg+xml">
 
 <style>
 :root{
-  color-scheme:dark;
-  --bg:#090b12;
-  --bg2:#0e111b;
-  --panel:#111521;
-  --panel2:#171c2a;
-  --panel3:#202638;
-  --text:#f2f4ff;
-  --muted:#969eb5;
-  --border:rgba(255,255,255,.085);
-  --accent:#8b7bff;
-  --accent2:#51d9ff;
-  --green:#6be6bc;
-  --danger:#ff6d87;
-  --shadow:0 24px 80px rgba(0,0,0,.3);
-  --radius:22px;
-  --sidebar-width:285px;
+ --bg:#080910;
+ --panel:#10111b;
+ --panel2:#151623;
+ --panel3:#1b1c2b;
+ --border:rgba(255,255,255,.085);
+ --text:#f5f4ff;
+ --muted:#9394ac;
+ --purple:#9575ff;
+ --blue:#60cfff;
+ --cyan:#71e5ec;
+ --danger:#ff777f;
+ --green:#55d9a0;
+ --shadow:0 22px 80px rgba(0,0,0,.35);
+ --sidebar:286px;
+ --radius:22px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;min-height:100%;font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text)}
-body{overflow:hidden}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{
+ background:var(--bg);color:var(--text);
+ font-family:"Cairo",system-ui,sans-serif;
+ -webkit-font-smoothing:antialiased;
+}
 button,input,textarea{font:inherit}
 button{color:inherit;cursor:pointer}
-button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent2);outline-offset:3px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+ outline:2px solid var(--blue);outline-offset:3px
+}
 button:disabled{opacity:.45;cursor:not-allowed}
-svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+svg{width:21px;height:21px;display:block;flex-shrink:0}
 button svg{pointer-events:none}
-::selection{background:rgba(139,123,255,.35)}
+button,.clickable{-webkit-tap-highlight-color:transparent}
+::selection{background:#8f76ff55}
 .hidden{display:none!important}
-.app{display:flex;width:100%;height:100dvh;min-height:0;background:var(--bg)}
+#app{
+ height:100dvh;width:100%;display:flex;overflow:hidden;
+ background:
+ radial-gradient(ellipse at 52% -20%,#47337d23,transparent 50%),
+ var(--bg);
+}
 .sidebar{
-  width:var(--sidebar-width);flex:0 0 var(--sidebar-width);
-  display:flex;flex-direction:column;gap:18px;padding:22px 16px;
-  background:linear-gradient(180deg,#111521,#0d1019);
-  border-left:1px solid var(--border);z-index:20;
-  transition:transform .28s ease;
+ width:var(--sidebar);height:100%;flex-shrink:0;
+ border-left:1px solid var(--border);
+ background:rgba(13,14,23,.94);
+ display:flex;flex-direction:column;
+ padding:18px 14px calc(12px + env(safe-area-inset-bottom));
+ transition:transform .25s ease;
+ z-index:30;
 }
-.brand{display:flex;align-items:center;gap:12px;padding:3px 5px 15px}
-.brand-mark{
-  width:44px;height:44px;border-radius:15px;display:grid;place-items:center;
-  background:linear-gradient(140deg,#9d8aff,#6153e8 60%,#39d9ee);
-  box-shadow:0 5px 28px rgba(124,103,255,.28);
-  position:relative;overflow:hidden;
+.brand{display:flex;align-items:center;gap:11px;padding:4px 7px 21px}
+.brand-symbol{
+ width:44px;height:44px;border-radius:15px;display:grid;place-items:center;
+ background:linear-gradient(145deg,#9878ff,#6050db 55%,#35bde9);
+ box-shadow:0 5px 25px #775cff33;flex-shrink:0;
 }
-.brand-mark:before{content:"";position:absolute;width:70px;height:15px;background:#fff;opacity:.18;transform:rotate(-45deg);top:7px;right:-30px}
-.brand-mark svg{width:26px;height:26px;stroke:white;stroke-width:2.1;position:relative}
-.brand-name{font-family:"Inter","Cairo",sans-serif;font-size:20px;font-weight:800;letter-spacing:-.8px;direction:ltr}
-.brand-name span{background:linear-gradient(90deg,#a79bff,#65e5ff);color:transparent;background-clip:text}
-.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1.7px;margin-top:1px;direction:ltr}
-.icon-button,.plain-button{
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  border:1px solid var(--border);background:rgba(255,255,255,.035);
-  border-radius:13px;transition:background .2s,border-color .2s,transform .2s;
+.brand-symbol svg{width:30px;height:30px}
+.brand-name{font-size:20px;font-weight:900;letter-spacing:-.5px;direction:ltr}
+.brand-caption{font-size:11px;color:var(--muted);margin-top:-3px}
+.icon-btn{
+ display:grid;place-items:center;border:1px solid var(--border);
+ background:rgba(255,255,255,.035);border-radius:14px;
+ width:43px;height:43px;transition:background .2s,border-color .2s;
 }
-.icon-button{width:42px;height:42px;flex-shrink:0}
-.icon-button:hover,.plain-button:hover{background:var(--panel3);border-color:rgba(139,123,255,.45)}
-.icon-button:active,.plain-button:active{transform:scale(.97)}
-.new-chat{
-  width:100%;height:47px;border:1px solid rgba(166,152,255,.27);
-  border-radius:15px;background:linear-gradient(110deg,rgba(139,123,255,.19),rgba(81,217,255,.07));
-  display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;
+.icon-btn:hover{background:#242337;border-color:#8e7aff66}
+.primary-btn{
+ border:0;border-radius:15px;
+ background:linear-gradient(115deg,#a08aff,#7064ed 65%,#4e9be8);
+ color:white;font-weight:800;padding:12px 15px;
+ box-shadow:0 5px 22px #7962ff20;
 }
-.new-chat:hover{background:linear-gradient(110deg,rgba(139,123,255,.3),rgba(81,217,255,.13))}
-.side-search{position:relative}
-.side-search svg{position:absolute;right:12px;top:12px;width:18px;color:var(--muted)}
-.side-search input{
-  width:100%;height:43px;border:1px solid var(--border);border-radius:13px;
-  background:rgba(255,255,255,.035);color:var(--text);padding:0 39px 0 12px;outline:none;
+.primary-btn:hover{filter:brightness(1.08)}
+.new-chat{width:100%;display:flex;align-items:center;justify-content:center;gap:9px}
+.side-label{font-size:11px;color:#74758d;font-weight:800;padding:24px 10px 9px}
+.search-wrap{position:relative;margin-top:14px}
+.search-wrap svg{position:absolute;right:13px;top:13px;color:var(--muted);width:18px}
+.search-wrap input{
+ width:100%;height:44px;border:1px solid var(--border);
+ border-radius:13px;background:#ffffff04;color:var(--text);
+ padding:0 39px 0 12px;outline:none;font-size:12px;
 }
-.side-search input:focus{border-color:rgba(139,123,255,.65)}
-.side-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:0 7px}
-.side-label span:last-child{font-variant-numeric:tabular-nums}
-.history-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:5px}
-.history-list::-webkit-scrollbar,.messages::-webkit-scrollbar{width:5px}
-.history-list::-webkit-scrollbar-thumb,.messages::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:8px}
-.history-empty{padding:25px 10px;text-align:center;color:var(--muted);font-size:12px;line-height:1.9}
+.search-wrap input:focus{border-color:#8b79ff77}
+.history{flex:1;overflow:auto;min-height:0;padding-top:9px}
 .history-item{
-  min-height:44px;display:flex;align-items:center;gap:9px;padding:8px 10px;
-  border:1px solid transparent;border-radius:12px;cursor:pointer;color:#cbd0e1;
-  transition:background .18s;position:relative;
+ display:flex;align-items:center;gap:10px;width:100%;
+ padding:11px 10px;border-radius:13px;background:transparent;
+ border:1px solid transparent;text-align:right;margin-bottom:3px;
+ color:#bfc0d3;font-size:12px;
 }
-.history-item:hover,.history-item.active{background:rgba(255,255,255,.055)}
-.history-item.active{border-color:rgba(139,123,255,.18)}
-.history-item>svg{width:17px;height:17px;color:var(--muted)}
-.history-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
-.history-delete{border:0;background:none;color:var(--muted);padding:3px 6px;opacity:0;font-size:18px;border-radius:7px}
-.history-item:hover .history-delete,.history-item.active .history-delete{opacity:1}
-.history-delete:hover{color:var(--danger);background:rgba(255,109,135,.1)}
-.side-bottom{border-top:1px solid var(--border);padding-top:14px;display:grid;gap:8px}
-.profile-button{width:100%;display:flex;align-items:center;gap:10px;text-align:right;border:1px solid transparent;background:transparent;padding:9px;border-radius:14px}
-.profile-button:hover{background:rgba(255,255,255,.04)}
-.avatar{width:39px;height:39px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(140deg,#353052,#222b48);color:#c4c0ff;font-weight:800}
-.profile-info{flex:1;min-width:0}
-.profile-info strong{display:block;font-size:12px}
-.profile-info small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
-.profile-button>svg{color:var(--muted);width:18px}
-.workspace{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;isolation:isolate}
-.workspace:before{
-  content:"";position:absolute;width:420px;height:420px;top:-260px;left:15%;
-  background:radial-gradient(circle,rgba(112,91,255,.11),transparent 68%);pointer-events:none;z-index:-1
+.history-item:hover,.history-item.active{background:#ffffff08;border-color:var(--border);color:white}
+.history-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.delete-chat{opacity:.55;border:0;background:none;padding:4px;display:grid;place-items:center}
+.delete-chat:hover{opacity:1;color:var(--danger)}
+.empty-history{font-size:12px;color:var(--muted);text-align:center;padding:22px 6px}
+.sidebar-bottom{border-top:1px solid var(--border);padding-top:13px}
+.profile-row{display:flex;align-items:center;gap:10px;padding:8px 4px}
+.avatar{
+ display:grid;place-items:center;width:39px;height:39px;flex-shrink:0;
+ border-radius:13px;background:linear-gradient(135deg,#3b9ac8,#8c67e8);
+ color:white;font-weight:900
 }
-.topbar{height:76px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid var(--border);gap:15px}
-.topbar-right,.topbar-left{display:flex;align-items:center;gap:12px}
-.mobile-menu{display:none}
-.model-picker{display:flex;align-items:center;gap:9px;background:transparent;border:1px solid transparent;border-radius:13px;padding:8px 12px}
-.model-picker:hover{background:rgba(255,255,255,.04);border-color:var(--border)}
-.model-symbol{width:30px;height:30px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,rgba(139,123,255,.23),rgba(81,217,255,.1));color:#b7adff}
-.model-title{font-size:13px;font-weight:800}
-.model-subtitle{font-size:10px;color:var(--muted);margin-top:1px}
-.status-pill{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);padding:8px 11px;border:1px solid var(--border);border-radius:30px}
-.status-dot{width:7px;height:7px;border-radius:50%;background:#e6ba66;box-shadow:0 0 12px rgba(230,186,102,.3)}
-.topbar .icon-button{width:39px;height:39px}
-.main-scroll{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.profile-text{min-width:0;flex:1}
+.profile-text strong{font-size:12px;display:block}
+.profile-text small{font-size:10px;color:var(--muted)}
+.profile-menu{background:none;border:0;color:var(--muted);padding:6px}
+.main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;position:relative}
+.topbar{
+ height:72px;flex-shrink:0;border-bottom:1px solid var(--border);
+ display:flex;align-items:center;justify-content:space-between;
+ padding:0 23px;gap:12px;background:#080910bb;backdrop-filter:blur(18px);
+ z-index:5;
+}
+.top-left,.top-right{display:flex;align-items:center;gap:12px}
+.top-brand{display:flex;align-items:center;gap:10px}
+.top-brand .brand-symbol{width:36px;height:36px;border-radius:12px}
+.top-brand .brand-symbol svg{width:25px;height:25px}
+.top-title{font-size:14px;font-weight:900;direction:ltr}
+.top-subtitle{font-size:10px;color:var(--muted)}
+.status-pill{
+ display:flex;align-items:center;gap:8px;border:1px solid var(--border);
+ padding:8px 12px;border-radius:50px;font-size:11px;color:var(--muted)
+}
+.status-dot{width:7px;height:7px;background:#e6b96b;border-radius:50%;box-shadow:0 0 12px #e6b96b66}
+.content{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.scroll-area{
+ flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+ scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:#35344d transparent;
+}
+.scroll-inner{width:100%;max-width:950px;margin:auto;padding:32px 30px 30px}
 .welcome{
-  width:min(870px,100%);margin:auto;padding:35px 30px 30px;
-  animation:fadeUp .65s ease both;
+ min-height:100%;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;text-align:center;padding:26px 0 38px;
+ animation:fadeIn .55s ease both;
 }
-.hero-orb{width:84px;height:84px;margin:0 auto 27px;position:relative;display:grid;place-items:center}
-.orb-ring{position:absolute;inset:0;border-radius:28px;transform:rotate(45deg);border:1px solid rgba(160,147,255,.38);animation:orbSpin 18s linear infinite}
-.orb-ring:before,.orb-ring:after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;background:#74dfff;box-shadow:0 0 20px #74dfff}
-.orb-ring:before{top:-4px;left:35px}
-.orb-ring:after{bottom:-4px;right:35px;background:#a597ff;box-shadow:0 0 20px #a597ff}
-.orb-core{width:59px;height:59px;border-radius:21px;display:grid;place-items:center;background:linear-gradient(145deg,#9586ff,#6455dc 60%,#35c9e6);box-shadow:0 0 55px rgba(139,123,255,.28);position:relative}
-.orb-core svg{width:33px;height:33px;stroke:white;stroke-width:1.8}
-.eyebrow{text-align:center;font-size:11px;letter-spacing:2.4px;color:#aaa0ff;font-weight:700;direction:ltr}
-.hero-title{text-align:center;font-size:clamp(29px,4vw,46px);line-height:1.5;letter-spacing:-1.3px;margin:11px 0 8px;font-weight:800}
-.gradient-text{background:linear-gradient(100deg,#b6aaff 5%,#77dfff 55%,#c5a5ff 95%);background-clip:text;color:transparent}
-.hero-description{text-align:center;color:var(--muted);font-size:13px;line-height:2;max-width:530px;margin:0 auto 32px}
-.suggestions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 auto 25px;max-width:690px}
-.suggestion-card{
-  min-height:91px;display:flex;align-items:flex-start;gap:13px;padding:17px;
-  border:1px solid var(--border);border-radius:17px;text-align:right;
-  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
-  transition:transform .22s,border-color .22s,background .22s;
+.hero-symbol{
+ position:relative;width:94px;height:94px;margin-bottom:26px;
+ display:grid;place-items:center;
 }
-.suggestion-card:hover{transform:translateY(-3px);border-color:rgba(139,123,255,.4);background:rgba(139,123,255,.055)}
-.suggestion-icon{width:36px;height:36px;display:grid;place-items:center;flex-shrink:0;border-radius:12px;background:rgba(139,123,255,.12);color:#b7adff}
-.suggestion-icon.cyan{background:rgba(81,217,255,.09);color:#75dfff}
-.suggestion-copy strong{display:block;font-size:12px;margin:1px 0 5px}
-.suggestion-copy small{display:block;font-size:10px;color:var(--muted);line-height:1.8}
-.workspace-footer-note{text-align:center;color:#707991;font-size:10px;line-height:1.8}
-.chat-area{width:min(850px,100%);margin:0 auto;flex:1;min-height:0;display:flex;flex-direction:column}
-.messages{flex:1;min-height:0;overflow-y:auto;padding:28px 30px 20px;scroll-behavior:smooth}
-.message{display:flex;align-items:flex-start;gap:13px;margin:0 auto 27px;max-width:780px;animation:fadeUp .3s ease both}
+.hero-symbol:before{
+ content:"";position:absolute;inset:0;border:1px solid #a18cff48;
+ border-radius:30px;transform:rotate(12deg);animation:orbit 12s linear infinite;
+}
+.hero-symbol:after{
+ content:"";position:absolute;inset:8px;border:1px solid #68d7ff25;
+ border-radius:25px;transform:rotate(-10deg);
+}
+.hero-core{
+ width:70px;height:70px;border-radius:23px;display:grid;place-items:center;
+ background:linear-gradient(140deg,#a18aff,#6652e9 58%,#32bfe9);
+ box-shadow:0 0 45px #8266ff38,inset 0 1px 0 #ffffff55;
+ position:relative;z-index:1;
+}
+.hero-core svg{width:43px;height:43px}
+.orbit-dot{position:absolute;width:10px;height:10px;border-radius:50%;z-index:2}
+.orbit-dot.one{top:0;right:8px;background:var(--blue);box-shadow:0 0 16px var(--blue)}
+.orbit-dot.two{bottom:0;left:8px;background:var(--purple);box-shadow:0 0 16px var(--purple)}
+.eyebrow{color:#b3a4ff;font-size:12px;letter-spacing:3px;font-weight:900;direction:ltr}
+h1{font-size:clamp(28px,4vw,43px);line-height:1.55;margin:10px 0 8px;font-weight:900;letter-spacing:-1px}
+.gradient-text{
+ background:linear-gradient(100deg,#b6a3ff,#73d8ff);
+ -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.hero-description{max-width:570px;color:var(--muted);font-size:14px;line-height:2;margin:0 auto}
+.suggestions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:12px;width:100%;max-width:760px;margin-top:32px;text-align:right;
+}
+.suggestion{
+ display:flex;align-items:flex-start;gap:13px;text-align:right;
+ background:linear-gradient(145deg,#ffffff07,#ffffff02);
+ border:1px solid var(--border);border-radius:19px;padding:17px 15px;
+ min-height:94px;transition:transform .2s,border-color .2s,background .2s;
+}
+.suggestion:hover{transform:translateY(-2px);border-color:#9c86ff55;background:#ffffff0a}
+.suggestion-icon{
+ width:39px;height:39px;display:grid;place-items:center;border-radius:13px;
+ color:var(--blue);background:#59d7e714;flex-shrink:0
+}
+.suggestion:nth-child(2) .suggestion-icon{color:#b7a1ff;background:#a18aff17}
+.suggestion:nth-child(3) .suggestion-icon{color:#ceadff;background:#a18aff17}
+.suggestion:nth-child(4) .suggestion-icon{color:#6ce1e6;background:#6ce1e614}
+.suggestion strong{display:block;font-size:13px;margin:0 0 4px}
+.suggestion small{display:block;font-size:11px;color:var(--muted);line-height:1.8}
+.welcome-note{font-size:11px;color:#777890;line-height:2;margin-top:24px}
+.messages{display:flex;flex-direction:column;gap:27px}
+.message{display:flex;gap:12px;align-items:flex-start;animation:messageIn .25s ease both}
 .message.user{flex-direction:row-reverse}
-.message-avatar{width:35px;height:35px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:800}
-.message.assistant .message-avatar{background:linear-gradient(135deg,#8978ff,#43cde7);color:#fff}
-.message.user .message-avatar{background:var(--panel3);color:#e1deff}
-.message-body{min-width:0;flex:1}
-.message-heading{display:flex;align-items:center;gap:10px;margin:2px 0 10px}
-.message-heading strong{font-size:12px}
-.message-heading time{font-size:10px;color:var(--muted)}
-.message-content{font-size:13px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere;color:#e1e5f2}
-.message.user .message-content{background:var(--panel2);border:1px solid var(--border);border-radius:17px 4px 17px 17px;padding:13px 16px;display:inline-block;max-width:100%}
-.message-actions{display:flex;gap:6px;margin-top:11px}
-.message-action{width:31px;height:31px;display:grid;place-items:center;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--muted)}
-.message-action:hover{background:var(--panel2);color:var(--text)}
-.message-action svg{width:16px;height:16px}
-.message-error{color:var(--danger);font-size:12px;line-height:1.9;margin-top:8px}
-.typing-dots{display:flex;gap:5px;padding:9px 0}
-.typing-dots span{width:6px;height:6px;border-radius:50%;background:#a99aff;animation:bounce 1s infinite ease-in-out}
-.typing-dots span:nth-child(2){animation-delay:.15s}
-.typing-dots span:nth-child(3){animation-delay:.3s}
-.composer-wrap{flex-shrink:0;padding:14px 24px max(18px,env(safe-area-inset-bottom));background:linear-gradient(0deg,var(--bg) 75%,transparent)}
-.composer{width:min(850px,100%);margin:auto;border:1px solid rgba(172,160,255,.22);background:linear-gradient(145deg,#151927,#10131d);border-radius:23px;box-shadow:0 14px 50px rgba(0,0,0,.16);transition:border-color .2s,box-shadow .2s}
-.composer:focus-within{border-color:rgba(139,123,255,.58);box-shadow:0 14px 50px rgba(0,0,0,.18),0 0 0 3px rgba(139,123,255,.055)}
-.prompt{display:block;width:100%;min-height:62px;max-height:180px;resize:none;outline:none;border:0;background:transparent;color:var(--text);padding:20px 20px 10px;line-height:1.9;font-size:13px}
-.prompt::placeholder{color:#777f97}
-.composer-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px 12px}
-.tool-group{display:flex;align-items:center;gap:6px;min-width:0}
-.tool-button{height:36px;min-width:36px;display:flex;align-items:center;justify-content:center;gap:7px;padding:0 10px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--muted);font-size:11px}
-.tool-button:hover{background:rgba(255,255,255,.06);color:var(--text)}
-.tool-button.active{color:#c2b7ff;background:rgba(139,123,255,.13);border-color:rgba(139,123,255,.2)}
-.tool-button svg{width:18px;height:18px}
-.char-counter{font-size:10px;color:#737b92;direction:ltr;white-space:nowrap}
-.send-button{width:39px;height:39px;display:grid;place-items:center;border:0;border-radius:13px;background:linear-gradient(140deg,#a292ff,#6555e6);color:white;box-shadow:0 5px 17px rgba(115,91,255,.23);transition:transform .2s,filter .2s}
-.send-button:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.send-button svg{width:19px;height:19px}
-.disclaimer{text-align:center;font-size:9px;color:#717990;line-height:1.9;margin:9px auto 0;max-width:700px}
-.attachments-preview{display:flex;flex-wrap:wrap;gap:7px;padding:0 15px 10px}
-.attachment-chip{display:flex;align-items:center;gap:7px;max-width:100%;padding:7px 9px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);font-size:10px}
-.attachment-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.attachment-chip button{border:0;background:none;color:var(--muted);font-size:17px;padding:0 2px}
-.toast-container{position:fixed;z-index:100;bottom:100px;left:20px;display:grid;gap:8px;pointer-events:none}
-.toast{max-width:min(340px,calc(100vw - 40px));padding:12px 15px;border-radius:13px;background:#202638;border:1px solid var(--border);box-shadow:var(--shadow);font-size:12px;line-height:1.8;animation:fadeUp .2s ease both;pointer-events:auto}
-.toast.error{border-color:rgba(255,109,135,.35)}
-.toast.success{border-color:rgba(107,230,188,.3)}
-.modal-backdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.62);backdrop-filter:blur(8px)}
-.modal{width:min(480px,100%);max-height:85dvh;overflow:auto;padding:23px;border:1px solid var(--border);border-radius:23px;background:var(--panel);box-shadow:var(--shadow);animation:fadeUp .25s ease both}
-.modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
-.modal-header h2{font-size:18px;margin:0}
-.modal-description{font-size:12px;line-height:1.9;color:var(--muted);margin:0 0 18px}
-.settings-group{display:grid;gap:8px;margin:17px 0}
-.settings-group label{font-size:12px;color:#c7cce0}
-.settings-group input,.settings-group select{width:100%;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--bg2);color:var(--text);padding:0 12px}
-.modal-primary{width:100%;height:45px;margin-top:10px;border:0;border-radius:13px;background:linear-gradient(100deg,#9382ff,#6556e8);font-weight:700}
-.plan-card{padding:14px;border:1px solid var(--border);border-radius:15px;margin-top:10px}
-.plan-card strong{font-size:13px}
-.plan-card p{font-size:11px;color:var(--muted);line-height:1.9;margin:8px 0}
-.plan-card small{color:#a99aff;font-size:10px}
+.message-avatar{
+ width:35px;height:35px;border-radius:12px;display:grid;place-items:center;
+ flex-shrink:0;background:#8b75ff1b;color:#b5a4ff;border:1px solid #9c8aff25
+}
+.message.user .message-avatar{background:#ffffff0a;color:#d6d6e7;border-color:var(--border)}
+.message-avatar svg{width:20px;height:20px}
+.message-main{min-width:0;max-width:calc(100% - 48px);flex:1}
+.message-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;font-weight:800}
+.message-head time{font-size:10px;font-weight:400;color:#777990}
+.message-body{font-size:14px;line-height:2;overflow-wrap:anywhere;white-space:pre-wrap;color:#e5e5f2}
+.message.user .message-body{
+ background:#191a29;border:1px solid var(--border);border-radius:17px 5px 17px 17px;
+ padding:12px 15px;display:inline-block;max-width:100%;
+}
+.message-actions{display:flex;gap:5px;margin-top:8px;opacity:.75}
+.mini-action{
+ border:1px solid transparent;background:transparent;border-radius:8px;
+ padding:5px 7px;color:#85869e;font-size:10px;display:flex;align-items:center;gap:5px
+}
+.mini-action:hover{background:#ffffff08;color:white}
+.mini-action svg{width:15px;height:15px}
+.typing{display:flex;gap:5px;align-items:center;padding:8px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:#a99aff;animation:bounce 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+.composer-area{
+ flex-shrink:0;padding:12px 24px calc(10px + env(safe-area-inset-bottom));
+ background:linear-gradient(0deg,var(--bg) 78%,transparent);
+ position:relative;z-index:4;
+}
+.composer{max-width:950px;margin:auto}
+.composer-box{
+ border:1px solid #8f80db45;background:linear-gradient(145deg,#151522,#10111b);
+ border-radius:23px;padding:10px 12px 8px;
+ box-shadow:0 10px 38px #0003,0 0 0 1px #ffffff03;
+ transition:border-color .2s,box-shadow .2s;
+}
+.composer-box:focus-within{border-color:#a091ff99;box-shadow:0 0 0 3px #8e78ff12,0 12px 35px #0003}
+#promptInput{
+ display:block;width:100%;resize:none;min-height:34px;max-height:180px;
+ background:transparent;color:var(--text);border:0;outline:none;
+ padding:4px 5px;font-size:14px;line-height:1.8;
+}
+#promptInput::placeholder{color:#85869c}
+.composer-toolbar{display:flex;align-items:center;gap:6px;min-height:40px}
+.tool-btn{
+ display:flex;align-items:center;justify-content:center;gap:6px;
+ border:1px solid transparent;background:transparent;color:#a2a2ba;
+ border-radius:12px;padding:8px 10px;font-size:11px;white-space:nowrap
+}
+.tool-btn:hover{background:#ffffff08;color:white}
+.tool-btn.active{background:#8671ff20;color:#c4b8ff;border-color:#927dff32}
+.tool-btn svg{width:18px;height:18px}
+.toolbar-spacer{flex:1}
+.send-btn{
+ width:43px;height:43px;border:0;border-radius:14px;
+ background:linear-gradient(145deg,#a18bff,#6d5be8);
+ display:grid;place-items:center;box-shadow:0 4px 18px #7962ff25;flex-shrink:0
+}
+.send-btn svg{width:21px;height:21px}
+.send-btn:hover{filter:brightness(1.12)}
+.send-btn.stop{background:#e05d70}
+.counter{font-size:10px;color:#6f7087;white-space:nowrap;direction:ltr}
+.attachment-list{display:flex;gap:8px;flex-wrap:wrap;padding:5px 0 10px}
+.attachment{
+ display:flex;align-items:center;gap:7px;border:1px solid var(--border);
+ background:#ffffff06;border-radius:10px;padding:6px 8px;font-size:10px;max-width:100%
+}
+.attachment span{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.attachment button{border:0;background:none;color:var(--muted);padding:0 3px}
+.composer-disclaimer{text-align:center;color:#65667c;font-size:10px;margin-top:9px;line-height:1.8}
+.bottom-status{display:none}
+.toast-container{position:fixed;top:84px;left:50%;transform:translateX(-50%);z-index:100;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:max-content;max-width:calc(100% - 30px)}
+.toast{
+ border:1px solid var(--border);border-radius:13px;background:#1b1b2a;
+ padding:11px 16px;box-shadow:var(--shadow);font-size:12px;
+ animation:fadeIn .2s ease;max-width:100%;text-align:center
+}
+.toast.error{border-color:#ff777f55}
+.modal-backdrop{
+ position:fixed;inset:0;background:#0009;backdrop-filter:blur(7px);
+ display:grid;place-items:center;padding:20px;z-index:80
+}
+.modal{
+ width:min(100%,480px);max-height:min(80dvh,650px);overflow:auto;
+ border:1px solid var(--border);border-radius:23px;background:#13141f;
+ box-shadow:var(--shadow);padding:22px;animation:fadeIn .2s ease
+}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-header h2{font-size:17px;margin:0}
+.modal p{font-size:12px;color:var(--muted);line-height:2}
+.modal-label{font-size:12px;color:#bfc0d4;display:block;margin:15px 0 7px}
+.modal-input{
+ width:100%;border:1px solid var(--border);border-radius:12px;background:#090a12;
+ color:white;padding:11px 12px;outline:none
+}
+.modal-footer{display:flex;gap:9px;margin-top:22px}
+.secondary-btn{border:1px solid var(--border);background:#ffffff06;border-radius:12px;padding:10px 14px}
+.modal-footer button{flex:1}
+.voice-screen{
+ position:fixed;inset:0;z-index:60;background:radial-gradient(ellipse at center,#211a44,#080910 70%);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ padding:28px;text-align:center;animation:fadeIn .3s ease
+}
+.voice-close{position:absolute;top:calc(20px + env(safe-area-inset-top));left:20px}
+.voice-orb{
+ width:160px;height:160px;border-radius:50%;display:grid;place-items:center;
+ background:linear-gradient(145deg,#a18aff,#6e5ce8 60%,#40bfe8);
+ box-shadow:0 0 0 12px #947cff0c,0 0 0 30px #947cff08,0 0 80px #826aff38;
+ margin:20px 0 32px;position:relative
+}
+.voice-orb svg{width:66px;height:66px}
+.voice-orb.listening{animation:pulse 1.8s infinite}
+.voice-screen h2{font-size:25px;margin:0 0 7px}
+.voice-screen p{color:var(--muted);font-size:13px;line-height:2;max-width:420px}
+.voice-status{color:#b6a5ff;font-size:12px;margin:12px 0 25px}
+.voice-controls{display:flex;align-items:center;justify-content:center;gap:15px}
+.voice-main-btn{width:62px;height:62px;border:0;border-radius:50%;background:#8a74ff;display:grid;place-items:center}
+.voice-main-btn svg{width:26px;height:26px}
+.voice-transcript{max-width:500px;color:#d4d2e8;font-size:13px;line-height:2;min-height:25px}
+#fileInput{display:none}
 .mobile-overlay{display:none}
-.light-theme{
-  color-scheme:light;--bg:#f5f6fc;--bg2:#fff;--panel:#fff;--panel2:#f0f1f8;
-  --panel3:#e7e9f4;--text:#1a1d2c;--muted:#727a90;--border:rgba(34,42,70,.11);
-  --shadow:0 24px 80px rgba(34,42,70,.12);
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes messageIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+@keyframes orbit{to{transform:rotate(372deg)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 12px #947cff0c,0 0 0 30px #947cff08,0 0 70px #826aff38}50%{box-shadow:0 0 0 21px #947cff0c,0 0 0 46px #947cff06,0 0 100px #826aff55}}
+@media(min-width:1200px){.scroll-inner{padding-top:36px}.welcome{padding-top:24px}}
+@media(max-width:850px){
+ :root{--sidebar:285px}
+ .sidebar{position:fixed;right:0;top:0;bottom:0;height:100dvh;transform:translateX(105%);box-shadow:var(--shadow)}
+ .sidebar.open{transform:translateX(0)}
+ .mobile-overlay.visible{display:block;position:fixed;inset:0;background:#0009;z-index:25}
+ .topbar{height:64px;padding:0 13px}
+ .topbar .icon-btn{width:39px;height:39px}
+ .top-left{gap:8px}.status-pill{padding:7px 9px;font-size:10px}
+ .scroll-inner{padding:22px 18px 20px}
+ .composer-area{padding:9px 12px calc(8px + env(safe-area-inset-bottom))}
+ .suggestions{gap:9px;margin-top:24px}
+ .suggestion{padding:13px 11px;min-height:87px;gap:9px}
+ .suggestion-icon{width:34px;height:34px}
+ .suggestion strong{font-size:12px}.suggestion small{font-size:10px}
+ .hero-description{font-size:13px}
 }
-.light-theme .sidebar{background:linear-gradient(180deg,#fff,#f3f4fa)}
-.light-theme .composer{background:linear-gradient(145deg,#fff,#f8f8fd)}
-.light-theme .message-content{color:#303448}
-.light-theme .hero-description,.light-theme .workspace-footer-note{color:#727a90}
-.light-theme .history-item{color:#363b50}
-.light-theme .toast{background:#fff}
-.light-theme .settings-group input,.light-theme .settings-group select{background:#fff}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes orbSpin{to{transform:rotate(405deg)}}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-5px);opacity:1}}
-@media(min-width:1500px){:root{--sidebar-width:315px}.welcome{width:min(950px,100%)}.chat-area{width:min(900px,100%)}}
-@media(max-width:900px){
-  :root{--sidebar-width:285px}
-  .sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-105%);height:100dvh;box-shadow:var(--shadow)}
-  body.sidebar-open .sidebar{transform:translateX(0)}
-  .mobile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:19}
-  body.sidebar-open .mobile-overlay{display:block}
-  .mobile-menu{display:inline-flex}
-  .topbar{padding:0 18px;height:67px}
-  .welcome{padding:30px 20px}
-  .messages{padding:23px 20px}
-}
-@media(max-width:600px){
-  .topbar{padding:0 12px;height:62px;gap:7px}
-  .topbar-right,.topbar-left{gap:6px}
-  .model-picker{padding:5px 7px;gap:7px}
-  .model-symbol{width:29px;height:29px}
-  .model-title{font-size:12px}
-  .model-subtitle{font-size:9px}
-  .status-pill{font-size:0;padding:10px}
-  .status-dot{width:7px;height:7px}
-  .topbar .icon-button{width:36px;height:36px}
-  .welcome{padding:23px 15px 20px}
-  .hero-orb{width:68px;height:68px;margin-bottom:22px}
-  .orb-core{width:49px;height:49px;border-radius:17px}
-  .orb-core svg{width:27px;height:27px}
-  .hero-title{font-size:30px;letter-spacing:-.7px;margin-top:9px}
-  .hero-description{font-size:12px;margin-bottom:24px}
-  .suggestions{gap:8px;margin-bottom:19px}
-  .suggestion-card{min-height:98px;padding:11px;gap:8px;flex-direction:column}
-  .suggestion-icon{width:30px;height:30px;border-radius:10px}
-  .suggestion-icon svg{width:17px;height:17px}
-  .suggestion-copy strong{font-size:11px}
-  .suggestion-copy small{font-size:9px}
-  .messages{padding:20px 13px}
-  .message{gap:9px;margin-bottom:23px}
-  .message-avatar{width:31px;height:31px;border-radius:10px}
-  .message-content{font-size:12px}
-  .composer-wrap{padding:9px 10px max(12px,env(safe-area-inset-bottom))}
-  .composer{border-radius:19px}
-  .prompt{min-height:55px;padding:15px 14px 7px;font-size:13px}
-  .composer-tools{padding:6px 8px 9px}
-  .tool-button{height:34px;min-width:33px;padding:0 7px}
-  .tool-button .tool-label{display:none}
-  .char-counter{font-size:9px}
-  .send-button{width:36px;height:36px}
-  .disclaimer{font-size:9px;margin-top:7px}
-  .toast-container{bottom:95px;left:10px}
-}
-@media(max-height:650px) and (min-width:601px){
-  .welcome{padding-top:15px;padding-bottom:15px}
-  .hero-orb{width:58px;height:58px;margin-bottom:12px}
-  .orb-core{width:43px;height:43px}
-  .hero-title{font-size:30px;margin:6px 0}
-  .hero-description{margin-bottom:15px}
-  .suggestion-card{min-height:72px;padding:11px}
+@media(max-width:520px){
+ .topbar{height:59px;padding:0 10px;gap:6px}
+ .top-brand{gap:7px}.top-brand .brand-symbol{width:33px;height:33px;border-radius:11px}
+ .top-title{font-size:12px}.top-subtitle{font-size:9px}
+ .status-pill{font-size:9px;gap:5px;padding:7px 8px}
+ .topbar .icon-btn{width:36px;height:36px;border-radius:12px}
+ .topbar .status-pill{max-width:118px}
+ .scroll-inner{padding:17px 13px 20px}
+ .welcome{padding:18px 0 25px;justify-content:flex-start}
+ .hero-symbol{width:78px;height:78px;margin:22px 0 21px}
+ .hero-core{width:59px;height:59px;border-radius:19px}
+ .hero-core svg{width:36px;height:36px}
+ .eyebrow{font-size:10px;letter-spacing:2.5px}
+ h1{font-size:29px;line-height:1.65;margin:10px 0}
+ .hero-description{font-size:12px;line-height:2}
+ .suggestions{grid-template-columns:1fr;gap:8px;margin-top:23px}
+ .suggestion{min-height:75px;padding:11px 12px;border-radius:15px}
+ .suggestion-icon{width:36px;height:36px}
+ .welcome-note{margin-top:17px;font-size:10px}
+ .composer-area{padding:7px 8px calc(7px + env(safe-area-inset-bottom))}
+ .composer-box{padding:8px 8px 6px;border-radius:19px}
+ #promptInput{font-size:13px;min-height:32px;max-height:130px;padding:3px 5px}
+ .composer-toolbar{gap:2px;min-height:39px}
+ .tool-btn{padding:8px 7px;font-size:10px;gap:4px;border-radius:10px}
+ .tool-btn svg{width:17px;height:17px}
+ .send-btn{width:39px;height:39px;border-radius:12px}
+ .counter{font-size:9px}
+ .composer-disclaimer{font-size:9px;margin-top:5px}
+ .message{gap:8px}
+ .message-avatar{width:30px;height:30px;border-radius:10px}
+ .message-main{max-width:calc(100% - 38px)}
+ .message-body{font-size:13px;line-height:1.95}
+ .message.user .message-body{padding:10px 12px}
+ .messages{gap:22px}
+ .voice-orb{width:135px;height:135px}
+ .voice-screen h2{font-size:22px}
 }
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
 }
 </style>
 </head>
-
 <body>
-<div class="app">
-  <aside class="sidebar" id="sidebar" aria-label="قائمة المحادثات">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M12 3.2 14.4 9.6 20.8 12l-6.4 2.4L12 20.8l-2.4-6.4L3.2 12l6.4-2.4L12 3.2Z"/><path d="m18.5 3 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
-      </div>
-      <div>
-        <div class="brand-name">MIKA <span>CHAT</span></div>
-        <div class="brand-sub">YOUR INTELLIGENT SPACE</div>
-      </div>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<symbol id="mika-mark" viewBox="0 0 100 100">
+ <defs>
+  <linearGradient id="markGradient" x1="10%" y1="0%" x2="90%" y2="100%">
+   <stop offset="0%" stop-color="#fff"/>
+   <stop offset="100%" stop-color="#d7eaff"/>
+  </linearGradient>
+ </defs>
+ <path d="M50 8 59 35 86 44 62 55 53 84 43 59 15 50 41 40Z" fill="none" stroke="url(#markGradient)" stroke-width="5" stroke-linejoin="round"/>
+ <path d="M70 14 74 25 85 29 74 33 70 44 66 33 55 29 66 25Z" fill="#fff"/>
+ <circle cx="22" cy="74" r="4" fill="#fff" opacity=".95"/>
+ <circle cx="78" cy="72" r="3" fill="#79e6ff"/>
+</symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 15.2A8.6 8.6 0 0 1 8.8 3.8 8.7 8.7 0 1 0 20.2 15.2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M12 19V5m-6 6 6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-attach" viewBox="0 0 24 24"><path d="m8 12.5 7.8-7.8a4 4 0 0 1 5.7 5.7L10 21.8a6 6 0 0 1-8.5-8.5L12.2 2.6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V22m-4 0h8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 14h10l1-14M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-spark" viewBox="0 0 100 100"><path d="M50 6 61 37 92 49 61 61 50 92 39 61 8 49 39 37Z" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="m77 8 4 11 11 4-11 4-4 11-4-11-11-4 11-4Z" fill="currentColor"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4m-2-19a7 7 0 0 0-4 12.75c.8.5 1 1.2 1 2.25h6c0-1.05.2-1.75 1-2.25A7 7 0 0 0 12 2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m8 5-7 7 7 7m8-14 7 7-7 7m-2-17-4 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 9a2.6 2.6 0 1 1 4.6 1.7c-1.2 1.2-2.1 1.4-2.1 3.3m0 3h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1 1.3 1-1.4 2.4-1.6-.6a8 8 0 0 1-2 .9l-.3 1.7h-2.8l-.3-1.7a8 8 0 0 1-2-.9l-1.6.6-1.4-2.4 1.3-1a7 7 0 0 1 0-2l-1.3-1 1.4-2.4 1.6.6a8 8 0 0 1 2-.9l.3-1.7h2.8l.3 1.7a8 8 0 0 1 2 .9l1.6-.6 1.4 2.4-1.3 1a7 7 0 0 1 0 2Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5m-4 0a7 7 0 0 1 12-4l3 4M4 12l3 4a7 7 0 0 0 12-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<div id="app">
+ <aside class="sidebar" id="sidebar">
+  <div class="brand">
+   <div class="brand-symbol"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>
+   <div><div class="brand-name">MIKA CHAT</div><div class="brand-caption">مساحة تفكيرك الذكية</div></div>
+   <button class="icon-btn" id="closeSidebar" aria-label="إغلاق القائمة" style="margin-right:auto;width:34px;height:34px"><svg><use href="#i-close"/></svg></button>
+  </div>
+
+  <button class="primary-btn new-chat" id="newChat"><svg><use href="#i-plus"/></svg> محادثة جديدة</button>
+
+  <div class="search-wrap">
+   <svg><use href="#i-search"/></svg>
+   <input id="searchChats" type="search" placeholder="ابحث في محادثاتك..." aria-label="البحث في المحادثات">
+  </div>
+
+  <div class="side-label">محادثاتك</div>
+  <div class="history" id="historyList"></div>
+  <div id="historyEmpty" class="empty-history">محادثاتك الجديدة هتظهر هنا.</div>
+
+  <div class="sidebar-bottom">
+   <button class="history-item" id="openSettings"><svg><use href="#i-settings"/></svg><span class="history-title">الإعدادات والتفضيلات</span></button>
+   <div class="profile-row">
+    <div class="avatar" id="profileAvatar">م</div>
+    <div class="profile-text"><strong id="profileName">مستخدم ميكا</strong><small>مساحة شخصية</small></div>
+    <button class="profile-menu" id="profileSettings" aria-label="إعدادات الحساب"><svg><use href="#i-settings"/></svg></button>
+   </div>
+  </div>
+ </aside>
+
+ <div class="mobile-overlay" id="mobileOverlay"></div>
+
+ <main class="main">
+  <header class="topbar">
+   <div class="top-left">
+    <button class="icon-btn" id="themeToggle" aria-label="تغيير المظهر"><svg><use href="#i-moon"/></svg></button>
+    <div class="status-pill"><span class="status-dot" id="statusDot"></span><span id="serviceStatus">الخدمة غير متصلة</span></div>
+   </div>
+
+   <div class="top-right">
+    <div class="top-brand">
+     <div class="brand-symbol"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>
+     <div><div class="top-title">MIKA CHAT</div><div class="top-subtitle">مساعدك الذكي</div></div>
     </div>
+    <button class="icon-btn" id="openSidebar" aria-label="فتح القائمة"><svg><use href="#i-menu"/></svg></button>
+   </div>
+  </header>
 
-    <button class="new-chat" id="newChat" type="button">
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-      <span>محادثة جديدة</span>
-    </button>
-
-    <label class="side-search">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
-      <input id="searchChats" type="search" placeholder="ابحث في محادثاتك..." autocomplete="off" aria-label="ابحث في المحادثات">
-    </label>
-
-    <div class="side-label"><span>محادثاتك</span><span id="historyCount">0</span></div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">محادثاتك هتظهر هنا<br>ابدأ محادثة جديدة علشان تنطلق.</div>
-    </div>
-
-    <div class="side-bottom">
-      <button class="profile-button" id="openSettings" type="button">
-        <span class="avatar" id="profileAvatar">م</span>
-        <span class="profile-info"><strong id="profileName">ضيف ميكا</strong><small>الإعدادات والتخصيص</small></span>
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 3.1-.2-.1a1.7 1.7 0 0 0-1.8.1 1.7 1.7 0 0 0-.8 1.5v.2h-3.6v-.2a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.8.3l-.1.1-3.1-1.8.1-.2a1.7 1.7 0 0 0-.1-1.8A1.7 1.7 0 0 0 4 15.8h-.2v-3.6H4a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1L7 6.1l.2.1a1.7 1.7 0 0 0 1.8-.1A1.7 1.7 0 0 0 9.8 4v-.2h3.6V4a1.7 1.7 0 0 0 1.1 1.6 1.7 1.7 0 0 0 1.8-.3l.1-.1 3.1 1.8-.1.2a1.7 1.7 0 0 0 .1 1.8 1.7 1.7 0 0 0 1.5.8h.2v3.6h-.2a1.7 1.7 0 0 0-1.6 1.6Z"/></svg>
-      </button>
-    </div>
-  </aside>
-
-  <div class="mobile-overlay" id="mobileOverlay"></div>
-
-  <main class="workspace">
-    <header class="topbar">
-      <div class="topbar-right">
-        <button class="icon-button mobile-menu" id="openSidebar" type="button" aria-label="فتح القائمة">
-          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <button class="model-picker" type="button" id="modelInfo" aria-label="معلومات عن ميكا شات">
-          <span class="model-symbol"><svg viewBox="0 0 24 24"><path d="M12 3.2 14.4 9.6 20.8 12l-6.4 2.4L12 20.8l-2.4-6.4L3.2 12l6.4-2.4L12 3.2Z"/></svg></span>
-          <span><span class="model-title">MIKA CHAT</span><span class="model-subtitle" style="display:block">مساعدك الذكي</span></span>
-          <svg viewBox="0 0 24 24" style="width:15px;color:var(--muted)"><path d="m7 10 5 5 5-5"/></svg>
-        </button>
+  <section class="content">
+   <div class="scroll-area" id="scrollArea">
+    <div class="scroll-inner" id="scrollInner">
+     <section class="welcome" id="welcomeScreen">
+      <div class="hero-symbol">
+       <span class="orbit-dot one"></span><span class="orbit-dot two"></span>
+       <div class="hero-core"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>
       </div>
-      <div class="topbar-left">
-        <span class="status-pill" id="serviceStatus"><span class="status-dot"></span><span id="statusText">الخدمة غير متصلة</span></span>
-        <button class="icon-button" id="themeToggle" type="button" aria-label="تغيير المظهر" title="تغيير المظهر">
-          <svg viewBox="0 0 24 24"><path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z"/></svg>
-        </button>
+      <div class="eyebrow">A NEW WAY TO THINK</div>
+      <h1>أهلًا بيك في <span class="gradient-text">ميكا شات</span></h1>
+      <p class="hero-description">مساحتك للأفكار والأسئلة والإبداع. ابدأ من أي نقطة، واكتب اللي في بالك، وخلي رحلتك تبدأ.</p>
+
+      <div class="suggestions">
+       <button class="suggestion" data-prompt="ساعدني أبتكر فكرة جديدة ومميزة لمشروع.">
+        <span class="suggestion-icon"><svg><use href="#i-spark"/></svg></span>
+        <span><strong>ابتكر فكرة جديدة</strong><small>حوّل أفكارك لحاجة مميزة</small></span>
+       </button>
+       <button class="suggestion" data-prompt="علّمني مهارة جديدة من الصفر بخطوات عملية واضحة.">
+        <span class="suggestion-icon"><svg><use href="#i-bulb"/></svg></span>
+        <span><strong>اتعلم حاجة جديدة</strong><small>خطة واضحة خطوة بخطوة</small></span>
+       </button>
+       <button class="suggestion" data-prompt="ساعدني في بناء مشروع برمجي منظم واشرح لي خطوات التنفيذ.">
+        <span class="suggestion-icon"><svg><use href="#i-code"/></svg></span>
+        <span><strong>برمجة ومشروعات</strong><small>من الفكرة إلى التنفيذ</small></span>
+       </button>
+       <button class="suggestion" data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة مع أمثلة مفيدة.">
+        <span class="suggestion-icon"><svg><use href="#i-help"/></svg></span>
+        <span><strong>افهم موضوع صعب</strong><small>شرح بسيط وأمثلة مفيدة</small></span>
+       </button>
       </div>
-    </header>
-
-    <div class="main-scroll">
-      <section class="welcome" id="welcomeScreen">
-        <div class="hero-orb" aria-hidden="true">
-          <div class="orb-ring"></div>
-          <div class="orb-core">
-            <svg viewBox="0 0 24 24"><path d="M12 2.5 14.7 9.3 21.5 12l-6.8 2.7L12 21.5l-2.7-6.8L2.5 12l6.8-2.7L12 2.5Z"/><path d="m18.5 3 .6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6.6-1.9Z"/></svg>
-          </div>
-        </div>
-        <div class="eyebrow">A NEW WAY TO THINK</div>
-        <h1 class="hero-title">أهلًا بيك في <span class="gradient-text">ميكا شات</span></h1>
-        <p class="hero-description">مساحتك للأفكار والأسئلة والإبداع. ابدأ من أي نقطة، واكتب اللي في بالك، وخلي رحلتك تبدأ.</p>
-
-        <div class="suggestions">
-          <button class="suggestion-card" type="button" data-prompt="ساعدني أتعلم مهارة جديدة، وضع لي خطة عملية للمبتدئين.">
-            <span class="suggestion-icon"><svg viewBox="0 0 24 24"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3Z"/><path d="M9 22h6M9 16h6"/></svg></span>
-            <span class="suggestion-copy"><strong>اتعلم حاجة جديدة</strong><small>خطة واضحة خطوة بخطوة</small></span>
-          </button>
-          <button class="suggestion-card" type="button" data-prompt="ساعدني أكتب فكرة إبداعية مميزة، وابدأ باقتراحات مختلفة.">
-            <span class="suggestion-icon cyan"><svg viewBox="0 0 24 24"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2L12 3Z"/><path d="m19 16 .9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"/></svg></span>
-            <span class="suggestion-copy"><strong>ابتكر فكرة جديدة</strong><small>حوّل أفكارك لحاجة مميزة</small></span>
-          </button>
-          <button class="suggestion-card" type="button" data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة، مع أمثلة من الحياة اليومية.">
-            <span class="suggestion-icon cyan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.6 2.6 0 1 1 4.3 2c-1.2 1-1.8 1.4-1.8 3"/><path d="M12 17h.01"/></svg></span>
-            <span class="suggestion-copy"><strong>افهم موضوع صعب</strong><small>شرح بسيط وأمثلة مفيدة</small></span>
-          </button>
-          <button class="suggestion-card" type="button" data-prompt="ساعدني أكتب كودًا منظمًا، واشرح لي طريقة عمله واختباره.">
-            <span class="suggestion-icon"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span>
-            <span class="suggestion-copy"><strong>برمجة ومشروعات</strong><small>من الفكرة إلى التنفيذ</small></span>
-          </button>
-        </div>
-        <p class="workspace-footer-note">ابدأ سؤالك من صندوق الكتابة بالأسفل<br>يتم حفظ المحادثات على هذا الجهاز فقط في هذه النسخة.</p>
-      </section>
-
-      <section class="chat-area hidden" id="messagesContainer" aria-label="المحادثة">
-        <div class="messages" id="messagesList" aria-live="polite"></div>
-      </section>
+      <div class="welcome-note">ابدأ سؤالك من صندوق الكتابة بالأسفل<br>يتم حفظ المحادثات على هذا الجهاز في هذه النسخة.</div>
+     </section>
+     <section class="messages hidden" id="messagesList" aria-live="polite"></section>
     </div>
+   </div>
 
-    <footer class="composer-wrap">
-      <form class="composer" id="composerForm">
-        <textarea class="prompt" id="promptInput" rows="1" maxlength="12000" placeholder="اكتب سؤالك هنا... اسأل، فكّر، ابتكر" aria-label="رسالتك" autocomplete="off"></textarea>
-        <div class="attachments-preview hidden" id="attachmentPreview"></div>
-        <div class="composer-tools">
-          <div class="tool-group">
-            <button class="tool-button" type="button" id="attachButton" title="إرفاق ملفات">
-              <svg viewBox="0 0 24 24"><path d="m21 11.5-8.5 8.5a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg><span class="tool-label">إرفاق</span>
-            </button>
-            <input id="fileInput" type="file" multiple hidden>
-            <button class="tool-button" type="button" id="webSearchButton" aria-pressed="false" title="تفعيل البحث على الإنترنت">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4M4 11h14M11 4a12 12 0 0 1 0 14M11 4a12 12 0 0 0 0 14"/></svg><span class="tool-label">بحث</span>
-            </button>
-            <button class="tool-button" type="button" id="voiceButton" aria-pressed="false" title="الإملاء الصوتي">
-              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4M8 22h8"/></svg><span class="tool-label">صوت</span>
-            </button>
-          </div>
-          <div class="tool-group">
-            <span class="char-counter" id="charCounter">0 / 12000</span>
-            <button class="send-button" id="sendButton" type="submit" aria-label="إرسال الرسالة" title="إرسال الرسالة">
-              <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </button>
-          </div>
-        </div>
-      </form>
-      <p class="disclaimer" id="serviceNotice">قد تحتاج بعض الخصائص إلى اتصال بخدمات خارجية. لا تضع كلمات مرور أو بيانات سرية في المحادثة.</p>
-    </footer>
-  </main>
-</div>
-
-<div class="toast-container" id="toastContainer" aria-live="polite"></div>
-
-<div class="modal-backdrop hidden" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-  <section class="modal">
-    <header class="modal-header">
-      <h2 id="modalTitle">الإعدادات</h2>
-      <button class="icon-button" id="closeModal" type="button" aria-label="إغلاق النافذة">
-        <svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>
-      </button>
-    </header>
-    <div id="modalBody"></div>
+   <div class="composer-area">
+    <div class="composer">
+     <div class="composer-box">
+      <div class="attachment-list hidden" id="attachmentPreview"></div>
+      <textarea id="promptInput" rows="1" maxlength="12000" placeholder="اسأل ميكا أي حاجة..."></textarea>
+      <div class="composer-toolbar">
+       <button class="tool-btn" id="attachButton" aria-label="إرفاق ملف"><svg><use href="#i-attach"/></svg><span>إرفاق</span></button>
+       <input id="fileInput" type="file" multiple>
+       <button class="tool-btn" id="webSearchButton" aria-label="البحث على الإنترنت"><svg><use href="#i-globe"/></svg><span>بحث</span></button>
+       <button class="tool-btn" id="voiceButton" aria-label="المحادثة الصوتية"><svg><use href="#i-mic"/></svg><span>صوت</span></button>
+       <div class="toolbar-spacer"></div>
+       <span class="counter" id="charCounter">0 / 12000</span>
+       <button class="send-btn" id="sendButton" aria-label="إرسال الرسالة"><svg><use href="#i-send"/></svg></button>
+      </div>
+     </div>
+     <div class="composer-disclaimer" id="serviceNotice">المحادثات محفوظة على جهازك. يلزم اتصال بخدمة ذكاء اصطناعي لتوليد ردود حقيقية.</div>
+    </div>
+   </div>
   </section>
+ </main>
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-backdrop hidden" id="modalBackdrop">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-header">
+   <h2 id="modalTitle">الإعدادات</h2>
+   <button class="icon-btn" id="closeModal" aria-label="إغلاق"><svg><use href="#i-close"/></svg></button>
+  </div>
+  <div id="modalBody"></div>
+  <div class="modal-footer" id="modalFooter"></div>
+ </section>
+</div>
+
+<section class="voice-screen hidden" id="voiceScreen">
+ <button class="icon-btn voice-close" id="closeVoice" aria-label="إنهاء الوضع الصوتي"><svg><use href="#i-close"/></svg></button>
+ <div class="eyebrow">MIKA VOICE</div>
+ <div class="voice-orb" id="voiceOrb"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>
+ <h2>المحادثة الصوتية</h2>
+ <p id="voiceDescription">ابدأ بالتحدث. يحتاج تحويل الصوت إلى نص والرد الصوتي الكامل إلى خدمات متوافقة.</p>
+ <div class="voice-status" id="voiceStatus">اضغط على الميكروفون للبدء</div>
+ <div class="voice-transcript" id="voiceTranscript"></div>
+ <div class="voice-controls">
+  <button class="icon-btn" id="voiceClear" aria-label="مسح النص"><svg><use href="#i-trash"/></svg></button>
+  <button class="voice-main-btn" id="voiceStart" aria-label="بدء الاستماع"><svg><use href="#i-mic"/></svg></button>
+  <button class="icon-btn" id="voiceSpeak" aria-label="قراءة النص"><svg><use href="#i-spark"/></svg></button>
+ </div>
+</section>
 
 <script>
 "use strict";
 
-(() => {
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const $ = selector => document.querySelector(selector);
+const $$ = selector => [...document.querySelectorAll(selector)];
 
-  const el = {
-    body: document.body,
-    sidebar: $("#sidebar"),
-    newChat: $("#newChat"),
-    search: $("#searchChats"),
-    history: $("#historyList"),
-    historyCount: $("#historyCount"),
-    prompt: $("#promptInput"),
-    form: $("#composerForm"),
-    send: $("#sendButton"),
-    welcome: $("#welcomeScreen"),
-    chat: $("#messagesContainer"),
-    messages: $("#messagesList"),
-    theme: $("#themeToggle"),
-    settings: $("#openSettings"),
-    closeModal: $("#closeModal"),
-    backdrop: $("#modalBackdrop"),
-    modalTitle: $("#modalTitle"),
-    modalBody: $("#modalBody"),
-    openSidebar: $("#openSidebar"),
-    overlay: $("#mobileOverlay"),
-    attach: $("#attachButton"),
-    files: $("#fileInput"),
-    attachmentPreview: $("#attachmentPreview"),
-    web: $("#webSearchButton"),
-    voice: $("#voiceButton"),
-    counter: $("#charCounter"),
-    notice: $("#serviceNotice"),
-    toast: $("#toastContainer"),
-    profileName: $("#profileName"),
-    profileAvatar: $("#profileAvatar"),
-    statusText: $("#statusText")
+const ICON = name => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
+const STORAGE_KEY = "mika_chat_v3_conversations";
+const SETTINGS_KEY = "mika_chat_v3_settings";
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+const state = {
+ conversations: [],
+ currentId: null,
+ attachments: [],
+ isGenerating: false,
+ stopRequested: false,
+ webSearch: false,
+ theme: "dark",
+ userName: "مستخدم ميكا",
+ voiceRecognition: null,
+ voiceActive: false,
+ lastAssistantText: ""
+};
+
+function makeId(){
+ return Date.now().toString(36) + Math.random().toString(36).slice(2,9);
+}
+
+function escapeHTML(value){
+ return String(value ?? "").replace(/[&<>"']/g, ch => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[ch]));
+}
+
+function loadLocalData(){
+ try{
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  state.conversations = Array.isArray(saved) ? saved.filter(c =>
+   c && typeof c.id === "string" && Array.isArray(c.messages)
+  ) : [];
+ }catch{
+  state.conversations = [];
+ }
+ try{
+  const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
+  state.userName = typeof settings.userName === "string" ? settings.userName : "مستخدم ميكا";
+  state.theme = settings.theme === "light" ? "light" : "dark";
+ }catch{}
+ applyTheme();
+ updateProfile();
+}
+
+function saveConversations(){
+ try{
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.conversations));
+ }catch{
+  toast("مساحة التخزين المحلية ممتلئة. جرّب حذف محادثات قديمة.", true);
+ }
+}
+
+function saveSettings(){
+ try{
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+   userName: state.userName,
+   theme: state.theme
+  }));
+ }catch{}
+}
+
+function currentConversation(){
+ return state.conversations.find(c => c.id === state.currentId) || null;
+}
+
+function createConversation(){
+ const conversation = {
+  id: makeId(),
+  title: "محادثة جديدة",
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
+  messages: []
+ };
+ state.conversations.unshift(conversation);
+ state.currentId = conversation.id;
+ state.attachments = [];
+ saveConversations();
+ renderHistory();
+ renderConversation();
+ clearAttachments();
+ closeSidebarMobile();
+ $("#promptInput").focus({preventScroll:true});
+}
+
+function updateConversationTitle(conversation){
+ const firstUser = conversation.messages.find(m => m.role === "user");
+ if(!firstUser) return;
+ const title = firstUser.content.trim().replace(/\s+/g," ");
+ conversation.title = title.length > 38 ? title.slice(0,38) + "…" : title;
+}
+
+function formatTime(timestamp){
+ try{
+  return new Intl.DateTimeFormat("ar-EG",{hour:"2-digit",minute:"2-digit"}).format(timestamp || Date.now());
+ }catch{
+  return "";
+ }
+}
+
+function renderHistory(){
+ const list = $("#historyList");
+ const query = $("#searchChats").value.trim().toLowerCase();
+
+ const conversations = [...state.conversations]
+  .sort((a,b) => b.updatedAt-a.updatedAt)
+  .filter(c => !query || c.title.toLowerCase().includes(query) ||
+   c.messages.some(m => String(m.content || "").toLowerCase().includes(query)));
+
+ list.innerHTML = "";
+ $("#historyEmpty").classList.toggle("hidden",conversations.length > 0);
+
+ conversations.forEach(conversation => {
+  const row = document.createElement("div");
+  row.className = "history-item" + (conversation.id === state.currentId ? " active" : "");
+  row.innerHTML = `
+   <span>${ICON("search")}</span>
+   <button class="history-title" data-open="${escapeHTML(conversation.id)}" style="border:0;background:none;color:inherit;text-align:right;min-width:0">${escapeHTML(conversation.title || "محادثة جديدة")}</button>
+   <button class="delete-chat" data-delete="${escapeHTML(conversation.id)}" aria-label="حذف المحادثة">${ICON("trash")}</button>`;
+  list.appendChild(row);
+ });
+}
+
+function createMessageElement(message,index){
+ const isUser = message.role === "user";
+ const article = document.createElement("article");
+ article.className = "message" + (isUser ? " user" : "");
+ article.dataset.messageIndex = index;
+
+ const avatar = isUser
+  ? `<div class="message-avatar">${escapeHTML((state.userName || "م").trim().charAt(0))}</div>`
+  : `<div class="message-avatar"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>`;
+
+ article.innerHTML = `
+  ${avatar}
+  <div class="message-main">
+   <div class="message-head">
+    <span>${isUser ? escapeHTML(state.userName) : "MIKA AI"}</span>
+    <time>${escapeHTML(formatTime(message.time))}</time>
+   </div>
+   <div class="message-body">${escapeHTML(message.content || "")}</div>
+   ${!isUser ? `<div class="message-actions">
+    <button class="mini-action" data-copy="${index}">${ICON("copy")} نسخ</button>
+    <button class="mini-action" data-read="${index}">${ICON("mic")} استمع</button>
+   </div>` : ""}
+  </div>`;
+ return article;
+}
+
+function renderConversation(options={}){
+ const conversation = currentConversation();
+ const welcome = $("#welcomeScreen");
+ const messages = $("#messagesList");
+
+ if(!conversation || !conversation.messages.length){
+  welcome.classList.remove("hidden");
+  messages.classList.add("hidden");
+  messages.innerHTML = "";
+  return;
+ }
+
+ welcome.classList.add("hidden");
+ messages.classList.remove("hidden");
+ messages.innerHTML = "";
+ conversation.messages.forEach((message,index) => {
+  messages.appendChild(createMessageElement(message,index));
+ });
+
+ if(state.isGenerating){
+  const typing = document.createElement("div");
+  typing.className = "message";
+  typing.id = "typingIndicator";
+  typing.innerHTML = `
+   <div class="message-avatar"><svg viewBox="0 0 100 100"><use href="#mika-mark"/></svg></div>
+   <div class="message-main">
+    <div class="message-head">MIKA AI</div>
+    <div class="typing"><i></i><i></i><i></i></div>
+   </div>`;
+  messages.appendChild(typing);
+ }
+
+ if(options.scroll !== false) scrollToBottom();
+}
+
+function scrollToBottom(){
+ requestAnimationFrame(() => {
+  const area = $("#scrollArea");
+  area.scrollTop = area.scrollHeight;
+ });
+}
+
+function toast(message,isError=false){
+ const item = document.createElement("div");
+ item.className = "toast" + (isError ? " error" : "");
+ item.textContent = message;
+ $("#toastContainer").appendChild(item);
+ setTimeout(() => item.remove(),3500);
+}
+
+function closeSidebarMobile(){
+ $("#sidebar").classList.remove("open");
+ $("#mobileOverlay").classList.remove("visible");
+}
+
+function openSidebarMobile(){
+ $("#sidebar").classList.add("open");
+ $("#mobileOverlay").classList.add("visible");
+}
+
+function clearAttachments(){
+ state.attachments = [];
+ $("#fileInput").value = "";
+ renderAttachments();
+}
+
+function renderAttachments(){
+ const preview = $("#attachmentPreview");
+ preview.innerHTML = "";
+ preview.classList.toggle("hidden",state.attachments.length === 0);
+
+ state.attachments.forEach((file,index) => {
+  const item = document.createElement("div");
+  item.className = "attachment";
+  item.innerHTML = `<span>${ICON("attach")}${escapeHTML(file.name)}</span>
+   <button data-remove-file="${index}" aria-label="إزالة الملف">×</button>`;
+  preview.appendChild(item);
+ });
+}
+
+function autoResizeInput(){
+ const input = $("#promptInput");
+ input.style.height = "auto";
+ input.style.height = Math.min(input.scrollHeight,180) + "px";
+ $("#charCounter").textContent = input.value.length.toLocaleString("ar-EG") + " / 12000";
+}
+
+function applyTheme(){
+ const light = state.theme === "light";
+ document.documentElement.style.setProperty("--bg",light ? "#f6f7fc" : "#080910");
+ document.documentElement.style.setProperty("--panel",light ? "#fff" : "#10111b");
+ document.documentElement.style.setProperty("--panel2",light ? "#f0f1f8" : "#151623");
+ document.documentElement.style.setProperty("--panel3",light ? "#e8eaf4" : "#1b1c2b");
+ document.documentElement.style.setProperty("--text",light ? "#202136" : "#f5f4ff");
+ document.documentElement.style.setProperty("--muted",light ? "#777b96" : "#9394ac");
+ document.body.style.background = light ? "#f6f7fc" : "#080910";
+ document.body.style.color = light ? "#202136" : "#f5f4ff";
+ $("#app").style.background = light ? "#f6f7fc" : "radial-gradient(ellipse at 52% -20%,#47337d23,transparent 50%),#080910";
+ $(".sidebar").style.background = light ? "rgba(255,255,255,.96)" : "rgba(13,14,23,.94)";
+ $(".topbar").style.background = light ? "#ffffffdd" : "#080910bb";
+ $(".composer-box").style.background = light ? "#fff" : "linear-gradient(145deg,#151522,#10111b)";
+ $(".composer-box").style.color = light ? "#202136" : "#f5f4ff";
+ $("#themeToggle").innerHTML = ICON(light ? "sun" : "moon");
+ saveSettings();
+}
+
+function updateProfile(){
+ $("#profileName").textContent = state.userName;
+ $("#profileAvatar").textContent = (state.userName || "م").trim().charAt(0);
+}
+
+function addUserMessage(content){
+ let conversation = currentConversation();
+ if(!conversation){
+  createConversation();
+  conversation = currentConversation();
+ }
+ const message = {
+  role:"user",
+  content,
+  time:Date.now(),
+  files:state.attachments.map(file=>({name:file.name,type:file.type,size:file.size}))
+ };
+ conversation.messages.push(message);
+ conversation.updatedAt = Date.now();
+ updateConversationTitle(conversation);
+ saveConversations();
+ renderHistory();
+ renderConversation();
+}
+
+function setGenerating(value){
+ state.isGenerating = value;
+ const button = $("#sendButton");
+ button.innerHTML = ICON(value ? "stop" : "send");
+ button.classList.toggle("stop",value);
+ button.setAttribute("aria-label",value ? "إيقاف التوليد" : "إرسال الرسالة");
+ $("#typingIndicator")?.remove();
+ if(!value) renderConversation({scroll:false});
+}
+
+async function sendMessage(){
+ if(state.isGenerating){
+  state.stopRequested = true;
+  setGenerating(false);
+  toast("تم إيقاف الانتظار.");
+  return;
+ }
+
+ const input = $("#promptInput");
+ const text = input.value.trim();
+ if(!text && !state.attachments.length) return;
+
+ const files = [...state.attachments];
+ if(files.length){
+  const fileSummary = files.map(f => `[ملف مرفق: ${f.name}]`).join("\n");
+  addUserMessage([text,fileSummary].filter(Boolean).join("\n\n"));
+ }else{
+  addUserMessage(text);
+ }
+
+ input.value = "";
+ autoResizeInput();
+ clearAttachments();
+
+ const conversation = currentConversation();
+ if(!conversation) return;
+
+ state.stopRequested = false;
+ setGenerating(true);
+ renderConversation();
+
+ try{
+  const endpoint = window.MIKA_CONFIG?.chatEndpoint || "/api/chat";
+  const controller = new AbortController();
+  const timeout = setTimeout(()=>controller.abort(),90000);
+  const history = conversation.messages.map(m=>({
+   role:m.role,
+   content:m.content
+  }));
+
+  const payload = {
+   messages:history,
+   message:text,
+   webSearch:state.webSearch
   };
 
-  const CHAT_KEY = "mika_chat_conversations_v2";
-  const SETTINGS_KEY = "mika_chat_settings_v2";
-  const MAX_CHATS = 100;
-  const MAX_LENGTH = 12000;
-  const MAX_FILES = 5;
-  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const response = await fetch(endpoint,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify(payload),
+   signal:controller.signal
+  });
+  clearTimeout(timeout);
 
-  let conversations = [];
-  let activeId = null;
-  let files = [];
-  let searchEnabled = false;
-  let sending = false;
-  let recognition = null;
-  let listening = false;
+  if(state.stopRequested) return;
 
-  let settings = { theme: "dark", name: "ضيف ميكا" };
-
-  function id() {
-    return crypto.randomUUID ? crypto.randomUUID() :
-      "mika-" + Date.now().toString(36) + Math.random().toString(36).slice(2);
+  if(!response.ok){
+   let details = "";
+   try{
+    const data = await response.json();
+    details = data.error || data.message || "";
+   }catch{}
+   throw new Error(details || `الخادم رجّع خطأ ${response.status}`);
   }
 
-  function toast(message, type = "") {
-    const node = document.createElement("div");
-    node.className = "toast" + (type ? " " + type : "");
-    node.textContent = message;
-    el.toast.appendChild(node);
-    setTimeout(() => {
-      node.style.opacity = "0";
-      setTimeout(() => node.remove(), 250);
-    }, 3500);
+  const data = await response.json();
+  if(state.stopRequested) return;
+
+  const answer = data.reply || data.answer || data.message ||
+   data.choices?.[0]?.message?.content;
+
+  if(typeof answer !== "string" || !answer.trim()){
+   throw new Error("الخدمة لم تُرجع ردًا نصيًا صالحًا.");
   }
 
-  function setNotice(message) {
-    el.notice.textContent = message ||
-      "قد تحتاج بعض الخصائص إلى اتصال بخدمات خارجية. لا تضع كلمات مرور أو بيانات سرية في المحادثة.";
-  }
+  conversation.messages.push({
+   role:"assistant",
+   content:answer,
+   time:Date.now()
+  });
+  conversation.updatedAt = Date.now();
+  state.lastAssistantText = answer;
+  saveConversations();
+  renderHistory();
+ }catch(error){
+  if(state.stopRequested) return;
+  const message = error.name === "AbortError"
+   ? "انتهت مهلة الاتصال. حاول مرة أخرى."
+   : error instanceof TypeError
+    ? "خدمة الذكاء الاصطناعي غير متصلة. يلزم إعداد الخادم /api/chat."
+    : error.message || "حصل خطأ أثناء الاتصال.";
 
-  function activeChat() {
-    return conversations.find(c => c.id === activeId) || null;
+  toast(message,true);
+ }finally{
+  if(!state.stopRequested){
+   setGenerating(false);
+   renderConversation();
   }
+  state.stopRequested = false;
+ }
+}
 
-  function makeTitle(text) {
-    const value = String(text || "").replace(/\s+/g, " ").trim();
-    return value.length > 38 ? value.slice(0, 38) + "…" : value || "محادثة جديدة";
+function openModal(title,body,buttons=[]){
+ $("#modalTitle").textContent = title;
+ $("#modalBody").innerHTML = body;
+ const footer = $("#modalFooter");
+ footer.innerHTML = "";
+ buttons.forEach(button => {
+  const element = document.createElement("button");
+  element.className = button.primary ? "primary-btn" : "secondary-btn";
+  element.textContent = button.label;
+  element.addEventListener("click",button.action);
+  footer.appendChild(element);
+ });
+ $("#modalBackdrop").classList.remove("hidden");
+}
+
+function closeModal(){
+ $("#modalBackdrop").classList.add("hidden");
+}
+
+function showSettings(){
+ openModal("الإعدادات والتفضيلات",`
+  <label class="modal-label" for="settingName">اسم العرض</label>
+  <input class="modal-input" id="settingName" maxlength="40" value="${escapeHTML(state.userName)}">
+  <p>المحادثات محفوظة محليًا على هذا الجهاز. لا تمثل هذه النسخة تسجيل دخول أو مزامنة بين الأجهزة.</p>
+  <p>خدمة الذكاء الاصطناعي: ${escapeHTML(window.MIKA_CONFIG?.chatEndpoint || "/api/chat")}</p>
+ `,[
+  {label:"إلغاء",action:closeModal},
+  {label:"حفظ الإعدادات",primary:true,action:()=>{
+   const name = $("#settingName").value.trim();
+   if(name) state.userName = name;
+   updateProfile();
+   saveSettings();
+   renderConversation({scroll:false});
+   closeModal();
+   toast("تم حفظ الإعدادات على هذا الجهاز.");
+  }}
+ ]);
+}
+
+function showPlans(){
+ openModal("MIKA CHAT",`
+  <p>هدفنا إن ميكا شات تجمع المحادثة الذكية والأدوات الإبداعية في تجربة واحدة.</p>
+  <p>الاشتراكات والدفع غير مفعّلين في هذه النسخة. لن يتم عرض خطط مدفوعة وهمية أو خصم أي مبلغ.</p>
+ `,[{label:"إغلاق",primary:true,action:closeModal}]);
+}
+
+function openVoice(){
+ $("#voiceScreen").classList.remove("hidden");
+ $("#voiceTranscript").textContent = "";
+ $("#voiceStatus").textContent = "اضغط على الميكروفون للبدء";
+ $("#voiceDescription").textContent = "تقدر تستخدم التعرف على الكلام إذا كان متاحًا في متصفحك. الرد الصوتي الذكي يحتاج اتصال الخدمة.";
+}
+
+function closeVoice(){
+ stopVoiceRecognition();
+ $("#voiceScreen").classList.add("hidden");
+}
+
+function stopVoiceRecognition(){
+ if(state.voiceRecognition){
+  try{state.voiceRecognition.stop()}catch{}
+ }
+ state.voiceRecognition = null;
+ state.voiceActive = false;
+ $("#voiceOrb").classList.remove("listening");
+ $("#voiceStart").innerHTML = ICON("mic");
+}
+
+function startVoiceRecognition(){
+ const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+ if(!Recognition){
+  toast("التعرف على الصوت غير مدعوم في هذا المتصفح. جرّب متصفحًا يدعمه.",true);
+  $("#voiceStatus").textContent = "التعرف على الصوت غير متاح";
+  return;
+ }
+
+ if(state.voiceRecognition){
+  stopVoiceRecognition();
+  return;
+ }
+
+ const recognition = new Recognition();
+ recognition.lang = "ar-EG";
+ recognition.interimResults = true;
+ recognition.continuous = false;
+ state.voiceRecognition = recognition;
+ state.voiceActive = true;
+ $("#voiceOrb").classList.add("listening");
+ $("#voiceStart").innerHTML = ICON("stop");
+ $("#voiceStatus").textContent = "بسمعك دلوقتي...";
+
+ recognition.onresult = event => {
+  let transcript = "";
+  for(let i=0;i<event.results.length;i++) transcript += event.results[i][0].transcript;
+  $("#voiceTranscript").textContent = transcript;
+  if(event.results[event.results.length-1].isFinal){
+   $("#promptInput").value = transcript;
+   autoResizeInput();
+   $("#voiceStatus").textContent = "تم تحويل كلامك إلى نص. تقدر تبعته للمساعد.";
   }
+ };
+ recognition.onerror = event => {
+  $("#voiceStatus").textContent = "تعذر التعرف على الصوت: " + event.error;
+ };
+ recognition.onend = () => {
+  state.voiceRecognition = null;
+  state.voiceActive = false;
+  $("#voiceOrb").classList.remove("listening");
+  $("#voiceStart").innerHTML = ICON("mic");
+ };
+ try{
+  recognition.start();
+ }catch{
+  stopVoiceRecognition();
+  toast("تعذر بدء الميكروفون.",true);
+ }
+}
 
-  function saveChats() {
-    try {
-      localStorage.setItem(CHAT_KEY, JSON.stringify(conversations.slice(0, MAX_CHATS)));
-    } catch {
-      toast("تعذر حفظ المحادثات. قد تكون مساحة التخزين ممتلئة.", "error");
-    }
+async function copyText(text){
+ try{
+  await navigator.clipboard.writeText(text);
+  toast("تم نسخ النص.");
+ }catch{
+  const area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
+  const ok = document.execCommand("copy");
+  area.remove();
+  toast(ok ? "تم نسخ النص." : "تعذر النسخ. حدد النص وانسخه يدويًا.",!ok);
+ }
+}
+
+function readText(text){
+ if(!("speechSynthesis" in window)){
+  toast("ميزة القراءة الصوتية غير متاحة في هذا المتصفح.",true);
+  return;
+ }
+ window.speechSynthesis.cancel();
+ const utterance = new SpeechSynthesisUtterance(text);
+ utterance.lang = "ar-EG";
+ utterance.rate = .95;
+ window.speechSynthesis.speak(utterance);
+}
+
+$("#newChat").addEventListener("click",createConversation);
+$("#openSidebar").addEventListener("click",openSidebarMobile);
+$("#closeSidebar").addEventListener("click",closeSidebarMobile);
+$("#mobileOverlay").addEventListener("click",closeSidebarMobile);
+$("#searchChats").addEventListener("input",renderHistory);
+$("#promptInput").addEventListener("input",autoResizeInput);
+$("#promptInput").addEventListener("keydown",event=>{
+ if(event.key==="Enter" && !event.shiftKey && !event.isComposing){
+  event.preventDefault();
+  sendMessage();
+ }
+});
+$("#sendButton").addEventListener("click",sendMessage);
+$("#openSettings").addEventListener("click",showSettings);
+$("#profileSettings").addEventListener("click",showSettings);
+$("#openPlans")?.addEventListener("click",showPlans);
+$("#closeModal").addEventListener("click",closeModal);
+$("#modalBackdrop").addEventListener("click",event=>{
+ if(event.target === $("#modalBackdrop")) closeModal();
+});
+$("#themeToggle").addEventListener("click",()=>{
+ state.theme = state.theme === "dark" ? "light" : "dark";
+ applyTheme();
+});
+$("#attachButton").addEventListener("click",()=>$("#fileInput").click());
+
+$("#fileInput").addEventListener("change",event=>{
+ const incoming = [...event.target.files];
+ for(const file of incoming){
+  if(state.attachments.length >= MAX_FILES){
+   toast("الحد الأقصى خمسة ملفات في الرسالة.",true);
+   break;
   }
+  if(file.size > MAX_FILE_SIZE){
+   toast(`الملف ${file.name} أكبر من 10 ميجابايت.`,true);
+   continue;
+  }
+  if(state.attachments.some(existing=>existing.name===file.name && existing.size===file.size)){
+   continue;
+  }
+  state.attachments.push(file);
+ }
+ renderAttachments();
+ event.target.value = "";
+});
 
-  function loadChats() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
-      conversations = Array.isArray(saved) ? saved
-        .filter(c => c && typeof c.id === "string" && Array.isArray(c.messages))
-        .slice(0, MAX_CHATS) : [];
-    } catch {
-      conversations = [];
-    }
-    conversations.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+$("#attachmentPreview").addEventListener("click",event=>{
+ const button = event.target.closest("[data-remove-file]");
+ if(!button) return;
+ state.attachments.splice(Number(button.dataset.removeFile),1);
+ renderAttachments();
+});
+
+$$(".suggestion").forEach(button=>{
+ button.addEventListener("click",()=>{
+  $("#promptInput").value = button.dataset.prompt || "";
+  autoResizeInput();
+  $("#promptInput").focus({preventScroll:true});
+ });
+});
+
+$("#webSearchButton").addEventListener("click",()=>{
+ state.webSearch = !state.webSearch;
+ $("#webSearchButton").classList.toggle("active",state.webSearch);
+ $("#webSearchButton").setAttribute("aria-pressed",String(state.webSearch));
+ toast(state.webSearch
+  ? "تم تفعيل خيار البحث. يلزم أن يدعم الخادم البحث الفعلي."
+  : "تم إيقاف خيار البحث.");
+});
+
+$("#voiceButton").addEventListener("click",openVoice);
+$("#closeVoice").addEventListener("click",closeVoice);
+$("#voiceStart").addEventListener("click",startVoiceRecognition);
+$("#voiceClear").addEventListener("click",()=>{
+ $("#voiceTranscript").textContent = "";
+ $("#voiceStatus").textContent = "تم مسح النص.";
+});
+$("#voiceSpeak").addEventListener("click",()=>{
+ const text = $("#voiceTranscript").textContent.trim() || state.lastAssistantText;
+ if(!text){
+  toast("مفيش نص متاح لقراءته.",true);
+  return;
+ }
+ readText(text);
+});
+
+$("#historyList").addEventListener("click",event=>{
+ const deleteButton = event.target.closest("[data-delete]");
+ if(deleteButton){
+  const id = deleteButton.dataset.delete;
+  const conversation = state.conversations.find(c=>c.id===id);
+  if(!conversation) return;
+
+  openModal("حذف المحادثة",`<p>هل تريد حذف محادثة «${escapeHTML(conversation.title)}» من هذا الجهاز؟ لا يمكن التراجع عن هذا الإجراء.</p>`,[
+   {label:"إلغاء",action:closeModal},
+   {label:"حذف",primary:true,action:()=>{
+    state.conversations = state.conversations.filter(c=>c.id!==id);
+    if(state.currentId===id) state.currentId = null;
+    saveConversations();
     renderHistory();
-  }
-
-  function saveSettings() {
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-    } catch {}
-  }
-
-  function loadSettings() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
-      settings = {
-        theme: saved.theme === "light" ? "light" : "dark",
-        name: typeof saved.name === "string" ? saved.name.slice(0, 40) : "ضيف ميكا"
-      };
-    } catch {}
-    applyTheme();
-    updateProfile();
-  }
-
-  function applyTheme() {
-    el.body.classList.toggle("light-theme", settings.theme === "light");
-    const meta = $('meta[name="theme-color"]');
-    if (meta) meta.content = settings.theme === "light" ? "#f5f6fc" : "#090b12";
-  }
-
-  function updateProfile() {
-    el.profileName.textContent = settings.name || "ضيف ميكا";
-    el.profileAvatar.textContent = Array.from(settings.name || "م")[0];
-  }
-
-  function createChat() {
-    if (conversations.length >= MAX_CHATS) {
-      toast("وصلت للحد الأقصى للمحادثات المحلية.", "error");
-      return null;
-    }
-
-    const chat = {
-      id: id(),
-      title: "محادثة جديدة",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      messages: []
-    };
-
-    conversations.unshift(chat);
-    activeId = chat.id;
-    saveChats();
-    renderHistory();
-    renderChat();
-    closeSidebar();
-    el.prompt.focus();
-    return chat;
-  }
-
-  function getOrCreateChat() {
-    return activeChat() || createChat();
-  }
-
-  function renderHistory() {
-    const query = el.search.value.trim().toLocaleLowerCase("ar");
-    const list = conversations.filter(chat =>
-      !query ||
-      chat.title.toLocaleLowerCase("ar").includes(query) ||
-      chat.messages.some(m => String(m.content || "").toLocaleLowerCase("ar").includes(query))
-    );
-
-    el.historyCount.textContent = conversations.length.toLocaleString("ar-EG");
-    el.history.replaceChildren();
-
-    if (!list.length) {
-      const empty = document.createElement("div");
-      empty.className = "history-empty";
-      empty.textContent = query ? "مفيش نتائج مطابقة لبحثك." :
-        "محادثاتك هتظهر هنا. ابدأ محادثة جديدة علشان تنطلق.";
-      el.history.appendChild(empty);
-      return;
-    }
-
-    list.forEach(chat => {
-      const row = document.createElement("div");
-      row.className = "history-item" + (chat.id === activeId ? " active" : "");
-      row.tabIndex = 0;
-      row.setAttribute("role", "button");
-      row.setAttribute("aria-label", "فتح " + chat.title);
-
-      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      icon.setAttribute("viewBox", "0 0 24 24");
-      icon.innerHTML = '<path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-4-.9L3 21l1.9-5.5a9 9 0 0 1-.9-4A8.5 8.5 0 0 1 12.5 3h.5a8.5 8.5 0 0 1 8 8v.5Z"/>';
-
-      const title = document.createElement("span");
-      title.className = "history-title";
-      title.textContent = chat.title;
-
-      const remove = document.createElement("button");
-      remove.className = "history-delete";
-      remove.type = "button";
-      remove.textContent = "×";
-      remove.title = "حذف المحادثة";
-      remove.setAttribute("aria-label", "حذف المحادثة");
-
-      remove.addEventListener("click", event => {
-        event.stopPropagation();
-        if (!confirm("تحذف المحادثة دي من جهازك؟")) return;
-        conversations = conversations.filter(c => c.id !== chat.id);
-        if (activeId === chat.id) activeId = null;
-        saveChats();
-        renderHistory();
-        renderChat();
-        toast("تم حذف المحادثة.", "success");
-      });
-
-      const open = () => {
-        activeId = chat.id;
-        renderHistory();
-        renderChat();
-        closeSidebar();
-      };
-
-      row.addEventListener("click", open);
-      row.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          open();
-        }
-      });
-
-      row.append(icon, title, remove);
-      el.history.appendChild(row);
-    });
-  }
-
-  function renderChat() {
-    const chat = activeChat();
-
-    if (!chat || !chat.messages.length) {
-      el.welcome.classList.remove("hidden");
-      el.chat.classList.add("hidden");
-      el.messages.replaceChildren();
-      return;
-    }
-
-    el.welcome.classList.add("hidden");
-    el.chat.classList.remove("hidden");
-    el.messages.replaceChildren();
-    chat.messages.forEach(message => renderMessage(message, false));
-    scrollBottom();
-  }
-
-  function formatTime(time) {
-    try {
-      return new Intl.DateTimeFormat("ar-EG", {
-        hour: "2-digit", minute: "2-digit"
-      }).format(new Date(time));
-    } catch {
-      return "";
-    }
-  }
-
-  function renderMessage(message, scroll = true) {
-    const row = document.createElement("article");
-    row.className = "message " + message.role;
-
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = message.role === "assistant" ? "M" :
-      Array.from(settings.name || "م")[0];
-
-    const body = document.createElement("div");
-    body.className = "message-body";
-
-    const heading = document.createElement("div");
-    heading.className = "message-heading";
-
-    const name = document.createElement("strong");
-    name.textContent = message.role === "assistant" ? "ميكا شات" : settings.name;
-
-    const time = document.createElement("time");
-    time.textContent = formatTime(message.timestamp || Date.now());
-
-    heading.append(name, time);
-
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.textContent = message.content;
-
-    body.append(heading, content);
-
-    if (message.attachments?.length) {
-      message.attachments.forEach(file => {
-        const chip = document.createElement("div");
-        chip.className = "attachment-chip";
-        const name = document.createElement("span");
-        name.textContent = "📎 " + file.name;
-        chip.appendChild(name);
-        body.appendChild(chip);
-      });
-    }
-
-    if (message.role === "assistant") {
-      const actions = document.createElement("div");
-      actions.className = "message-actions";
-
-      const copy = document.createElement("button");
-      copy.className = "message-action";
-      copy.type = "button";
-      copy.title = "نسخ الرد";
-      copy.setAttribute("aria-label", "نسخ الرد");
-      copy.innerHTML = '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>';
-      copy.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(message.content);
-          toast("تم نسخ الرد.", "success");
-        } catch {
-          toast("تعذر النسخ من المتصفح.", "error");
-        }
-      });
-
-      actions.appendChild(copy);
-      body.appendChild(actions);
-    }
-
-    row.append(avatar, body);
-    el.messages.appendChild(row);
-    if (scroll) scrollBottom();
-  }
-
-  function scrollBottom() {
-    requestAnimationFrame(() => {
-      el.chat.scrollTop = el.chat.scrollHeight;
-    });
-  }
-
-  function addMessage(role, content, attached = []) {
-    const chat = getOrCreateChat();
-    if (!chat) return null;
-
-    const message = {
-      id: id(),
-      role,
-      content: String(content || ""),
-      timestamp: Date.now(),
-      attachments: attached.map(file => ({
-        name: file.name, size: file.size, type: file.type
-      }))
-    };
-
-    chat.messages.push(message);
-    chat.updatedAt = Date.now();
-
-    if (role === "user" && chat.messages.filter(m => m.role === "user").length === 1) {
-      chat.title = makeTitle(content || attached[0]?.name);
-    }
-
-    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
-    saveChats();
-    renderHistory();
-
-    el.welcome.classList.add("hidden");
-    el.chat.classList.remove("hidden");
-    renderMessage(message);
-    return message;
-  }
-
-  function showTyping() {
-    const row = document.createElement("article");
-    row.className = "message assistant";
-    row.id = "typingIndicator";
-
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = "M";
-
-    const body = document.createElement("div");
-    body.className = "message-body";
-
-    const heading = document.createElement("div");
-    heading.className = "message-heading";
-    const title = document.createElement("strong");
-    title.textContent = "ميكا شات";
-    heading.appendChild(title);
-
-    const dots = document.createElement("div");
-    dots.className = "typing-dots";
-    dots.setAttribute("aria-label", "جاري انتظار الرد من الخادم");
-
-    for (let i = 0; i < 3; i++) dots.appendChild(document.createElement("span"));
-
-    body.append(heading, dots);
-    row.append(avatar, body);
-    el.messages.appendChild(row);
-    scrollBottom();
-  }
-
-  function updateCounter() {
-    el.counter.textContent = `${el.prompt.value.length.toLocaleString("ar-EG")} / 12000`;
-    el.send.disabled = sending || (!el.prompt.value.trim() && !files.length);
-  }
-
-  function resizePrompt() {
-    el.prompt.style.height = "auto";
-    el.prompt.style.height = Math.min(el.prompt.scrollHeight, 180) + "px";
-  }
-
-  function renderFiles() {
-    el.attachmentPreview.replaceChildren();
-    el.attachmentPreview.classList.toggle("hidden", !files.length);
-
-    files.forEach((file, index) => {
-      const chip = document.createElement("div");
-      chip.className = "attachment-chip";
-
-      const label = document.createElement("span");
-      label.textContent = file.name + " (" +
-        (file.size < 1024 * 1024 ?
-          Math.round(file.size / 1024) + " KB" :
-          (file.size / 1024 / 1024).toFixed(1) + " MB") + ")";
-
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.textContent = "×";
-      remove.setAttribute("aria-label", "إزالة " + file.name);
-      remove.addEventListener("click", () => {
-        files.splice(index, 1);
-        renderFiles();
-        updateCounter();
-      });
-
-      chip.append(label, remove);
-      el.attachmentPreview.appendChild(chip);
-    });
-  }
-
-  function selectFiles(fileList) {
-    for (const file of Array.from(fileList || [])) {
-      if (files.length >= MAX_FILES) {
-        toast("الحد الأقصى 5 ملفات في الرسالة.", "error");
-        break;
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        toast("الملف " + file.name + " أكبر من 10 ميجابايت.", "error");
-        continue;
-      }
-      if (!files.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) {
-        files.push(file);
-      }
-    }
-
-    renderFiles();
-    updateCounter();
-
-    if (files.length) {
-      toast("تم اختيار المرفقات. إرسال محتواها وتحليلها يحتاج خادمًا يدعم الملفات.");
-    }
-  }
-
-  async function sendMessage(event) {
-    if (event) event.preventDefault();
-    if (sending) return;
-
-    const text = el.prompt.value.trim();
-    if (!text && !files.length) return;
-
-    const message = text || "أرفقت ملفات. أريد تحليل محتواها.";
-    const attached = files.slice();
-    const chat = getOrCreateChat();
-    if (!chat) return;
-
-    const history = chat.messages.slice(-20).map(m => ({
-      role: m.role,
-      content: m.content
-    }));
-
-    addMessage("user", message, attached);
-
-    el.prompt.value = "";
-    el.prompt.style.height = "auto";
-    files = [];
-    el.files.value = "";
-    renderFiles();
-
-    sending = true;
-    updateCounter();
-    showTyping();
-
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 120000);
-
-      let response;
-      try {
-        response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          credentials: "same-origin",
-          cache: "no-store",
-          signal: controller.signal,
-          body: JSON.stringify({
-            message,
-            history,
-            conversationId: chat.id,
-            options: {
-              webSearch: searchEnabled,
-              attachments: attached.map(f => ({
-                name: f.name, type: f.type, size: f.size
-              }))
-            }
-          })
-        });
-      } finally {
-        clearTimeout(timer);
-      }
-
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        throw new Error("خادم الذكاء الاصطناعي غير متصل أو لم يرجع JSON. يلزم نشر backend/server.js.");
-      }
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(typeof data.message === "string" ? data.message : "الخادم رفض الطلب.");
-      }
-
-      const answer = typeof data.reply === "string" ? data.reply :
-        typeof data.answer === "string" ? data.answer : "";
-
-      if (!answer.trim()) throw new Error("الخادم لم يرجع إجابة صالحة.");
-
-      $("#typingIndicator")?.remove();
-      addMessage("assistant", answer);
-      el.statusText.textContent = "تم الاتصال";
-      setNotice();
-    } catch (error) {
-      $("#typingIndicator")?.remove();
-
-      const reason = error.name === "AbortError"
-        ? "انتهى وقت انتظار الرد."
-        : error.message || "تعذر الاتصال بالخادم.";
-
-      const failure = "مش قادر أجيب رد ذكي حقيقي دلوقتي، لأن خادم الذكاء الاصطناعي مش متصل.\n\n" +
-        "التفاصيل: " + reason + "\n\n" +
-        "رسالتك محفوظة في المحادثة. بعد نشر الخادم وربط مزوّد الذكاء الاصطناعي، هتقدر تجرب تاني.";
-
-      addMessage("assistant", failure);
-      el.statusText.textContent = "الخدمة غير متصلة";
-      setNotice("الواجهة جاهزة، لكن خدمة الذكاء الاصطناعي تحتاج خادمًا فعليًا على /api/chat.");
-      toast("لم يصل رد من خدمة الذكاء الاصطناعي.", "error");
-    } finally {
-      sending = false;
-      updateCounter();
-    }
-  }
-
-  function openModal(title, builder) {
-    el.modalTitle.textContent = title;
-    el.modalBody.replaceChildren();
-    builder(el.modalBody);
-    el.backdrop.classList.remove("hidden");
-    el.closeModal.focus();
-  }
-
-  function closeModal() {
-    el.backdrop.classList.add("hidden");
-  }
-
-  function element(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
-
-  function openSettings() {
-    openModal("الإعدادات والتخصيص", body => {
-      body.appendChild(element("p", "modal-description",
-        "تُحفظ هذه الإعدادات على جهازك. تسجيل الدخول ومزامنة الحسابات لم يتم تفعيلهما بعد."));
-
-      const nameGroup = element("div", "settings-group");
-      const nameLabel = element("label", "", "الاسم الظاهر");
-      nameLabel.htmlFor = "mikaName";
-
-      const nameInput = element("input");
-      nameInput.id = "mikaName";
-      nameInput.maxLength = 40;
-      nameInput.value = settings.name;
-      nameGroup.append(nameLabel, nameInput);
-
-      const themeGroup = element("div", "settings-group");
-      const themeLabel = element("label", "", "المظهر");
-      themeLabel.htmlFor = "mikaTheme";
-
-      const themeSelect = element("select");
-      themeSelect.id = "mikaTheme";
-
-      [["dark", "داكن"], ["light", "فاتح"]].forEach(([value, label]) => {
-        const option = element("option", "", label);
-        option.value = value;
-        themeSelect.appendChild(option);
-      });
-
-      themeSelect.value = settings.theme;
-      themeGroup.append(themeLabel, themeSelect);
-
-      const save = element("button", "modal-primary", "حفظ التغييرات");
-      save.type = "button";
-      save.addEventListener("click", () => {
-        settings.name = nameInput.value.trim().slice(0, 40) || "ضيف ميكا";
-        settings.theme = themeSelect.value === "light" ? "light" : "dark";
-        saveSettings();
-        applyTheme();
-        updateProfile();
-        renderChat();
-        closeModal();
-        toast("تم حفظ الإعدادات.", "success");
-      });
-
-      body.append(nameGroup, themeGroup, save);
-    });
-  }
-
-  function openInfo() {
-    openModal("عن MIKA CHAT", body => {
-      body.appendChild(element("p", "modal-description",
-        "MIKA CHAT واجهة مساعد ذكي قيد التجهيز. التصميم والمحادثات المحلية يعملان على جهازك، أما الردود الذكية والبحث وتحليل الملفات فتحتاج إلى خادم وخدمات فعلية."));
-      body.appendChild(element("div", "plan-card", "لا توجد هنا بيانات اتصال أو مفاتيح سرية. لن ندّعي أن خدمة غير متصلة تعمل بالفعل."));
-    });
-  }
-
-  function toggleTheme() {
-    settings.theme = settings.theme === "dark" ? "light" : "dark";
-    saveSettings();
-    applyTheme();
-    toast(settings.theme === "dark" ? "تم تفعيل المظهر الداكن." : "تم تفعيل المظهر الفاتح.", "success");
-  }
-
-  function toggleSearch() {
-    searchEnabled = !searchEnabled;
-    el.web.classList.toggle("active", searchEnabled);
-    el.web.setAttribute("aria-pressed", String(searchEnabled));
-
-    if (searchEnabled) {
-      setNotice("تم اختيار البحث للرسالة التالية. تنفيذ البحث يتطلب ربط مزوّد بحث حقيقي بالخادم.");
-      toast("تم اختيار البحث لهذه الرسالة.");
-    } else {
-      setNotice();
-      toast("تم إيقاف البحث.");
-    }
-  }
-
-  function voiceInput() {
-    const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Speech) {
-      toast("الإملاء الصوتي غير مدعوم في هذا المتصفح.", "error");
-      return;
-    }
-
-    if (listening && recognition) {
-      recognition.stop();
-      return;
-    }
-
-    recognition = new Speech();
-    recognition.lang = "ar-EG";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-
-    let finalText = "";
-    recognition.onstart = () => {
-      listening = true;
-      el.voice.classList.add("active");
-      el.voice.setAttribute("aria-pressed", "true");
-      toast("اتكلم دلوقتي؛ هحوّل كلامك لنص.");
-    };
-
-    recognition.onresult = event => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const text = event.results[i][0].transcript;
-        if (event.results[i].isFinal) finalText += text;
-        else interim += text;
-      }
-
-      const recognized = [finalText, interim].filter(Boolean).join(" ").trim();
-      if (recognized) {
-        el.prompt.value = recognized;
-        resizePrompt();
-        updateCounter();
-      }
-    };
-
-    recognition.onerror = event => {
-      if (!["no-speech", "aborted"].includes(event.error)) {
-        toast("تعذر الإملاء الصوتي: " + event.error, "error");
-      }
-    };
-
-    recognition.onend = () => {
-      listening = false;
-      el.voice.classList.remove("active");
-      el.voice.setAttribute("aria-pressed", "false");
-    };
-
-    try { recognition.start(); }
-    catch { toast("تعذر بدء الإملاء الصوتي.", "error"); }
-  }
-
-  function openSidebar() {
-    document.body.classList.add("sidebar-open");
-  }
-
-  function closeSidebar() {
-    document.body.classList.remove("sidebar-open");
-  }
-
-  function bindEvents() {
-    el.newChat.addEventListener("click", createChat);
-    el.search.addEventListener("input", renderHistory);
-    el.form.addEventListener("submit", sendMessage);
-
-    el.prompt.addEventListener("input", () => {
-      resizePrompt();
-      updateCounter();
-    });
-
-    el.prompt.addEventListener("keydown", event => {
-      if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
-        event.preventDefault();
-        sendMessage();
-      }
-    });
-
-    $$(".suggestion-card").forEach(button => {
-      button.addEventListener("click", () => {
-        el.prompt.value = button.dataset.prompt || "";
-        resizePrompt();
-        updateCounter();
-        el.prompt.focus();
-      });
-    });
-
-    el.theme.addEventListener("click", toggleTheme);
-    el.settings.addEventListener("click", openSettings);
-    $("#modelInfo").addEventListener("click", openInfo);
-    el.closeModal.addEventListener("click", closeModal);
-
-    el.backdrop.addEventListener("click", event => {
-      if (event.target === el.backdrop) closeModal();
-    });
-
-    el.openSidebar.addEventListener("click", openSidebar);
-    el.overlay.addEventListener("click", closeSidebar);
-
-    el.attach.addEventListener("click", () => el.files.click());
-    el.files.addEventListener("change", event => selectFiles(event.target.files));
-    el.web.addEventListener("click", toggleSearch);
-    el.voice.addEventListener("click", voiceInput);
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        closeModal();
-        closeSidebar();
-      }
-
-      const tag = document.activeElement?.tagName;
-      const typing = tag === "INPUT" || tag === "TEXTAREA";
-
-      if (event.key === "/" && !typing && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        event.preventDefault();
-        el.search.focus();
-      }
-
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        createChat();
-      }
-    });
-  }
-
-  async function checkService() {
-    try {
-      const response = await fetch("/api/health", {
-        method: "GET",
-        headers: { "Accept": "application/json" },
-        credentials: "same-origin",
-        cache: "no-store",
-        signal: AbortSignal.timeout ? AbortSignal.timeout(5000) : undefined
-      });
-
-      if (!response.ok) throw new Error("offline");
-      const data = await response.json();
-
-      if (data.status === "ok") {
-        el.statusText.textContent = "الخدمة متصلة";
-        return;
-      }
-    } catch {}
-
-    el.statusText.textContent = "الخدمة غير متصلة";
-  }
-
-  function initialize() {
-    loadSettings();
-    loadChats();
-    bindEvents();
-    updateCounter();
-    renderChat();
-    checkService();
-
-    window.MIKA_CHAT = Object.freeze({
-      newConversation: createChat,
-      getConversations: () => JSON.parse(JSON.stringify(conversations)),
-      getActiveConversation: () => {
-        const chat = activeChat();
-        return chat ? JSON.parse(JSON.stringify(chat)) : null;
-      }
-    });
-
-    console.info("MIKA CHAT initialized.");
-  }
-
-  initialize();
-})();
+    renderConversation();
+    closeModal();
+    toast("تم حذف المحادثة.");
+   }}
+  ]);
+  return;
+ }
+ const openButton = event.target.closest("[data-open]");
+ if(openButton){
+  state.currentId = openButton.dataset.open;
+  renderHistory();
+  renderConversation();
+  closeSidebarMobile();
+ }
+});
+
+$("#messagesList").addEventListener("click",event=>{
+ const copyButton = event.target.closest("[data-copy]");
+ const readButton = event.target.closest("[data-read]");
+ const conversation = currentConversation();
+ if(!conversation) return;
+
+ if(copyButton){
+  const message = conversation.messages[Number(copyButton.dataset.copy)];
+  if(message) copyText(message.content);
+ }
+ if(readButton){
+  const message = conversation.messages[Number(readButton.dataset.read)];
+  if(message) readText(message.content);
+ }
+});
+
+$("#messagesList").addEventListener("click",event=>{
+ const retry = event.target.closest("[data-retry]");
+ if(!retry) return;
+ const conversation = currentConversation();
+ if(!conversation) return;
+ const previousUser = [...conversation.messages].reverse().find(m=>m.role==="user");
+ if(previousUser){
+  $("#promptInput").value = previousUser.content;
+  autoResizeInput();
+  sendMessage();
+ }
+});
+
+$("#scrollArea").addEventListener("keydown",event=>{
+ if(event.key==="Escape") closeModal();
+});
+
+function installFavicon(){
+ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a18aff"/><stop offset="1" stop-color="#39c9ed"/></linearGradient></defs><rect width="100" height="100" rx="25" fill="#10111b"/><rect x="8" y="8" width="84" height="84" rx="22" fill="url(#g)"/><path d="M50 18 59 40 82 49 59 59 50 82 41 59 18 50 41 40Z" fill="none" stroke="white" stroke-width="4.5" stroke-linejoin="round"/><path d="m72 17 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="white"/></svg>`;
+ $("#appIcon").href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+}
+installFavicon();
+loadLocalData();
+renderHistory();
+renderConversation();
+autoResizeInput();
+
+if(!state.currentId && state.conversations.length){
+ state.currentId = state.conversations.sort((a,b)=>b.updatedAt-a.updatedAt)[0].id;
+ renderHistory();
+ renderConversation();
+}
+
+window.addEventListener("online",()=>{
+ toast("الجهاز متصل بالإنترنت. تأكد من إعداد خدمة الذكاء الاصطناعي.");
+});
+window.addEventListener("offline",()=>{
+ toast("الجهاز غير متصل بالإنترنت.",true);
+});
+window.addEventListener("beforeunload",()=>{
+ if(state.voiceRecognition) stopVoiceRecognition();
+});
 </script>
 </body>
   </html>
