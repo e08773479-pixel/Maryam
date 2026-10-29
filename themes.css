@@ -1,0 +1,1365 @@
+/* =========================================================
+   MEKA X — THEMES SYSTEM
+   File: themes.css
+   Purpose: Theme colors, backgrounds, surfaces and palettes
+   Direction: RTL-ready | Mobile | Tablet | Desktop
+   ========================================================= */
+
+/* =========================================================
+   1. ROOT THEME VARIABLES
+   ========================================================= */
+
+:root {
+  color-scheme: dark;
+
+  /* Brand */
+  --mx-primary: #8b5cf6;
+  --mx-primary-hover: #9d75ff;
+  --mx-primary-active: #7041dc;
+  --mx-primary-soft: rgba(139, 92, 246, 0.14);
+  --mx-primary-medium: rgba(139, 92, 246, 0.24);
+
+  --mx-secondary: #3b82f6;
+  --mx-secondary-hover: #60a5fa;
+  --mx-secondary-soft: rgba(59, 130, 246, 0.14);
+
+  --mx-accent: #06b6d4;
+  --mx-accent-soft: rgba(6, 182, 212, 0.14);
+
+  /* Backgrounds */
+  --mx-bg: #080b14;
+  --mx-bg-secondary: #0c1020;
+  --mx-bg-tertiary: #101629;
+  --mx-bg-elevated: #141a2d;
+
+  /* Surfaces */
+  --mx-surface: #101526;
+  --mx-surface-hover: #171e33;
+  --mx-surface-active: #202943;
+  --mx-surface-raised: #161d31;
+  --mx-surface-glass: rgba(17, 23, 42, 0.76);
+
+  /* Borders */
+  --mx-border: rgba(255, 255, 255, 0.08);
+  --mx-border-light: rgba(255, 255, 255, 0.12);
+  --mx-border-strong: rgba(255, 255, 255, 0.2);
+  --mx-border-primary: rgba(139, 92, 246, 0.42);
+
+  /* Text */
+  --mx-text: #f5f7ff;
+  --mx-text-secondary: #b2bad0;
+  --mx-text-muted: #7e89a5;
+  --mx-text-disabled: #58627a;
+  --mx-text-inverse: #080b14;
+
+  /* Status */
+  --mx-success: #22c55e;
+  --mx-success-soft: rgba(34, 197, 94, 0.14);
+
+  --mx-warning: #f59e0b;
+  --mx-warning-soft: rgba(245, 158, 11, 0.14);
+
+  --mx-danger: #ef4444;
+  --mx-danger-soft: rgba(239, 68, 68, 0.14);
+
+  --mx-info: #38bdf8;
+  --mx-info-soft: rgba(56, 189, 248, 0.14);
+
+  /* Gradients */
+  --mx-gradient-brand:
+    linear-gradient(135deg, #8b5cf6 0%, #3b82f6 55%, #06b6d4 100%);
+
+  --mx-gradient-primary:
+    linear-gradient(135deg, #8b5cf6 0%, #6d5dfc 100%);
+
+  --mx-gradient-blue:
+    linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+
+  --mx-gradient-dark:
+    linear-gradient(145deg, #080b14 0%, #11152a 55%, #0c1020 100%);
+
+  --mx-gradient-card:
+    linear-gradient(
+      145deg,
+      rgba(139, 92, 246, 0.1),
+      rgba(59, 130, 246, 0.04)
+    );
+
+  --mx-gradient-glow:
+    radial-gradient(
+      circle at top right,
+      rgba(139, 92, 246, 0.18),
+      transparent 45%
+    );
+
+  /* Shadows */
+  --mx-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.16);
+
+  --mx-shadow-md:
+    0 8px 24px rgba(0, 0, 0, 0.22);
+
+  --mx-shadow-lg:
+    0 18px 48px rgba(0, 0, 0, 0.3);
+
+  --mx-shadow-primary:
+    0 8px 28px rgba(139, 92, 246, 0.2);
+
+  --mx-shadow-blue:
+    0 8px 28px rgba(59, 130, 246, 0.18);
+
+  /* Focus */
+  --mx-focus-ring:
+    0 0 0 3px rgba(139, 92, 246, 0.28);
+
+  /* Layout surfaces */
+  --mx-header-bg: rgba(8, 11, 20, 0.84);
+  --mx-sidebar-bg: rgba(12, 16, 32, 0.96);
+  --mx-overlay: rgba(3, 5, 12, 0.72);
+  --mx-modal-bg: #12182a;
+  --mx-input-bg: #0b1020;
+
+  /* Chat */
+  --mx-chat-user-bg:
+    linear-gradient(135deg, #7041dc, #4f46e5);
+
+  --mx-chat-assistant-bg: #151c30;
+  --mx-chat-divider: rgba(255, 255, 255, 0.07);
+
+  /* Radius */
+  --mx-radius-xs: 6px;
+  --mx-radius-sm: 10px;
+  --mx-radius-md: 14px;
+  --mx-radius-lg: 20px;
+  --mx-radius-xl: 28px;
+  --mx-radius-pill: 999px;
+
+  /* Typography */
+  --mx-font-family:
+    "Cairo",
+    "Segoe UI",
+    Tahoma,
+    Arial,
+    sans-serif;
+
+  /* Motion */
+  --mx-transition-fast: 150ms ease;
+  --mx-transition-normal: 240ms ease;
+  --mx-transition-slow: 380ms ease;
+}
+
+/* =========================================================
+   2. BASE THEME APPLICATION
+   ========================================================= */
+
+html {
+  background-color: var(--mx-bg);
+  color: var(--mx-text);
+}
+
+body {
+  background-color: var(--mx-bg);
+  color: var(--mx-text);
+  font-family: var(--mx-font-family);
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.38);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background: rgba(139, 92, 246, 0.38);
+  color: #ffffff;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--mx-border);
+}
+
+.theme-background {
+  background: var(--mx-bg);
+  color: var(--mx-text);
+}
+
+.theme-surface {
+  background: var(--mx-surface);
+  color: var(--mx-text);
+  border: 1px solid var(--mx-border);
+}
+
+.theme-surface-raised {
+  background: var(--mx-surface-raised);
+  color: var(--mx-text);
+  border: 1px solid var(--mx-border);
+}
+
+.theme-text {
+  color: var(--mx-text);
+}
+
+.theme-text-secondary {
+  color: var(--mx-text-secondary);
+}
+
+.theme-text-muted {
+  color: var(--mx-text-muted);
+}
+
+.theme-border {
+  border-color: var(--mx-border);
+}
+
+/* =========================================================
+   3. BRAND COLORS
+   ========================================================= */
+
+.text-primary {
+  color: var(--mx-primary) !important;
+}
+
+.text-secondary {
+  color: var(--mx-secondary) !important;
+}
+
+.text-accent {
+  color: var(--mx-accent) !important;
+}
+
+.text-success {
+  color: var(--mx-success) !important;
+}
+
+.text-warning {
+  color: var(--mx-warning) !important;
+}
+
+.text-danger {
+  color: var(--mx-danger) !important;
+}
+
+.text-muted {
+  color: var(--mx-text-muted) !important;
+}
+
+.bg-primary {
+  background-color: var(--mx-primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--mx-secondary) !important;
+}
+
+.bg-success {
+  background-color: var(--mx-success) !important;
+}
+
+.bg-warning {
+  background-color: var(--mx-warning) !important;
+}
+
+.bg-danger {
+  background-color: var(--mx-danger) !important;
+}
+
+.bg-primary-soft {
+  background-color: var(--mx-primary-soft) !important;
+}
+
+.bg-secondary-soft {
+  background-color: var(--mx-secondary-soft) !important;
+}
+
+.bg-success-soft {
+  background-color: var(--mx-success-soft) !important;
+}
+
+.bg-warning-soft {
+  background-color: var(--mx-warning-soft) !important;
+}
+
+.bg-danger-soft {
+  background-color: var(--mx-danger-soft) !important;
+}
+
+/* =========================================================
+   4. BRAND GRADIENTS
+   ========================================================= */
+
+.mx-gradient {
+  background: var(--mx-gradient-brand);
+}
+
+.mx-gradient-primary {
+  background: var(--mx-gradient-primary);
+}
+
+.mx-gradient-blue {
+  background: var(--mx-gradient-blue);
+}
+
+.mx-gradient-dark {
+  background: var(--mx-gradient-dark);
+}
+
+.mx-gradient-card {
+  background: var(--mx-gradient-card);
+}
+
+.mx-gradient-text {
+  background: var(--mx-gradient-brand);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.mx-gradient-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--mx-surface), var(--mx-surface)) padding-box,
+    var(--mx-gradient-brand) border-box;
+}
+
+.mx-glow {
+  box-shadow: var(--mx-shadow-primary);
+}
+
+.mx-glow-blue {
+  box-shadow: var(--mx-shadow-blue);
+}
+
+/* =========================================================
+   5. APP BACKGROUND
+   ========================================================= */
+
+.mx-app-background {
+  background:
+    radial-gradient(
+      ellipse at 85% 0%,
+      rgba(139, 92, 246, 0.1),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 0% 100%,
+      rgba(59, 130, 246, 0.07),
+      transparent 38%
+    ),
+    var(--mx-bg);
+  color: var(--mx-text);
+  min-height: 100vh;
+}
+
+.mx-page-background {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(139, 92, 246, 0.08),
+      transparent 32%
+    ),
+    var(--mx-bg-secondary);
+}
+
+.mx-ambient-glow {
+  position: relative;
+  isolation: isolate;
+}
+
+.mx-ambient-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--mx-gradient-glow);
+}
+
+/* =========================================================
+   6. HEADER AND NAVIGATION THEMES
+   ========================================================= */
+
+.mx-header,
+.app-header,
+.topbar {
+  background: var(--mx-header-bg);
+  border-bottom: 1px solid var(--mx-border);
+  color: var(--mx-text);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.mx-sidebar,
+.app-sidebar,
+.sidebar {
+  background: var(--mx-sidebar-bg);
+  border-color: var(--mx-border);
+  color: var(--mx-text);
+}
+
+.mx-nav-item {
+  color: var(--mx-text-secondary);
+  transition:
+    background-color var(--mx-transition-fast),
+    color var(--mx-transition-fast);
+}
+
+.mx-nav-item:hover {
+  color: var(--mx-text);
+  background: var(--mx-surface-hover);
+}
+
+.mx-nav-item.active,
+.mx-nav-item[aria-current="page"] {
+  color: #ffffff;
+  background: var(--mx-primary-soft);
+  border-color: var(--mx-border-primary);
+}
+
+.mx-nav-item.active .mx-nav-icon {
+  color: var(--mx-primary-hover);
+}
+
+/* =========================================================
+   7. CARDS AND PANELS
+   ========================================================= */
+
+.mx-card,
+.app-card,
+.panel-card {
+  color: var(--mx-text);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+  box-shadow: var(--mx-shadow-sm);
+}
+
+.mx-card:hover {
+  border-color: var(--mx-border-light);
+}
+
+.mx-card-primary {
+  background: var(--mx-gradient-card);
+  border-color: var(--mx-border-primary);
+}
+
+.mx-card-elevated {
+  background: var(--mx-surface-raised);
+  box-shadow: var(--mx-shadow-md);
+}
+
+.mx-panel {
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+  color: var(--mx-text);
+}
+
+.mx-panel-header {
+  border-bottom: 1px solid var(--mx-border);
+}
+
+.mx-panel-footer {
+  border-top: 1px solid var(--mx-border);
+}
+
+/* =========================================================
+   8. BUTTON THEMES
+   ========================================================= */
+
+.mx-btn-primary {
+  color: #ffffff;
+  background: var(--mx-gradient-primary);
+  border: 1px solid transparent;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15);
+}
+
+.mx-btn-primary:hover {
+  color: #ffffff;
+  filter: brightness(1.1);
+  box-shadow: var(--mx-shadow-primary);
+}
+
+.mx-btn-secondary {
+  color: var(--mx-text);
+  background: var(--mx-surface-hover);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-btn-secondary:hover {
+  background: var(--mx-surface-active);
+  border-color: var(--mx-border-light);
+}
+
+.mx-btn-ghost {
+  color: var(--mx-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.mx-btn-ghost:hover {
+  color: var(--mx-text);
+  background: var(--mx-surface-hover);
+}
+
+.mx-btn-danger {
+  color: #ffffff;
+  background: var(--mx-danger);
+}
+
+.mx-btn-success {
+  color: #ffffff;
+  background: var(--mx-success);
+}
+
+/* =========================================================
+   9. INPUTS AND FORMS
+   ========================================================= */
+
+.mx-input,
+.mx-select,
+.mx-textarea,
+input.mx-input,
+select.mx-select,
+textarea.mx-textarea {
+  color: var(--mx-text);
+  background: var(--mx-input-bg);
+  border: 1px solid var(--mx-border-light);
+  caret-color: var(--mx-primary);
+}
+
+.mx-input::placeholder,
+.mx-textarea::placeholder {
+  color: var(--mx-text-muted);
+  opacity: 1;
+}
+
+.mx-input:hover,
+.mx-select:hover,
+.mx-textarea:hover {
+  border-color: var(--mx-border-strong);
+}
+
+.mx-input:focus,
+.mx-select:focus,
+.mx-textarea:focus {
+  outline: none;
+  border-color: var(--mx-primary);
+  box-shadow: var(--mx-focus-ring);
+}
+
+.mx-input:disabled,
+.mx-select:disabled,
+.mx-textarea:disabled {
+  color: var(--mx-text-disabled);
+  background: var(--mx-bg-secondary);
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+/* =========================================================
+   10. CHAT THEMES
+   ========================================================= */
+
+.mx-chat-window {
+  background: var(--mx-bg-secondary);
+  color: var(--mx-text);
+}
+
+.mx-chat-message {
+  color: var(--mx-text);
+}
+
+.mx-chat-message--user {
+  color: #ffffff;
+  background: var(--mx-chat-user-bg);
+}
+
+.mx-chat-message--assistant {
+  color: var(--mx-text);
+  background: var(--mx-chat-assistant-bg);
+  border: 1px solid var(--mx-chat-divider);
+}
+
+.mx-chat-composer {
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-chat-composer:focus-within {
+  border-color: var(--mx-border-primary);
+  box-shadow: var(--mx-focus-ring);
+}
+
+.mx-chat-divider {
+  border-color: var(--mx-chat-divider);
+}
+
+/* =========================================================
+   11. AI ASSISTANT THEME
+   ========================================================= */
+
+.mx-ai-panel {
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(139, 92, 246, 0.14),
+      transparent 48%
+    ),
+    var(--mx-surface);
+  border: 1px solid var(--mx-border);
+  color: var(--mx-text);
+}
+
+.mx-ai-avatar {
+  background: var(--mx-gradient-brand);
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(139, 92, 246, 0.22);
+}
+
+.mx-ai-highlight {
+  color: var(--mx-primary-hover);
+}
+
+.mx-ai-response {
+  color: var(--mx-text);
+  background: var(--mx-surface-raised);
+  border-inline-start: 3px solid var(--mx-primary);
+}
+
+/* =========================================================
+   12. SOCIAL FEED THEMES
+   ========================================================= */
+
+.mx-post {
+  color: var(--mx-text);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-post-meta {
+  color: var(--mx-text-muted);
+}
+
+.mx-post-content {
+  color: var(--mx-text-secondary);
+}
+
+.mx-post-action {
+  color: var(--mx-text-secondary);
+  background: transparent;
+}
+
+.mx-post-action:hover {
+  color: var(--mx-primary-hover);
+  background: var(--mx-primary-soft);
+}
+
+.mx-post-action.is-active {
+  color: var(--mx-primary-hover);
+  background: var(--mx-primary-soft);
+}
+
+.mx-feed-divider {
+  border-color: var(--mx-border);
+}
+
+/* =========================================================
+   13. BADGES AND STATUS INDICATORS
+   ========================================================= */
+
+.mx-badge-primary {
+  color: #dcd0ff;
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(139, 92, 246, 0.24);
+}
+
+.mx-badge-blue {
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.16);
+  border: 1px solid rgba(59, 130, 246, 0.24);
+}
+
+.mx-badge-success {
+  color: #bbf7d0;
+  background: var(--mx-success-soft);
+}
+
+.mx-badge-warning {
+  color: #fde68a;
+  background: var(--mx-warning-soft);
+}
+
+.mx-badge-danger {
+  color: #fecaca;
+  background: var(--mx-danger-soft);
+}
+
+.mx-badge-neutral {
+  color: var(--mx-text-secondary);
+  background: var(--mx-surface-active);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-status-online {
+  background: var(--mx-success);
+}
+
+.mx-status-offline {
+  background: var(--mx-text-muted);
+}
+
+.mx-status-busy {
+  background: var(--mx-danger);
+}
+
+/* =========================================================
+   14. NOTIFICATIONS AND TOASTS
+   ========================================================= */
+
+.mx-notification {
+  color: var(--mx-text);
+  background: var(--mx-surface-raised);
+  border: 1px solid var(--mx-border);
+  box-shadow: var(--mx-shadow-md);
+}
+
+.mx-notification.unread {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(139, 92, 246, 0.09),
+      transparent
+    ),
+    var(--mx-surface);
+  border-inline-start: 3px solid var(--mx-primary);
+}
+
+.mx-toast {
+  color: var(--mx-text);
+  background: var(--mx-surface-raised);
+  border: 1px solid var(--mx-border);
+  box-shadow: var(--mx-shadow-lg);
+}
+
+.mx-toast-success {
+  border-inline-start: 3px solid var(--mx-success);
+}
+
+.mx-toast-error {
+  border-inline-start: 3px solid var(--mx-danger);
+}
+
+.mx-toast-warning {
+  border-inline-start: 3px solid var(--mx-warning);
+}
+
+.mx-toast-info {
+  border-inline-start: 3px solid var(--mx-info);
+}
+
+/* =========================================================
+   15. MODALS AND OVERLAYS
+   ========================================================= */
+
+.mx-overlay {
+  background: var(--mx-overlay);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.mx-modal {
+  color: var(--mx-text);
+  background: var(--mx-modal-bg);
+  border: 1px solid var(--mx-border-light);
+  box-shadow: var(--mx-shadow-lg);
+}
+
+.mx-modal-header {
+  border-bottom: 1px solid var(--mx-border);
+}
+
+.mx-modal-footer {
+  border-top: 1px solid var(--mx-border);
+}
+
+.mx-modal-close {
+  color: var(--mx-text-secondary);
+  background: transparent;
+}
+
+.mx-modal-close:hover {
+  color: var(--mx-text);
+  background: var(--mx-surface-hover);
+}
+
+/* =========================================================
+   16. PROFILE AND ACCOUNT
+   ========================================================= */
+
+.mx-profile-header {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.2),
+      rgba(59, 130, 246, 0.1)
+    ),
+    var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-profile-avatar {
+  background: var(--mx-gradient-brand);
+  color: #ffffff;
+  border: 3px solid var(--mx-bg);
+}
+
+.mx-profile-stat {
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-profile-stat-value {
+  color: var(--mx-text);
+}
+
+.mx-profile-stat-label {
+  color: var(--mx-text-muted);
+}
+
+/* =========================================================
+   17. SETTINGS AND PREFERENCES
+   ========================================================= */
+
+.mx-settings-section {
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-settings-item {
+  color: var(--mx-text);
+  border-bottom: 1px solid var(--mx-border);
+}
+
+.mx-settings-item:last-child {
+  border-bottom: 0;
+}
+
+.mx-settings-item:hover {
+  background: var(--mx-surface-hover);
+}
+
+.mx-settings-description {
+  color: var(--mx-text-muted);
+}
+
+.mx-toggle {
+  background: var(--mx-surface-active);
+  border: 1px solid var(--mx-border-light);
+}
+
+.mx-toggle[aria-checked="true"],
+.mx-toggle.is-active {
+  background: var(--mx-primary);
+  border-color: var(--mx-primary);
+}
+
+/* =========================================================
+   18. SUBSCRIPTIONS AND PREMIUM
+   ========================================================= */
+
+.mx-premium-card {
+  color: #ffffff;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(96, 165, 250, 0.25),
+      transparent 42%
+    ),
+    linear-gradient(145deg, #241444, #11152c 70%);
+  border: 1px solid rgba(167, 139, 250, 0.36);
+  box-shadow: 0 16px 44px rgba(91, 33, 182, 0.15);
+}
+
+.mx-premium-label {
+  color: #ddd6fe;
+  background: rgba(167, 139, 250, 0.16);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.mx-premium-price {
+  color: #ffffff;
+}
+
+.mx-premium-feature {
+  color: #e0e7ff;
+}
+
+.mx-premium-divider {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* =========================================================
+   19. SEARCH AND FILTERS
+   ========================================================= */
+
+.mx-search-box {
+  background: var(--mx-input-bg);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-search-box:focus-within {
+  border-color: var(--mx-primary);
+  box-shadow: var(--mx-focus-ring);
+}
+
+.mx-search-icon {
+  color: var(--mx-text-muted);
+}
+
+.mx-filter-chip {
+  color: var(--mx-text-secondary);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-filter-chip:hover {
+  color: var(--mx-text);
+  background: var(--mx-surface-hover);
+}
+
+.mx-filter-chip.active,
+.mx-filter-chip[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--mx-primary-soft);
+  border-color: var(--mx-border-primary);
+}
+
+/* =========================================================
+   20. TABLES AND DATA
+   ========================================================= */
+
+.mx-table {
+  color: var(--mx-text);
+  background: var(--mx-surface);
+  border-color: var(--mx-border);
+}
+
+.mx-table th {
+  color: var(--mx-text-secondary);
+  background: var(--mx-bg-tertiary);
+  border-bottom: 1px solid var(--mx-border);
+}
+
+.mx-table td {
+  border-bottom: 1px solid var(--mx-border);
+}
+
+.mx-table tbody tr:hover {
+  background: var(--mx-surface-hover);
+}
+
+/* =========================================================
+   21. EMPTY STATES AND LOADING
+   ========================================================= */
+
+.mx-empty-state {
+  color: var(--mx-text-secondary);
+}
+
+.mx-empty-state-icon {
+  color: var(--mx-text-muted);
+  background: var(--mx-surface);
+  border: 1px solid var(--mx-border);
+}
+
+.mx-skeleton {
+  background:
+    linear-gradient(
+      90deg,
+      var(--mx-surface) 25%,
+      var(--mx-surface-hover) 50%,
+      var(--mx-surface) 75%
+    );
+  background-size: 200% 100%;
+}
+
+.mx-loading-overlay {
+  background: rgba(8, 11, 20, 0.88);
+}
+
+.mx-loading-spinner {
+  border-color: var(--mx-border-light);
+  border-top-color: var(--mx-primary);
+}
+
+/* =========================================================
+   22. SCROLLBARS
+   ========================================================= */
+
+* {
+  scrollbar-color: #34304d var(--mx-bg-secondary);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--mx-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #34304d;
+  border: 2px solid var(--mx-bg-secondary);
+  border-radius: var(--mx-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #514477;
+}
+
+/* =========================================================
+   23. SELECTION AND FOCUS
+   ========================================================= */
+
+:focus-visible {
+  outline: 2px solid var(--mx-primary-hover);
+  outline-offset: 3px;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  box-shadow: var(--mx-focus-ring);
+}
+
+.mx-focus-ring:focus-visible {
+  outline: 2px solid var(--mx-primary);
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   24. OPTIONAL LIGHT THEME
+   Activate by setting data-theme="light" on <html>
+   ========================================================= */
+
+html[data-theme="light"],
+body[data-theme="light"] {
+  color-scheme: light;
+
+  --mx-bg: #f5f7fc;
+  --mx-bg-secondary: #edf1f8;
+  --mx-bg-tertiary: #e5eaf4;
+  --mx-bg-elevated: #ffffff;
+
+  --mx-surface: #ffffff;
+  --mx-surface-hover: #f2f4fb;
+  --mx-surface-active: #e8ecf7;
+  --mx-surface-raised: #ffffff;
+  --mx-surface-glass: rgba(255, 255, 255, 0.84);
+
+  --mx-border: rgba(22, 31, 55, 0.1);
+  --mx-border-light: rgba(22, 31, 55, 0.15);
+  --mx-border-strong: rgba(22, 31, 55, 0.24);
+  --mx-border-primary: rgba(109, 64, 220, 0.38);
+
+  --mx-text: #182036;
+  --mx-text-secondary: #46516b;
+  --mx-text-muted: #69748c;
+  --mx-text-disabled: #9aa3b6;
+  --mx-text-inverse: #ffffff;
+
+  --mx-header-bg: rgba(255, 255, 255, 0.88);
+  --mx-sidebar-bg: rgba(249, 250, 255, 0.97);
+  --mx-overlay: rgba(20, 28, 48, 0.45);
+  --mx-modal-bg: #ffffff;
+  --mx-input-bg: #f8f9fd;
+
+  --mx-chat-user-bg:
+    linear-gradient(135deg, #7041dc, #4f46e5);
+
+  --mx-chat-assistant-bg: #ffffff;
+  --mx-chat-divider: rgba(22, 31, 55, 0.08);
+
+  --mx-shadow-sm: 0 2px 8px rgba(30, 40, 70, 0.05);
+  --mx-shadow-md: 0 8px 24px rgba(30, 40, 70, 0.08);
+  --mx-shadow-lg: 0 18px 48px rgba(30, 40, 70, 0.12);
+}
+
+html[data-theme="light"] body,
+body[data-theme="light"] {
+  background: var(--mx-bg);
+  color: var(--mx-text);
+}
+
+html[data-theme="light"] .mx-app-background,
+html[data-theme="light"] .mx-page-background {
+  background: var(--mx-bg);
+}
+
+html[data-theme="light"] .mx-header,
+html[data-theme="light"] .app-header,
+html[data-theme="light"] .topbar {
+  background: var(--mx-header-bg);
+}
+
+html[data-theme="light"] .mx-sidebar,
+html[data-theme="light"] .app-sidebar,
+html[data-theme="light"] .sidebar {
+  background: var(--mx-sidebar-bg);
+}
+
+html[data-theme="light"] .mx-card,
+html[data-theme="light"] .app-card,
+html[data-theme="light"] .panel-card,
+html[data-theme="light"] .mx-panel,
+html[data-theme="light"] .mx-post {
+  background: var(--mx-surface);
+  color: var(--mx-text);
+  border-color: var(--mx-border);
+}
+
+html[data-theme="light"] .mx-chat-window {
+  background: var(--mx-bg-secondary);
+  color: var(--mx-text);
+}
+
+html[data-theme="light"] .mx-chat-message--assistant {
+  background: var(--mx-chat-assistant-bg);
+  color: var(--mx-text);
+  border-color: var(--mx-border);
+}
+
+html[data-theme="light"] .mx-input,
+html[data-theme="light"] .mx-select,
+html[data-theme="light"] .mx-textarea {
+  background: var(--mx-input-bg);
+  color: var(--mx-text);
+  border-color: var(--mx-border-light);
+}
+
+html[data-theme="light"] .mx-table {
+  background: var(--mx-surface);
+  color: var(--mx-text);
+}
+
+html[data-theme="light"] .mx-table th {
+  background: var(--mx-bg-tertiary);
+  color: var(--mx-text-secondary);
+}
+
+html[data-theme="light"] .mx-modal {
+  background: var(--mx-modal-bg);
+  color: var(--mx-text);
+}
+
+html[data-theme="light"] .mx-settings-item {
+  color: var(--mx-text);
+}
+
+/* =========================================================
+   25. OPTIONAL MIDNIGHT PURPLE THEME
+   Activate by setting data-theme="purple" on <html>
+   ========================================================= */
+
+html[data-theme="purple"] {
+  --mx-primary: #c084fc;
+  --mx-primary-hover: #d8b4fe;
+  --mx-primary-active: #a855f7;
+  --mx-primary-soft: rgba(192, 132, 252, 0.15);
+  --mx-primary-medium: rgba(192, 132, 252, 0.25);
+
+  --mx-secondary: #818cf8;
+  --mx-secondary-hover: #a5b4fc;
+  --mx-secondary-soft: rgba(129, 140, 248, 0.15);
+
+  --mx-bg: #0c0715;
+  --mx-bg-secondary: #130b20;
+  --mx-bg-tertiary: #1b102b;
+  --mx-bg-elevated: #241537;
+
+  --mx-surface: #171025;
+  --mx-surface-hover: #211532;
+  --mx-surface-active: #2b1b40;
+  --mx-surface-raised: #1d1230;
+  --mx-surface-glass: rgba(23, 16, 37, 0.82);
+
+  --mx-border: rgba(216, 180, 254, 0.09);
+  --mx-border-light: rgba(216, 180, 254, 0.15);
+  --mx-border-strong: rgba(216, 180, 254, 0.24);
+  --mx-border-primary: rgba(192, 132, 252, 0.4);
+
+  --mx-text: #faf5ff;
+  --mx-text-secondary: #d8c9eb;
+  --mx-text-muted: #a899bd;
+
+  --mx-header-bg: rgba(12, 7, 21, 0.88);
+  --mx-sidebar-bg: rgba(19, 11, 32, 0.97);
+  --mx-modal-bg: #1b102b;
+  --mx-input-bg: #10091c;
+
+  --mx-gradient-brand:
+    linear-gradient(135deg, #c084fc 0%, #818cf8 55%, #e879f9 100%);
+
+  --mx-gradient-primary:
+    linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+
+  --mx-chat-assistant-bg: #1d1230;
+}
+
+/* =========================================================
+   26. OPTIONAL OCEAN BLUE THEME
+   Activate by setting data-theme="ocean" on <html>
+   ========================================================= */
+
+html[data-theme="ocean"] {
+  --mx-primary: #38bdf8;
+  --mx-primary-hover: #7dd3fc;
+  --mx-primary-active: #0284c7;
+  --mx-primary-soft: rgba(56, 189, 248, 0.15);
+  --mx-primary-medium: rgba(56, 189, 248, 0.25);
+
+  --mx-secondary: #6366f1;
+  --mx-secondary-hover: #818cf8;
+  --mx-secondary-soft: rgba(99, 102, 241, 0.15);
+
+  --mx-bg: #06111d;
+  --mx-bg-secondary: #081a2a;
+  --mx-bg-tertiary: #0b2338;
+  --mx-bg-elevated: #0e2b43;
+
+  --mx-surface: #0b1f31;
+  --mx-surface-hover: #102a40;
+  --mx-surface-active: #173650;
+  --mx-surface-raised: #0e263b;
+  --mx-surface-glass: rgba(11, 31, 49, 0.82);
+
+  --mx-border: rgba(125, 211, 252, 0.09);
+  --mx-border-light: rgba(125, 211, 252, 0.15);
+  --mx-border-strong: rgba(125, 211, 252, 0.24);
+  --mx-border-primary: rgba(56, 189, 248, 0.4);
+
+  --mx-text: #f0f9ff;
+  --mx-text-secondary: #c0d9e8;
+  --mx-text-muted: #86a8bd;
+
+  --mx-header-bg: rgba(6, 17, 29, 0.88);
+  --mx-sidebar-bg: rgba(8, 26, 42, 0.97);
+  --mx-modal-bg: #0b1f31;
+  --mx-input-bg: #071725;
+
+  --mx-gradient-brand:
+    linear-gradient(135deg, #38bdf8 0%, #6366f1 55%, #14b8a6 100%);
+
+  --mx-gradient-primary:
+    linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+
+  --mx-chat-assistant-bg: #0e263b;
+}
+
+/* =========================================================
+   27. REDUCED TRANSPARENCY SUPPORT
+   ========================================================= */
+
+@media (prefers-reduced-transparency: reduce) {
+  .mx-header,
+  .app-header,
+  .topbar,
+  .mx-sidebar,
+  .app-sidebar,
+  .sidebar,
+  .mx-overlay {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .mx-header,
+  .app-header,
+  .topbar {
+    background: var(--mx-bg-secondary);
+  }
+}
+
+/* =========================================================
+   28. HIGH CONTRAST SUPPORT
+   ========================================================= */
+
+@media (prefers-contrast: more) {
+  :root {
+    --mx-border: rgba(255, 255, 255, 0.22);
+    --mx-border-light: rgba(255, 255, 255, 0.34);
+    --mx-text-muted: #aab4ca;
+  }
+
+  .mx-btn-primary,
+  .mx-btn-secondary,
+  .mx-input,
+  .mx-select,
+  .mx-textarea,
+  .mx-card,
+  .mx-panel {
+    border-width: 1.5px;
+  }
+}
+
+/* =========================================================
+   29. PRINT THEME
+   ========================================================= */
+
+@media print {
+  :root {
+    color-scheme: light;
+
+    --mx-bg: #ffffff;
+    --mx-bg-secondary: #ffffff;
+    --mx-surface: #ffffff;
+    --mx-surface-raised: #ffffff;
+
+    --mx-text: #111111;
+    --mx-text-secondary: #333333;
+    --mx-text-muted: #555555;
+
+    --mx-border: #dddddd;
+  }
+
+  body,
+  .mx-app-background,
+  .mx-page-background {
+    color: #111111 !important;
+    background: #ffffff !important;
+  }
+
+  .mx-header,
+  .app-header,
+  .topbar,
+  .mx-sidebar,
+  .app-sidebar,
+  .sidebar {
+    background: #ffffff !important;
+    color: #111111 !important;
+    box-shadow: none !important;
+  }
+
+  .mx-card,
+  .mx-panel,
+  .mx-post {
+    background: #ffffff !important;
+    color: #111111 !important;
+    box-shadow: none !important;
+    border: 1px solid #dddddd !important;
+  }
+
+  .mx-overlay,
+  .mx-modal-close {
+    display: none !important;
+  }
+
+  a {
+    color: #333333 !important;
+    text-decoration: underline;
+  }
+}
+
+/* =========================================================
+   END OF MEKA X THEME SYSTEM
+   ========================================================= */
