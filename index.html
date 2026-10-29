@@ -2465,39 +2465,50 @@
 
   <script type="module" src="app.js"></script>
 <script>
-(function () {
+(() => {
   "use strict";
 
-  // Safety fallback: prevent the splash screen from staying forever.
-  window.setTimeout(function () {
+  function openMekaOffline() {
     const splash = document.getElementById("splash-screen");
     const auth = document.getElementById("auth-screen");
+    const main =
+      document.getElementById("main-screen") ||
+      document.getElementById("app-screen") ||
+      document.getElementById("main-app");
 
-    if (!splash || !auth) return;
-
-    const splashVisible =
-      !splash.hidden &&
-      !splash.classList.contains("hidden");
-
-    if (splashVisible) {
+    if (splash) {
       splash.hidden = true;
       splash.classList.add("hidden");
-
-      auth.hidden = false;
-      auth.classList.remove("hidden");
-
-      const status = document.getElementById("splash-status");
-
-      if (status) {
-        status.textContent = "تعذر بدء التطبيق تلقائيًا. يمكنك تجربة تسجيل الدخول.";
-      }
-
-      console.error(
-        "[MEKA] Startup timeout: app.js did not leave the splash screen."
-      );
+      splash.style.display = "none";
     }
-  }, 12000);
+
+    if (auth) {
+      auth.hidden = true;
+      auth.classList.add("hidden");
+      auth.style.display = "none";
+    }
+
+    if (main) {
+      main.hidden = false;
+      main.classList.remove("hidden");
+      main.style.removeProperty("display");
+    }
+
+    document.body.dataset.mekaScreen = "main";
+    document.documentElement.classList.add("meka-offline");
+    console.info("[MEKA] تم فتح الواجهة المحلية.");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(openMekaOffline, 2000);
+    }, { once: true });
+  } else {
+    setTimeout(openMekaOffline, 2000);
+  }
 })();
 </script>
+
+
 </body>
   </html>
