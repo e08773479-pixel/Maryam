@@ -2,17 +2,6 @@
 
 /* =========================================================
    MEKA — APPLICATION CORE
-   ========================================================= */
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    mekaStart();
-  }, { once: true });
-} else {
-  mekaStart();
-}"use strict";
-
-/* =========================================================
-   MEKA — APPLICATION CORE
    Existing Supabase project integration
    ========================================================= */
 
