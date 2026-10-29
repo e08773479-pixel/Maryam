@@ -1,1956 +1,1637 @@
+"use strict";
+
 /* =========================================================
-   MEKA X — APPLICATION CORE
-   File: app.js
-   Version: 1.0.0
+   MEKA — APPLICATION CORE
+   Existing Supabase project integration
    ========================================================= */
 
-(() => {
-  "use strict";
+const MEKA_CONFIG = Object.freeze({
+  name: "MEKA",
+  nameAr: "ميكا",
 
-  /* =======================================================
-     1. APPLICATION CONFIGURATION
-     ======================================================= */
+  supabaseUrl: "https://cxksushmcuyomuaywgfw.supabase.co",
 
-  const MEKA = {
-    name: "MEKA X",
-    version: "1.0.0",
-    storagePrefix: "meka_x_",
-    splashDuration: 5000,
+  // Publishable key: safe for frontend use when RLS is configured.
+  supabaseKey:
+    "sb_publishable_6D7DE4aODAIqhG9Ls3gGfQ_Um-E-7f5",
 
-    selectors: {
-      splash: [
-        "#splashScreen",
-        "#splash-screen",
-        ".splash-screen",
-        ".splash"
-      ],
+  buckets: {
+    avatars: "nova-avatars",
+    covers: "nova-covers",
+    messages: "nova-message-files",
+    stories: "nova-stories",
+    posts: "nova-post-media"
+  },
 
-      app: [
-        "#app",
-        "#appContainer",
-        "#mainApp",
-        ".app-container",
-        ".main-app"
-      ],
+  limits: {
+    usernameMin: 3,
+    usernameMax: 24,
+    displayNameMax: 60,
+    bioMax: 160,
+    messageMax: 10000,
+    attachmentMaxBytes: 100 * 1024 * 1024
+  }
+});
 
-      mainContent: [
-        "#mainContent",
-        "#main-content",
-        ".main-content",
-        "[data-main-content]"
-      ],
+/* =========================================================
+   APPLICATION STATE
+   ========================================================= */
 
-      navigation: [
-        "[data-page]",
-        "[data-navigation]",
-        ".nav-item",
-        ".sidebar-link"
-      ],
+const MEKA = {
+  db: null,
 
-      menuToggle: [
-        "[data-menu-toggle]",
-        "#menuToggle",
-        "#sidebarToggle",
-        ".menu-toggle"
-      ],
+  session: null,
+  user: null,
+  profile: null,
 
-      sidebar: [
-        "[data-sidebar]",
-        "#sidebar",
-        ".sidebar",
-        ".app-sidebar"
-      ],
+  conversations: [],
+  contacts: [],
+  messages: [],
 
-      themeToggle: [
-        "[data-theme-toggle]",
-        "#themeToggle",
-        "#theme-toggle"
-      ],
+  activeConversation: null,
+  messageChannel: null,
+  authSubscription: null,
 
-      modalOpen: "[data-modal-open]",
-      modalClose: "[data-modal-close]",
+  loading: false,
+  sending: false,
+  initialized: false
+};
 
-      search: [
-        "[data-global-search]",
-        "#globalSearch",
-        "#searchInput"
-      ],
+window.MEKA = MEKA;
 
-      toastContainer: [
-        "[data-toast-container]",
-        "#toastContainer",
-        ".toast-container"
-      ]
-    }
+/* =========================================================
+   GENERAL HELPERS
+   ========================================================= */
+
+const $ = (selector, root = document) =>
+  root.querySelector(selector);
+
+const $$ = (selector, root = document) =>
+  [...root.querySelectorAll(selector)];
+
+function mekaEscape(value = "") {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[character]);
+}
+
+function mekaToast(message, type = "info") {
+  let container = $("#meka-toast-container");
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "meka-toast-container";
+
+    Object.assign(container.style, {
+      position: "fixed",
+      zIndex: "99999",
+      bottom: "24px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
+      width: "min(92%, 420px)",
+      pointerEvents: "none"
+    });
+
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+
+  const backgrounds = {
+    success: "#123d35",
+    error: "#51252d",
+    warning: "#4a3b1c",
+    info: "#172b45"
   };
 
-  const state = {
-    initialized: false,
-    currentPage: null,
-    sidebarOpen: false,
-    activeModal: null,
-    toastTimer: null,
-    splashTimer: null,
-    cleanupFunctions: [],
-    pageHandlers: new Map()
-  };
+  Object.assign(toast.style, {
+    padding: "13px 17px",
+    borderRadius: "14px",
+    color: "#fff",
+    background: backgrounds[type] || backgrounds.info,
+    border: "1px solid rgba(255,255,255,.12)",
+    boxShadow: "0 12px 40px rgba(0,0,0,.25)",
+    fontSize: "14px",
+    lineHeight: "1.6",
+    direction: "rtl",
+    opacity: "0",
+    transform: "translateY(8px)",
+    transition: "opacity .2s, transform .2s",
+    pointerEvents: "auto"
+  });
 
-  /* =======================================================
-     2. DOM HELPERS
-     ======================================================= */
+  toast.textContent = message;
+  container.appendChild(toast);
 
-  function query(selector, root = document) {
-    try {
-      return root.querySelector(selector);
-    } catch {
-      return null;
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+    toast.style.transform = "translateY(0)";
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transform = "translateY(8px)";
+
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
+}
+
+function mekaSetStatus(message) {
+  const element = $(
+    "#auth-status, #login-status, #meka-status, [data-meka-status]"
+  );
+
+  if (element) element.textContent = message;
+}
+
+function mekaSetBusy(button, busy, busyText = "جارٍ التنفيذ...") {
+  if (!button) return;
+
+  if (busy) {
+    button.dataset.originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = busyText;
+  } else {
+    button.disabled = false;
+
+    if (button.dataset.originalText !== undefined) {
+      button.textContent = button.dataset.originalText;
+      delete button.dataset.originalText;
     }
   }
+}
 
-  function queryAll(selector, root = document) {
-    try {
-      return Array.from(root.querySelectorAll(selector));
-    } catch {
-      return [];
-    }
+function mekaInitials(name = "") {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+
+  if (!parts.length) return "M";
+
+  return parts
+    .slice(0, 2)
+    .map(part => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function mekaFormatTime(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("ar-EG", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function mekaFormatDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("ar-EG", {
+    day: "numeric",
+    month: "short"
+  }).format(date);
+}
+
+function mekaGetDisplayName(profile) {
+  return (
+    profile?.display_name ||
+    profile?.full_name ||
+    profile?.username ||
+    "مستخدم ميكا"
+  );
+}
+
+function mekaAvatar(profile, size = 44) {
+  const image =
+    profile?.avatar_url ||
+    profile?.avatar_path ||
+    "";
+
+  const name = mekaGetDisplayName(profile);
+
+  if (image && /^https:\/\//i.test(image)) {
+    return `
+      <img
+        src="${mekaEscape(image)}"
+        alt="${mekaEscape(name)}"
+        width="${size}"
+        height="${size}"
+        loading="lazy"
+        style="
+          width:${size}px;
+          height:${size}px;
+          border-radius:50%;
+          object-fit:cover;
+          flex-shrink:0;
+        "
+      >
+    `;
   }
 
-  function findFirst(selectors, root = document) {
-    for (const selector of selectors) {
-      const element = query(selector, root);
+  return `
+    <div
+      aria-label="${mekaEscape(name)}"
+      style="
+        width:${size}px;
+        height:${size}px;
+        border-radius:50%;
+        display:grid;
+        place-items:center;
+        flex-shrink:0;
+        color:#07111f;
+        background:linear-gradient(135deg,#63f5db,#16bfa9);
+        font-weight:800;
+      "
+    >${mekaEscape(mekaInitials(name))}</div>
+  `;
+}
 
-      if (element) {
-        return element;
-      }
-    }
+/* =========================================================
+   SUPABASE INITIALIZATION
+   ========================================================= */
 
-    return null;
+function mekaLoadSupabaseLibrary() {
+  if (window.supabase?.createClient) {
+    return Promise.resolve();
   }
 
-  function findAll(selectors, root = document) {
-    const elements = new Set();
+  return new Promise((resolve, reject) => {
+    const existing = $(
+      'script[data-meka-supabase="true"]'
+    );
 
-    for (const selector of selectors) {
-      queryAll(selector, root).forEach(element => {
-        elements.add(element);
-      });
-    }
-
-    return Array.from(elements);
-  }
-
-  function escapeHTML(value) {
-    return String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function getStorage(key, fallback = null) {
-    try {
-      const value = localStorage.getItem(
-        MEKA.storagePrefix + key
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error("تعذر تحميل مكتبة Supabase.")),
+        { once: true }
       );
 
-      return value === null ? fallback : value;
-    } catch {
-      return fallback;
-    }
-  }
-
-  function setStorage(key, value) {
-    try {
-      localStorage.setItem(
-        MEKA.storagePrefix + key,
-        String(value)
-      );
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function removeStorage(key) {
-    try {
-      localStorage.removeItem(
-        MEKA.storagePrefix + key
-      );
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function dispatch(name, detail = {}) {
-    document.dispatchEvent(
-      new CustomEvent("meka:" + name, {
-        detail
-      })
-    );
-  }
-
-  /* =======================================================
-     3. ACCESSIBLE ANNOUNCEMENTS
-     ======================================================= */
-
-  function announce(message) {
-    let region = query("#mekaLiveRegion");
-
-    if (!region) {
-      region = document.createElement("div");
-
-      region.id = "mekaLiveRegion";
-      region.setAttribute("role", "status");
-      region.setAttribute("aria-live", "polite");
-      region.setAttribute("aria-atomic", "true");
-
-      Object.assign(region.style, {
-        position: "absolute",
-        width: "1px",
-        height: "1px",
-        padding: "0",
-        margin: "-1px",
-        overflow: "hidden",
-        clip: "rect(0, 0, 0, 0)",
-        whiteSpace: "nowrap",
-        border: "0"
-      });
-
-      document.body.appendChild(region);
-    }
-
-    region.textContent = "";
-
-    requestAnimationFrame(() => {
-      region.textContent = String(message ?? "");
-    });
-  }
-
-  /* =======================================================
-     4. TOAST NOTIFICATIONS
-     ======================================================= */
-
-  function getToastContainer() {
-    let container = findFirst(
-      MEKA.selectors.toastContainer
-    );
-
-    if (!container) {
-      container = document.createElement("div");
-
-      container.id = "mekaToastContainer";
-      container.className = "mx-toast-container";
-      container.setAttribute("aria-live", "polite");
-      container.setAttribute("aria-atomic", "false");
-
-      Object.assign(container.style, {
-        position: "fixed",
-        zIndex: "99999",
-        top: "20px",
-        insetInlineEnd: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        width: "min(360px, calc(100vw - 32px))",
-        pointerEvents: "none"
-      });
-
-      document.body.appendChild(container);
-    }
-
-    return container;
-  }
-
-  function toast(message, type = "info", duration = 3200) {
-    const container = getToastContainer();
-    const item = document.createElement("div");
-
-    const allowedTypes = [
-      "success",
-      "error",
-      "warning",
-      "info"
-    ];
-
-    const safeType = allowedTypes.includes(type)
-      ? type
-      : "info";
-
-    item.className =
-      "mx-toast mx-toast-" + safeType;
-
-    item.setAttribute("role", "status");
-
-    Object.assign(item.style, {
-      pointerEvents: "auto",
-      padding: "13px 16px",
-      borderRadius: "14px",
-      background: "var(--mx-surface-raised, #161d31)",
-      color: "var(--mx-text, #f5f7ff)",
-      border: "1px solid var(--mx-border-light, #30364b)",
-      boxShadow: "var(--mx-shadow-lg, 0 18px 48px #0004)",
-      opacity: "0",
-      transform: "translateY(-8px)",
-      transition: "opacity 180ms ease, transform 180ms ease",
-      overflowWrap: "anywhere"
-    });
-
-    item.textContent = String(message ?? "");
-
-    container.appendChild(item);
-
-    requestAnimationFrame(() => {
-      item.style.opacity = "1";
-      item.style.transform = "translateY(0)";
-    });
-
-    const timeout = window.setTimeout(() => {
-      item.style.opacity = "0";
-      item.style.transform = "translateY(-8px)";
-
-      window.setTimeout(() => {
-        item.remove();
-      }, 200);
-    }, Math.max(500, duration));
-
-    state.cleanupFunctions.push(() => {
-      clearTimeout(timeout);
-      item.remove();
-    });
-
-    announce(message);
-
-    dispatch("toast", {
-      message,
-      type: safeType
-    });
-
-    return item;
-  }
-
-  /* =======================================================
-     5. LOADING INDICATOR
-     ======================================================= */
-
-  function setLoading(isLoading, message = "جارٍ التحميل...") {
-    document.documentElement.classList.toggle(
-      "is-loading",
-      Boolean(isLoading)
-    );
-
-    const indicator = query(
-      "[data-app-loading], #appLoading"
-    );
-
-    if (indicator) {
-      indicator.hidden = !isLoading;
-      indicator.setAttribute(
-        "aria-hidden",
-        String(!isLoading)
-      );
-
-      const label = query(
-        "[data-loading-message]",
-        indicator
-      );
-
-      if (label) {
-        label.textContent = message;
-      }
-    }
-
-    dispatch("loading", {
-      loading: Boolean(isLoading),
-      message
-    });
-  }
-
-  /* =======================================================
-     6. SPLASH SCREEN
-     ======================================================= */
-
-  function finishSplash() {
-    const splash = findFirst(
-      MEKA.selectors.splash
-    );
-
-    const app = findFirst(
-      MEKA.selectors.app
-    );
-
-    if (splash) {
-      splash.classList.add("is-hidden");
-      splash.setAttribute("aria-hidden", "true");
-      splash.style.pointerEvents = "none";
-
-      window.setTimeout(() => {
-        splash.hidden = true;
-        splash.style.display = "none";
-      }, 450);
-    }
-
-    if (app) {
-      app.hidden = false;
-      app.removeAttribute("aria-hidden");
-      app.classList.add("is-ready");
-    }
-
-    document.documentElement.classList.remove(
-      "is-starting"
-    );
-
-    document.documentElement.classList.add(
-      "app-ready"
-    );
-
-    setStorage("hasOpened", "true");
-
-    dispatch("splash-finished");
-
-    if (!state.currentPage) {
-      const firstNavigation = findAll(
-        MEKA.selectors.navigation
-      ).find(element => {
-        return element.dataset.page;
-      });
-
-      const initialPage =
-        firstNavigation?.dataset.page ||
-        getStorage("lastPage", "home");
-
-      navigate(initialPage, {
-        updateHistory: false,
-        silent: true
-      });
-    }
-  }
-
-  function initializeSplash() {
-    document.documentElement.classList.add(
-      "is-starting"
-    );
-
-    const splash = findFirst(
-      MEKA.selectors.splash
-    );
-
-    const app = findFirst(
-      MEKA.selectors.app
-    );
-
-    if (app) {
-      app.hidden = false;
-    }
-
-    if (!splash) {
-      finishSplash();
       return;
     }
 
-    splash.hidden = false;
-    splash.removeAttribute("aria-hidden");
+    const script = document.createElement("script");
 
-    state.splashTimer = window.setTimeout(
-      finishSplash,
-      MEKA.splashDuration
-    );
+    script.src =
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js";
 
-    const skipButton = query(
-      "[data-skip-splash], #skipSplash"
-    );
+    script.async = true;
+    script.dataset.mekaSupabase = "true";
 
-    if (skipButton) {
-      skipButton.addEventListener(
-        "click",
-        () => {
-          clearTimeout(state.splashTimer);
-          finishSplash();
-        },
-        { once: true }
-      );
+    script.onload = resolve;
+
+    script.onerror = () => {
+      reject(new Error("تعذر تحميل مكتبة Supabase."));
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+async function mekaInitializeSupabase() {
+  await mekaLoadSupabaseLibrary();
+
+  MEKA.db = window.supabase.createClient(
+    MEKA_CONFIG.supabaseUrl,
+    MEKA_CONFIG.supabaseKey,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: "pkce"
+      },
+
+      realtime: {
+        params: {
+          eventsPerSecond: 10
+        }
+      }
     }
-  }
-
-  /* =======================================================
-     7. PAGE REGISTRY
-     ======================================================= */
-
-  const defaultPages = {
-    home: {
-      title: "الرئيسية",
-      selectors: [
-        '[data-page-content="home"]',
-        "#homePage",
-        "#home"
-      ]
-    },
-
-    feed: {
-      title: "المنشورات",
-      selectors: [
-        '[data-page-content="feed"]',
-        "#feedPage",
-        "#feed"
-      ]
-    },
-
-    explore: {
-      title: "استكشف",
-      selectors: [
-        '[data-page-content="explore"]',
-        "#explorePage",
-        "#explore"
-      ]
-    },
-
-    messages: {
-      title: "الرسائل",
-      selectors: [
-        '[data-page-content="messages"]',
-        "#messagesPage",
-        "#messages"
-      ]
-    },
-
-    chat: {
-      title: "المحادثات",
-      selectors: [
-        '[data-page-content="chat"]',
-        "#chatPage",
-        "#chat"
-      ]
-    },
-
-    ai: {
-      title: "ميكا الذكي",
-      selectors: [
-        '[data-page-content="ai"]',
-        "#aiPage",
-        "#aiAssistant"
-      ]
-    },
-
-    notifications: {
-      title: "الإشعارات",
-      selectors: [
-        '[data-page-content="notifications"]',
-        "#notificationsPage",
-        "#notifications"
-      ]
-    },
-
-    profile: {
-      title: "الملف الشخصي",
-      selectors: [
-        '[data-page-content="profile"]',
-        "#profilePage",
-        "#profile"
-      ]
-    },
-
-    settings: {
-      title: "الإعدادات",
-      selectors: [
-        '[data-page-content="settings"]',
-        "#settingsPage",
-        "#settings"
-      ]
-    },
-
-    premium: {
-      title: "العضوية المميزة",
-      selectors: [
-        '[data-page-content="premium"]',
-        "#premiumPage",
-        "#premium"
-      ]
-    }
-  };
-
-  const pageRegistry = new Map(
-    Object.entries(defaultPages)
   );
 
-  function registerPage(name, configuration) {
-    if (!name || typeof name !== "string") {
-      throw new TypeError(
-        "اسم الصفحة يجب أن يكون نصًا."
-      );
-    }
+  return MEKA.db;
+}
 
-    if (!configuration || typeof configuration !== "object") {
-      throw new TypeError(
-        "إعدادات الصفحة غير صحيحة."
-      );
-    }
+/* =========================================================
+   SCREEN NAVIGATION
+   ========================================================= */
 
-    pageRegistry.set(name, {
-      title: configuration.title || name,
-      selectors: Array.isArray(configuration.selectors)
-        ? configuration.selectors
-        : [],
-      onEnter: configuration.onEnter,
-      onLeave: configuration.onLeave
+function mekaShowScreen(screenName) {
+  const aliases = {
+    splash: ["splash-screen", "splash"],
+    auth: ["auth-screen", "login-screen", "auth"],
+    onboarding: [
+      "profile-setup-screen",
+      "onboarding-screen",
+      "profile-setup"
+    ],
+    main: ["main-screen", "app-screen", "main-app"]
+  };
+
+  const allScreens = new Set(
+    Object.values(aliases).flat()
+  );
+
+  let targetId = aliases[screenName] || [screenName];
+
+  $$(".screen, [data-meka-screen]").forEach(element => {
+    const id = element.id;
+
+    if (allScreens.has(id)) {
+      element.hidden = true;
+      element.classList.add("hidden");
+    }
+  });
+
+  let target = null;
+
+  for (const id of targetId) {
+    target =
+      document.getElementById(id) ||
+      $(`[data-meka-screen="${id}"]`);
+
+    if (target) break;
+  }
+
+  if (target) {
+    target.hidden = false;
+    target.classList.remove("hidden");
+  }
+
+  document.body.dataset.mekaScreen = screenName;
+
+  window.dispatchEvent(
+    new CustomEvent("meka:screenchange", {
+      detail: { screen: screenName }
+    })
+  );
+}
+
+window.mekaShowScreen = mekaShowScreen;
+
+/* =========================================================
+   AUTHENTICATION — GOOGLE
+   ========================================================= */
+
+async function mekaSignInWithGoogle(button) {
+  if (!MEKA.db) {
+    mekaToast("الاتصال بقاعدة البيانات غير جاهز.", "error");
+    return;
+  }
+
+  mekaSetBusy(button, true, "جارٍ فتح تسجيل الدخول...");
+  mekaSetStatus("جارٍ الاتصال بحساب جوجل...");
+
+  try {
+    const redirectTo = new URL(
+      "./",
+      window.location.href
+    ).href;
+
+    const { error } = await MEKA.db.auth.signInWithOAuth({
+      provider: "google",
+
+      options: {
+        redirectTo,
+
+        queryParams: {
+          prompt: "select_account"
+        }
+      }
     });
 
-    dispatch("page-registered", {
-      name
-    });
-  }
+    if (error) throw error;
+  } catch (error) {
+    console.error("[MEKA] Google login error:", error);
 
-  function getPageElement(name) {
-    const page = pageRegistry.get(name);
-
-    if (!page) {
-      return null;
-    }
-
-    return findFirst(page.selectors);
-  }
-
-  function getPageTitle(name) {
-    const page = pageRegistry.get(name);
-
-    return page?.title || name;
-  }
-
-  /* =======================================================
-     8. PAGE NAVIGATION
-     ======================================================= */
-
-  function updateNavigationActive(name) {
-    const navigationItems = findAll(
-      MEKA.selectors.navigation
+    mekaToast(
+      error.message || "تعذر تسجيل الدخول بجوجل.",
+      "error"
     );
 
-    navigationItems.forEach(item => {
-      const active = item.dataset.page === name;
+    mekaSetStatus("تعذر تسجيل الدخول. راجع إعدادات جوجل.");
+    mekaSetBusy(button, false);
+  }
+}
 
-      item.classList.toggle("active", active);
-      item.classList.toggle("is-active", active);
+async function mekaSignOut() {
+  if (!MEKA.db) return;
 
-      if (active) {
-        item.setAttribute("aria-current", "page");
-      } else {
-        item.removeAttribute("aria-current");
-      }
-    });
+  try {
+    mekaStopMessageRealtime();
+
+    const { error } = await MEKA.db.auth.signOut();
+
+    if (error) throw error;
+
+    MEKA.session = null;
+    MEKA.user = null;
+    MEKA.profile = null;
+
+    MEKA.conversations = [];
+    MEKA.contacts = [];
+    MEKA.messages = [];
+    MEKA.activeConversation = null;
+
+    mekaShowScreen("auth");
+
+    mekaToast("تم تسجيل الخروج.", "success");
+  } catch (error) {
+    console.error("[MEKA] Sign out error:", error);
+
+    mekaToast("تعذر تسجيل الخروج.", "error");
+  }
+}
+
+/* =========================================================
+   PROFILE
+   ========================================================= */
+
+async function mekaLoadMyProfile() {
+  if (!MEKA.db || !MEKA.user) return null;
+
+  const { data, error } = await MEKA.db
+    .from("profiles")
+    .select("*")
+    .eq("id", MEKA.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[MEKA] Profile loading error:", error);
+    throw error;
   }
 
-  function updatePageTitle(name) {
-    const titleElement = findFirst([
-      "[data-page-title]",
-      "#pageTitle",
-      ".page-title"
-    ]);
+  MEKA.profile = data || null;
 
-    if (titleElement) {
-      titleElement.textContent = getPageTitle(name);
-    }
+  return MEKA.profile;
+}
 
-    document.title =
-      getPageTitle(name) + " | " + MEKA.name;
+async function mekaCreateProfile({
+  username,
+  displayName,
+  bio = ""
+}) {
+  if (!MEKA.db || !MEKA.user) {
+    throw new Error("يجب تسجيل الدخول أولًا.");
   }
 
-  function navigate(
-    name,
-    options = {}
+  username = String(username || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^@/, "");
+
+  displayName = String(displayName || "").trim();
+  bio = String(bio || "").trim();
+
+  if (
+    username.length < MEKA_CONFIG.limits.usernameMin ||
+    username.length > MEKA_CONFIG.limits.usernameMax
   ) {
-    const {
-      updateHistory = true,
-      silent = false
-    } = options;
+    throw new Error(
+      "اسم المستخدم يجب أن يكون من 3 إلى 24 حرفًا."
+    );
+  }
 
-    if (!name || typeof name !== "string") {
-      return false;
-    }
+  if (!/^[a-z0-9._]+$/.test(username)) {
+    throw new Error(
+      "اسم المستخدم يقبل الحروف الإنجليزية والأرقام والنقطة والشرطة السفلية."
+    );
+  }
 
-    const configuration = pageRegistry.get(name);
+  if (!displayName) {
+    throw new Error("اكتب الاسم الذي سيظهر للآخرين.");
+  }
 
-    if (!configuration) {
-      if (!silent) {
-        toast("القسم المطلوب غير مسجل داخل التطبيق.", "warning");
-      }
+  if (displayName.length > MEKA_CONFIG.limits.displayNameMax) {
+    throw new Error("الاسم طويل جدًا.");
+  }
 
-      return false;
-    }
+  if (bio.length > MEKA_CONFIG.limits.bioMax) {
+    throw new Error("النبذة الشخصية طويلة جدًا.");
+  }
 
-    const target = getPageElement(name);
+  const existing = await MEKA.db
+    .from("profiles")
+    .select("id")
+    .eq("username", username)
+    .maybeSingle();
 
-    if (!target) {
-      dispatch("page-missing", {
-        name
-      });
+  if (existing.error) throw existing.error;
 
-      if (!silent) {
-        toast(
-          "القسم مسجل، لكن عنصر الصفحة غير موجود في HTML.",
-          "warning"
-        );
-      }
+  if (existing.data && existing.data.id !== MEKA.user.id) {
+    throw new Error("اسم المستخدم مستخدم بالفعل.");
+  }
 
-      return false;
-    }
+  const existingProfile = await MEKA.db
+    .from("profiles")
+    .select("id")
+    .eq("id", MEKA.user.id)
+    .maybeSingle();
 
-    if (state.currentPage === name) {
-      closeSidebar();
-      return true;
-    }
+  if (existingProfile.error) {
+    throw existingProfile.error;
+  }
 
-    const previousPage = state.currentPage;
+  const payload = {
+    id: MEKA.user.id,
+    username,
+    display_name: displayName,
+    full_name: displayName,
+    bio
+  };
 
-    if (previousPage) {
-      const previousConfig = pageRegistry.get(previousPage);
+  let result;
 
-      if (
-        previousConfig &&
-        typeof previousConfig.onLeave === "function"
-      ) {
+  if (existingProfile.data) {
+    result = await MEKA.db
+      .from("profiles")
+      .update(payload)
+      .eq("id", MEKA.user.id)
+      .select("*")
+      .single();
+  } else {
+    result = await MEKA.db
+      .from("profiles")
+      .insert(payload)
+      .select("*")
+      .single();
+  }
+
+  if (result.error) throw result.error;
+
+  MEKA.profile = result.data;
+
+  mekaRenderMyProfile();
+
+  return MEKA.profile;
+}
+
+async function mekaUpdateProfile(changes) {
+  if (!MEKA.db || !MEKA.user) {
+    throw new Error("يجب تسجيل الدخول أولًا.");
+  }
+
+  const allowed = {};
+
+  if (typeof changes.display_name === "string") {
+    allowed.display_name =
+      changes.display_name.trim().slice(
+        0,
+        MEKA_CONFIG.limits.displayNameMax
+      );
+
+    allowed.full_name = allowed.display_name;
+  }
+
+  if (typeof changes.bio === "string") {
+    allowed.bio = changes.bio
+      .trim()
+      .slice(0, MEKA_CONFIG.limits.bioMax);
+  }
+
+  if (typeof changes.website === "string") {
+    allowed.website = changes.website.trim();
+  }
+
+  if (typeof changes.phone === "string") {
+    allowed.phone = changes.phone.trim();
+  }
+
+  if (typeof changes.is_private === "boolean") {
+    allowed.is_private = changes.is_private;
+  }
+
+  if (!Object.keys(allowed).length) {
+    throw new Error("لا توجد تعديلات لحفظها.");
+  }
+
+  const { data, error } = await MEKA.db
+    .from("profiles")
+    .update(allowed)
+    .eq("id", MEKA.user.id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  MEKA.profile = data;
+
+  mekaRenderMyProfile();
+
+  mekaToast("تم تحديث الملف الشخصي.", "success");
+
+  return data;
+}
+
+function mekaRenderMyProfile() {
+  const profile = MEKA.profile;
+
+  if (!profile) return;
+
+  const name = mekaGetDisplayName(profile);
+
+  const nameSelectors = [
+    "#profile-name",
+    "#user-name",
+    "#current-user-name",
+    "[data-meka-profile-name]"
+  ];
+
+  nameSelectors.forEach(selector => {
+    $$(selector).forEach(element => {
+      element.textContent = name;
+    });
+  });
+
+  const usernameSelectors = [
+    "#profile-username",
+    "#user-username",
+    "[data-meka-profile-username]"
+  ];
+
+  usernameSelectors.forEach(selector => {
+    $$(selector).forEach(element => {
+      element.textContent = profile.username
+        ? `@${profile.username}`
+        : "";
+    });
+  });
+
+  const bioSelectors = [
+    "#profile-bio",
+    "#user-bio",
+    "[data-meka-profile-bio]"
+  ];
+
+  bioSelectors.forEach(selector => {
+    $$(selector).forEach(element => {
+      element.textContent = profile.bio || "";
+    });
+  });
+
+  $$(".meka-my-avatar, [data-meka-my-avatar]").forEach(element => {
+    element.innerHTML = mekaAvatar(profile, 48);
+  });
+
+  window.dispatchEvent(
+    new CustomEvent("meka:profileloaded", {
+      detail: { profile }
+    })
+  );
+}
+
+/* =========================================================
+   SEARCH USERS
+   ========================================================= */
+
+async function mekaSearchUsers(query) {
+  if (!MEKA.db || !MEKA.user) {
+    throw new Error("سجّل الدخول لاستخدام البحث.");
+  }
+
+  query = String(query || "").trim().replace(/^@/, "");
+
+  if (query.length < 2) return [];
+
+  const { data, error } = await MEKA.db
+    .from("profiles")
+    .select(
+      "id, username, display_name, full_name, bio, avatar_url, user_code"
+    )
+    .neq("id", MEKA.user.id)
+    .or(
+      `username.ilike.%${query}%,display_name.ilike.%${query}%,user_code.ilike.%${query}%`
+    )
+    .limit(25);
+
+  if (error) {
+    console.error("[MEKA] Search error:", error);
+    throw error;
+  }
+
+  return data || [];
+}
+
+function mekaRenderSearchResults(users, container) {
+  if (!container) return;
+
+  if (!users.length) {
+    container.innerHTML = `
+      <div class="meka-empty-state">
+        <strong>لا توجد نتائج</strong>
+        <p>جرّب اسم مستخدم مختلفًا.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  container.innerHTML = users.map(user => `
+    <button
+      type="button"
+      class="meka-user-result"
+      data-meka-user-id="${mekaEscape(user.id)}"
+      style="
+        display:flex;
+        align-items:center;
+        gap:12px;
+        width:100%;
+        padding:12px;
+        border:0;
+        border-radius:14px;
+        background:transparent;
+        color:inherit;
+        text-align:right;
+        cursor:pointer;
+      "
+    >
+      ${mekaAvatar(user, 46)}
+
+      <span style="min-width:0;flex:1">
+        <strong style="display:block">
+          ${mekaEscape(mekaGetDisplayName(user))}
+        </strong>
+
+        <small style="opacity:.7">
+          ${user.username
+            ? `@${mekaEscape(user.username)}`
+            : "مستخدم ميكا"}
+        </small>
+      </span>
+
+      <span aria-hidden="true">›</span>
+    </button>
+  `).join("");
+}
+
+/* =========================================================
+   CONVERSATIONS
+   ========================================================= */
+
+async function mekaLoadConversations() {
+  if (!MEKA.db || !MEKA.user) return [];
+
+  const { data: memberships, error: memberError } =
+    await MEKA.db
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", MEKA.user.id);
+
+  if (memberError) throw memberError;
+
+  const ids = [
+    ...new Set(
+      (memberships || [])
+        .map(item => item.conversation_id)
+        .filter(Boolean)
+    )
+  ];
+
+  if (!ids.length) {
+    MEKA.conversations = [];
+    mekaRenderConversations();
+    return [];
+  }
+
+  const { data: conversations, error: conversationError } =
+    await MEKA.db
+      .from("conversations")
+      .select("*")
+      .in("id", ids)
+      .order("created_at", { ascending: false });
+
+  if (conversationError) throw conversationError;
+
+  MEKA.conversations = conversations || [];
+
+  mekaRenderConversations();
+
+  return MEKA.conversations;
+}
+
+async function mekaGetConversationMembers(conversationId) {
+  const { data, error } = await MEKA.db
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+async function mekaGetOtherMemberProfile(conversationId) {
+  const members = await mekaGetConversationMembers(conversationId);
+
+  const otherIds = members
+    .map(member => member.user_id)
+    .filter(id => id !== MEKA.user.id);
+
+  if (!otherIds.length) return null;
+
+  const { data, error } = await MEKA.db
+    .from("profiles")
+    .select("*")
+    .in("id", otherIds)
+    .limit(1);
+
+  if (error) throw error;
+
+  return data?.[0] || null;
+}
+
+function mekaConversationTitle(conversation) {
+  return (
+    conversation.title ||
+    conversation.name ||
+    (conversation.is_group ? "مجموعة ميكا" : "محادثة")
+  );
+}
+
+async function mekaRenderConversations() {
+  const containers = [
+    $("#chat-list"),
+    $("#conversation-list"),
+    $("#chats-list"),
+    $("[data-meka-conversations]")
+  ].filter(Boolean);
+
+  if (!containers.length) return;
+
+  if (!MEKA.conversations.length) {
+    const empty = `
+      <div class="meka-empty-state" style="padding:24px;text-align:center">
+        <strong>ابدأ أول محادثة</strong>
+        <p>ابحث عن مستخدم لبدء التواصل معه.</p>
+      </div>
+    `;
+
+    containers.forEach(container => {
+      container.innerHTML = empty;
+    });
+
+    return;
+  }
+
+  const rows = await Promise.all(
+    MEKA.conversations.map(async conversation => {
+      let otherProfile = null;
+
+      if (!conversation.is_group) {
         try {
-          previousConfig.onLeave({
-            from: previousPage,
-            to: name
-          });
+          otherProfile = await mekaGetOtherMemberProfile(
+            conversation.id
+          );
         } catch (error) {
-          console.error(
-            "[MEKA X] Page leave error:",
+          console.warn(
+            "[MEKA] Could not load conversation member:",
             error
           );
         }
       }
 
-      const previousElement = getPageElement(previousPage);
+      const title = conversation.is_group
+        ? mekaConversationTitle(conversation)
+        : mekaGetDisplayName(otherProfile);
 
-      if (previousElement) {
-        previousElement.hidden = true;
-        previousElement.setAttribute(
-          "aria-hidden",
-          "true"
-        );
+      return `
+        <button
+          type="button"
+          class="meka-conversation-item"
+          data-meka-conversation-id="${mekaEscape(conversation.id)}"
+          style="
+            display:flex;
+            align-items:center;
+            gap:12px;
+            width:100%;
+            padding:13px;
+            border:0;
+            border-radius:14px;
+            background:transparent;
+            color:inherit;
+            text-align:right;
+            cursor:pointer;
+          "
+        >
+          ${mekaAvatar(otherProfile || { display_name: title }, 48)}
 
-        previousElement.classList.remove(
-          "page-entering",
-          "page-active"
-        );
-      }
-    }
+          <span style="flex:1;min-width:0">
+            <strong style="display:block">
+              ${mekaEscape(title)}
+            </strong>
 
-    target.hidden = false;
-    target.removeAttribute("aria-hidden");
-    target.classList.add("page-active", "page-entering");
+            <small style="opacity:.65">
+              ${mekaEscape(mekaFormatDate(conversation.created_at))}
+            </small>
+          </span>
+        </button>
+      `;
+    })
+  );
 
-    requestAnimationFrame(() => {
-      target.classList.remove("page-entering");
-    });
+  containers.forEach(container => {
+    container.innerHTML = rows.join("");
+  });
+}
 
-    state.currentPage = name;
+/* =========================================================
+   OPEN OR CREATE DIRECT CONVERSATION
+   ========================================================= */
 
-    updateNavigationActive(name);
-    updatePageTitle(name);
-    closeSidebar();
-
-    setStorage("lastPage", name);
-
-    if (updateHistory) {
-      try {
-        const url = new URL(window.location.href);
-
-        url.searchParams.set("page", name);
-
-        window.history.pushState(
-          {
-            mekaPage: name
-          },
-          "",
-          url
-        );
-      } catch {
-        // التنقل داخل التطبيق يستمر حتى لو تعذر تحديث الرابط.
-      }
-    }
-
-    if (typeof configuration.onEnter === "function") {
-      try {
-        configuration.onEnter({
-          from: previousPage,
-          to: name,
-          element: target
-        });
-      } catch (error) {
-        console.error(
-          "[MEKA X] Page enter error:",
-          error
-        );
-      }
-    }
-
-    dispatch("navigate", {
-      from: previousPage,
-      to: name,
-      element: target
-    });
-
-    if (!silent) {
-      announce("تم فتح قسم " + getPageTitle(name));
-    }
-
-    return true;
+async function mekaStartConversation(otherUserId) {
+  if (!MEKA.db || !MEKA.user) {
+    throw new Error("يجب تسجيل الدخول أولًا.");
   }
 
-  function initializeNavigation() {
-    document.addEventListener("click", event => {
-      const item = event.target.closest(
-        "[data-page]"
-      );
+  if (!otherUserId || otherUserId === MEKA.user.id) {
+    throw new Error("لا يمكنك بدء محادثة مع نفسك.");
+  }
 
-      if (!item) {
-        return;
-      }
+  const { data: memberships, error: memberError } =
+    await MEKA.db
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", MEKA.user.id);
 
-      const name = item.dataset.page;
+  if (memberError) throw memberError;
 
-      if (!name) {
-        return;
-      }
+  for (const membership of memberships || []) {
+    const conversationId = membership.conversation_id;
 
-      event.preventDefault();
+    const { data: otherMember, error } = await MEKA.db
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", otherUserId)
+      .maybeSingle();
 
-      navigate(name);
-    });
+    if (error) throw error;
 
-    window.addEventListener("popstate", event => {
-      let name = event.state?.mekaPage;
+    if (!otherMember) continue;
 
-      if (!name) {
-        try {
-          name = new URL(
-            window.location.href
-          ).searchParams.get("page");
-        } catch {
-          name = null;
+    const { data: conversation, error: conversationError } =
+      await MEKA.db
+        .from("conversations")
+        .select("*")
+        .eq("id", conversationId)
+        .maybeSingle();
+
+    if (conversationError) throw conversationError;
+
+    if (conversation && !conversation.is_group) {
+      await mekaOpenConversation(conversation);
+      return conversation;
+    }
+  }
+
+  const { data: created, error: createError } =
+    await MEKA.db
+      .from("conversations")
+      .insert({})
+      .select("*")
+      .single();
+
+  if (createError) {
+    console.error(
+      "[MEKA] Conversation creation failed:",
+      createError
+    );
+
+    throw new Error(
+      "تعذر إنشاء المحادثة. قد يحتاج جدول conversations إلى حقول مطلوبة أو سياسة RLS مناسبة."
+    );
+  }
+
+  const { error: insertMembersError } =
+    await MEKA.db
+      .from("conversation_members")
+      .insert([
+        {
+          conversation_id: created.id,
+          user_id: MEKA.user.id
+        },
+        {
+          conversation_id: created.id,
+          user_id: otherUserId
         }
-      }
+      ]);
 
-      if (name && pageRegistry.has(name)) {
-        navigate(name, {
-          updateHistory: false,
-          silent: true
-        });
-      }
-    });
-  }
-
-  /* =======================================================
-     9. SIDEBAR
-     ======================================================= */
-
-  function openSidebar() {
-    const sidebar = findFirst(
-      MEKA.selectors.sidebar
+  if (insertMembersError) {
+    console.error(
+      "[MEKA] Adding conversation members failed:",
+      insertMembersError
     );
 
-    if (!sidebar) {
-      return false;
-    }
-
-    state.sidebarOpen = true;
-
-    sidebar.classList.add("is-open", "open");
-    sidebar.setAttribute("aria-expanded", "true");
-
-    document.documentElement.classList.add(
-      "sidebar-open"
+    throw new Error(
+      "تم إنشاء المحادثة، لكن تعذرت إضافة الأعضاء. راجع سياسات RLS."
     );
-
-    const toggle = findFirst(
-      MEKA.selectors.menuToggle
-    );
-
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", "true");
-    }
-
-    dispatch("sidebar-open");
-
-    return true;
   }
 
-  function closeSidebar() {
-    const sidebar = findFirst(
-      MEKA.selectors.sidebar
-    );
+  await mekaLoadConversations();
+  await mekaOpenConversation(created);
 
-    state.sidebarOpen = false;
+  return created;
+}
 
-    if (sidebar) {
-      sidebar.classList.remove("is-open", "open");
-      sidebar.setAttribute("aria-expanded", "false");
-    }
+/* =========================================================
+   MESSAGES
+   ========================================================= */
 
-    document.documentElement.classList.remove(
-      "sidebar-open"
-    );
+async function mekaLoadMessages(conversationId) {
+  if (!MEKA.db || !MEKA.user || !conversationId) return [];
 
-    const toggle = findFirst(
-      MEKA.selectors.menuToggle
-    );
+  const { data, error } = await MEKA.db
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true })
+    .limit(200);
 
-    if (toggle) {
-      toggle.setAttribute("aria-expanded", "false");
-    }
-
-    dispatch("sidebar-close");
+  if (error) {
+    console.error("[MEKA] Message loading error:", error);
+    throw error;
   }
 
-  function toggleSidebar() {
-    if (state.sidebarOpen) {
-      closeSidebar();
-    } else {
-      openSidebar();
-    }
+  MEKA.messages = data || [];
+
+  mekaRenderMessages();
+
+  return MEKA.messages;
+}
+
+function mekaRenderMessages() {
+  const container = $(
+    "#messages-container, #message-list, #chat-messages, [data-meka-messages]"
+  );
+
+  if (!container) return;
+
+  if (!MEKA.messages.length) {
+    container.innerHTML = `
+      <div class="meka-empty-state" style="padding:24px;text-align:center">
+        <p>لا توجد رسائل بعد. ابدأ المحادثة برسالة جديدة.</p>
+      </div>
+    `;
+
+    return;
   }
 
-  function initializeSidebar() {
-    document.addEventListener("click", event => {
-      const toggle = event.target.closest(
-        MEKA.selectors.menuToggle.join(",")
-      );
+  container.innerHTML = MEKA.messages.map(message => {
+    const ownMessage = message.sender_id === MEKA.user?.id;
 
-      if (toggle) {
-        event.preventDefault();
-        toggleSidebar();
-        return;
-      }
+    return `
+      <div
+        class="meka-message ${ownMessage ? "is-own" : "is-other"}"
+        style="
+          display:flex;
+          justify-content:${ownMessage ? "flex-start" : "flex-end"};
+          margin:8px 0;
+        "
+      >
+        <div
+          style="
+            max-width:min(80%, 560px);
+            padding:10px 13px;
+            border-radius:16px;
+            background:${ownMessage ? "#155e54" : "#172b45"};
+            color:#fff;
+            overflow-wrap:anywhere;
+            white-space:pre-wrap;
+          "
+        >
+          <div>${mekaEscape(message.content || "")}</div>
 
-      const closeButton = event.target.closest(
-        "[data-sidebar-close]"
-      );
+          <small
+            style="
+              display:block;
+              margin-top:5px;
+              opacity:.65;
+              font-size:11px;
+              text-align:left;
+            "
+          >${mekaEscape(mekaFormatTime(message.created_at))}</small>
+        </div>
+      </div>
+    `;
+  }).join("");
 
-      if (closeButton) {
-        event.preventDefault();
-        closeSidebar();
-        return;
-      }
+  container.scrollTop = container.scrollHeight;
+}
 
-      const sidebar = findFirst(
-        MEKA.selectors.sidebar
-      );
-
-      if (
-        state.sidebarOpen &&
-        sidebar &&
-        !sidebar.contains(event.target)
-      ) {
-        const menuButton = findFirst(
-          MEKA.selectors.menuToggle
-        );
-
-        if (!menuButton?.contains(event.target)) {
-          closeSidebar();
-        }
-      }
-    });
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && state.sidebarOpen) {
-        closeSidebar();
-      }
-    });
+async function mekaSendMessage(text) {
+  if (!MEKA.db || !MEKA.user) {
+    throw new Error("يجب تسجيل الدخول أولًا.");
   }
 
-  /* =======================================================
-     10. MODALS
-     ======================================================= */
-
-  function openModal(id) {
-    if (!id) {
-      return false;
-    }
-
-    const modal = query(
-      "#" + CSS.escape(id)
-    );
-
-    if (!modal) {
-      toast("النافذة المطلوبة غير موجودة.", "warning");
-      return false;
-    }
-
-    state.activeModal = modal;
-
-    modal.hidden = false;
-    modal.removeAttribute("aria-hidden");
-    modal.classList.add("is-open", "open");
-
-    modal.setAttribute("role", "dialog");
-    modal.setAttribute("aria-modal", "true");
-
-    document.documentElement.classList.add(
-      "modal-open"
-    );
-
-    const focusable = query(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      modal
-    );
-
-    if (focusable) {
-      requestAnimationFrame(() => {
-        focusable.focus();
-      });
-    }
-
-    dispatch("modal-open", {
-      id
-    });
-
-    return true;
+  if (!MEKA.activeConversation) {
+    throw new Error("افتح محادثة أولًا.");
   }
 
-  function closeModal(modal = state.activeModal) {
-    if (!modal) {
-      return false;
-    }
+  text = String(text || "").trim();
 
-    modal.classList.remove("is-open", "open");
-    modal.setAttribute("aria-hidden", "true");
-    modal.hidden = true;
+  if (!text) return null;
 
-    state.activeModal = null;
-
-    document.documentElement.classList.remove(
-      "modal-open"
-    );
-
-    dispatch("modal-close", {
-      id: modal.id
-    });
-
-    return true;
+  if (text.length > MEKA_CONFIG.limits.messageMax) {
+    throw new Error("الرسالة أطول من الحد المسموح.");
   }
 
-  function initializeModals() {
-    document.addEventListener("click", event => {
-      const openButton = event.target.closest(
-        MEKA.selectors.modalOpen
-      );
+  if (MEKA.sending) return null;
 
-      if (openButton) {
-        event.preventDefault();
+  MEKA.sending = true;
 
-        const id =
-          openButton.dataset.modalOpen;
+  try {
+    const { data, error } = await MEKA.db
+      .from("messages")
+      .insert({
+        conversation_id: MEKA.activeConversation.id,
+        sender_id: MEKA.user.id,
+        content: text
+      })
+      .select("*")
+      .single();
 
-        openModal(id);
-        return;
-      }
+    if (error) throw error;
 
-      const closeButton = event.target.closest(
-        MEKA.selectors.modalClose
-      );
+    MEKA.messages.push(data);
 
-      if (closeButton) {
-        event.preventDefault();
+    mekaRenderMessages();
 
-        closeModal(
-          closeButton.closest(
-            '[role="dialog"], .mx-modal, [data-modal]'
-          ) || state.activeModal
-        );
-
-        return;
-      }
-
-      if (
-        state.activeModal &&
-        event.target === state.activeModal &&
-        state.activeModal.dataset.closeOnBackdrop !== "false"
-      ) {
-        closeModal(state.activeModal);
-      }
-    });
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && state.activeModal) {
-        closeModal(state.activeModal);
-      }
-    });
+    return data;
+  } finally {
+    MEKA.sending = false;
   }
+}
 
-  /* =======================================================
-     11. THEME SWITCHING
-     ======================================================= */
+/* =========================================================
+   REALTIME MESSAGES
+   ========================================================= */
 
-  const allowedThemes = [
-    "dark",
-    "light",
-    "purple",
-    "ocean"
-  ];
+function mekaStopMessageRealtime() {
+  if (!MEKA.db || !MEKA.messageChannel) return;
 
-  function applyTheme(theme, persist = true) {
-    const safeTheme = allowedThemes.includes(theme)
-      ? theme
-      : "dark";
+  MEKA.db.removeChannel(MEKA.messageChannel);
 
-    const root = document.documentElement;
+  MEKA.messageChannel = null;
+}
 
-    if (safeTheme === "dark") {
-      root.removeAttribute("data-theme");
-    } else {
-      root.dataset.theme = safeTheme;
-    }
+function mekaStartMessageRealtime(conversationId) {
+  mekaStopMessageRealtime();
 
-    document.body.dataset.theme = safeTheme;
+  if (!MEKA.db || !conversationId) return;
 
-    root.style.colorScheme =
-      safeTheme === "light" ? "light" : "dark";
-
-    if (persist) {
-      setStorage("theme", safeTheme);
-    }
-
-    findAll(MEKA.selectors.themeToggle).forEach(button => {
-      button.setAttribute(
-        "aria-pressed",
-        String(safeTheme !== "dark")
-      );
-
-      button.dataset.currentTheme = safeTheme;
-    });
-
-    dispatch("theme-change", {
-      theme: safeTheme
-    });
-
-    return safeTheme;
-  }
-
-  function initializeTheme() {
-    const savedTheme = getStorage(
-      "theme",
-      "dark"
-    );
-
-    applyTheme(savedTheme, false);
-
-    document.addEventListener("click", event => {
-      const button = event.target.closest(
-        MEKA.selectors.themeToggle.join(",")
-      );
-
-      if (!button) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const current =
-        document.documentElement.dataset.theme || "dark";
-
-      const next = current === "dark"
-        ? "light"
-        : "dark";
-
-      applyTheme(next);
-
-      toast(
-        next === "light"
-          ? "تم تفعيل المظهر الفاتح."
-          : "تم تفعيل المظهر الداكن.",
-        "success"
-      );
-    });
-
-    document.addEventListener("change", event => {
-      const selector = event.target.closest(
-        "[data-theme-select]"
-      );
-
-      if (!selector) {
-        return;
-      }
-
-      applyTheme(selector.value);
-    });
-  }
-
-  /* =======================================================
-     12. GLOBAL SEARCH
-     ======================================================= */
-
-  function initializeSearch() {
-    document.addEventListener("keydown", event => {
-      const isShortcut =
-        (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === "k";
-
-      if (!isShortcut) {
-        return;
-      }
-
-      const search = findFirst(
-        MEKA.selectors.search
-      );
-
-      if (!search) {
-        return;
-      }
-
-      event.preventDefault();
-      search.focus();
-      search.select?.();
-    });
-
-    document.addEventListener("input", event => {
-      const input = event.target.closest(
-        MEKA.selectors.search.join(",")
-      );
-
-      if (!input) {
-        return;
-      }
-
-      dispatch("search", {
-        query: input.value.trim(),
-        input
-      });
-    });
-
-    document.addEventListener("keydown", event => {
-      const input = event.target.closest(
-        MEKA.selectors.search.join(",")
-      );
-
-      if (!input || event.key !== "Enter") {
-        return;
-      }
-
-      dispatch("search-submit", {
-        query: input.value.trim(),
-        input
-      });
-    });
-  }
-
-  /* =======================================================
-     13. PASSWORD VISIBILITY
-     ======================================================= */
-
-  function initializePasswordToggles() {
-    document.addEventListener("click", event => {
-      const button = event.target.closest(
-        "[data-toggle-password]"
-      );
-
-      if (!button) {
-        return;
-      }
-
-      const targetId =
-        button.dataset.togglePassword;
-
-      const input = targetId
-        ? query("#" + CSS.escape(targetId))
-        : button.parentElement?.querySelector(
-            'input[type="password"], input[type="text"]'
-          );
-
-      if (!input) {
-        return;
-      }
-
-      const reveal =
-        input.type === "password";
-
-      input.type = reveal
-        ? "text"
-        : "password";
-
-      button.setAttribute(
-        "aria-pressed",
-        String(reveal)
-      );
-
-      button.setAttribute(
-        "aria-label",
-        reveal
-          ? "إخفاء كلمة المرور"
-          : "إظهار كلمة المرور"
-      );
-    });
-  }
-
-  /* =======================================================
-     14. FORM VALIDATION
-     ======================================================= */
-
-  function initializeForms() {
-    document.addEventListener("submit", event => {
-      const form = event.target;
-
-      if (!(form instanceof HTMLFormElement)) {
-        return;
-      }
-
-      if (!form.checkValidity()) {
-        event.preventDefault();
-        form.reportValidity();
-
-        toast(
-          "راجع البيانات المطلوبة قبل المتابعة.",
-          "warning"
-        );
-
-        return;
-      }
-
-      /*
-       * لا نمنع الإرسال الصحيح تلقائيًا.
-       * النماذج المرتبطة بتسجيل الدخول أو قاعدة البيانات
-       * يجب أن تُربط بوظيفتها الفعلية في ملفاتها المخصصة.
-       */
-      dispatch("form-valid", {
-        form,
-        formId: form.id || null
-      });
-    });
-  }
-
-  /* =======================================================
-     15. DROPDOWN MENUS
-     ======================================================= */
-
-  function closeAllDropdowns(except = null) {
-    queryAll("[data-dropdown]").forEach(dropdown => {
-      if (dropdown === except) {
-        return;
-      }
-
-      dropdown.classList.remove("is-open", "open");
-
-      const trigger = query(
-        "[data-dropdown-toggle]",
-        dropdown
-      );
-
-      if (trigger) {
-        trigger.setAttribute(
-          "aria-expanded",
-          "false"
-        );
-      }
-    });
-  }
-
-  function initializeDropdowns() {
-    document.addEventListener("click", event => {
-      const trigger = event.target.closest(
-        "[data-dropdown-toggle]"
-      );
-
-      if (trigger) {
-        event.preventDefault();
-
-        const dropdown = trigger.closest(
-          "[data-dropdown]"
-        );
-
-        if (!dropdown) {
+  MEKA.messageChannel = MEKA.db
+    .channel(`meka-messages-${conversationId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "messages",
+        filter: `conversation_id=eq.${conversationId}`
+      },
+      async payload => {
+        if (
+          MEKA.activeConversation?.id !== conversationId
+        ) {
           return;
         }
 
-        const isOpen =
-          dropdown.classList.contains("is-open");
-
-        closeAllDropdowns(dropdown);
-
-        dropdown.classList.toggle(
-          "is-open",
-          !isOpen
-        );
-
-        dropdown.classList.toggle(
-          "open",
-          !isOpen
-        );
-
-        trigger.setAttribute(
-          "aria-expanded",
-          String(!isOpen)
-        );
-
-        return;
-      }
-
-      if (!event.target.closest("[data-dropdown]")) {
-        closeAllDropdowns();
-      }
-    });
-
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        closeAllDropdowns();
-      }
-    });
-  }
-
-  /* =======================================================
-     16. TABS
-     ======================================================= */
-
-  function initializeTabs() {
-    document.addEventListener("click", event => {
-      const tab = event.target.closest(
-        "[data-tab-target]"
-      );
-
-      if (!tab) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const targetSelector =
-        tab.dataset.tabTarget;
-
-      const target = targetSelector
-        ? query(targetSelector)
-        : null;
-
-      if (!target) {
-        return;
-      }
-
-      const group = tab.closest(
-        "[data-tabs]"
-      );
-
-      const scope = group?.parentElement || document;
-
-      if (group) {
-        queryAll("[data-tab-target]", group).forEach(item => {
-          const selected = item === tab;
-
-          item.classList.toggle("active", selected);
-          item.setAttribute(
-            "aria-selected",
-            String(selected)
+        if (payload.eventType === "INSERT") {
+          const exists = MEKA.messages.some(
+            message => message.id === payload.new.id
           );
 
-          item.setAttribute(
-            "tabindex",
-            selected ? "0" : "-1"
-          );
-        });
-      }
-
-      const panels = queryAll(
-        "[data-tab-panel]",
-        scope
-      );
-
-      panels.forEach(panel => {
-        const active = panel === target;
-
-        panel.hidden = !active;
-        panel.classList.toggle("active", active);
-
-        panel.setAttribute(
-          "aria-hidden",
-          String(!active)
-        );
-      });
-
-      dispatch("tab-change", {
-        tab,
-        target
-      });
-    });
-  }
-
-  /* =======================================================
-     17. TOOLTIP TEXT
-     ======================================================= */
-
-  function initializeTooltips() {
-    document.addEventListener("mouseover", event => {
-      const element = event.target.closest(
-        "[data-tooltip]"
-      );
-
-      if (!element) {
-        return;
-      }
-
-      const text = element.dataset.tooltip;
-
-      if (!text) {
-        return;
-      }
-
-      element.setAttribute(
-        "aria-label",
-        element.getAttribute("aria-label") || text
-      );
-    });
-  }
-
-  /* =======================================================
-     18. BACK TO TOP
-     ======================================================= */
-
-  function initializeBackToTop() {
-    document.addEventListener("click", event => {
-      const button = event.target.closest(
-        "[data-back-to-top]"
-      );
-
-      if (!button) {
-        return;
-      }
-
-      event.preventDefault();
-
-      window.scrollTo({
-        top: 0,
-        behavior: window.matchMedia(
-          "(prefers-reduced-motion: reduce)"
-        ).matches
-          ? "auto"
-          : "smooth"
-      });
-    });
-  }
-
-  /* =======================================================
-     19. NETWORK STATUS
-     ======================================================= */
-
-  function updateNetworkStatus() {
-    const online = navigator.onLine;
-
-    document.documentElement.classList.toggle(
-      "is-online",
-      online
-    );
-
-    document.documentElement.classList.toggle(
-      "is-offline",
-      !online
-    );
-
-    const indicators = queryAll(
-      "[data-network-status]"
-    );
-
-    indicators.forEach(indicator => {
-      indicator.textContent = online
-        ? "متصل بالإنترنت"
-        : "لا يوجد اتصال بالإنترنت";
-
-      indicator.classList.toggle(
-        "is-online",
-        online
-      );
-
-      indicator.classList.toggle(
-        "is-offline",
-        !online
-      );
-    });
-
-    dispatch("network-status", {
-      online
-    });
-  }
-
-  function initializeNetworkStatus() {
-    window.addEventListener(
-      "online",
-      () => {
-        updateNetworkStatus();
-
-        toast(
-          "عاد الاتصال بالإنترنت.",
-          "success"
-        );
-      }
-    );
-
-    window.addEventListener(
-      "offline",
-      () => {
-        updateNetworkStatus();
-
-        toast(
-          "الاتصال بالإنترنت غير متاح حاليًا.",
-          "warning"
-        );
-      }
-    );
-
-    updateNetworkStatus();
-  }
-
-  /* =======================================================
-     20. LOCAL PREFERENCES
-     ======================================================= */
-
-  function initializePreferences() {
-    const reducedMotion = getStorage(
-      "reducedMotion",
-      null
-    );
-
-    if (reducedMotion !== null) {
-      document.documentElement.classList.toggle(
-        "reduce-motion",
-        reducedMotion === "true"
-      );
-    }
-
-    const compactMode = getStorage(
-      "compactMode",
-      "false"
-    );
-
-    document.documentElement.classList.toggle(
-      "compact-mode",
-      compactMode === "true"
-    );
-
-    document.addEventListener("change", event => {
-      const control = event.target.closest(
-        "[data-preference]"
-      );
-
-      if (!control) {
-        return;
-      }
-
-      const preference =
-        control.dataset.preference;
-
-      if (!preference) {
-        return;
-      }
-
-      if (control.type === "checkbox") {
-        setStorage(
-          "preference_" + preference,
-          control.checked
-        );
-      } else {
-        setStorage(
-          "preference_" + preference,
-          control.value
-        );
-      }
-
-      dispatch("preference-change", {
-        preference,
-        value: control.type === "checkbox"
-          ? control.checked
-          : control.value
-      });
-    });
-  }
-
-  /* =======================================================
-     21. CUSTOM PAGE HANDLERS
-     ======================================================= */
-
-  function on(name, handler) {
-    if (
-      typeof name !== "string" ||
-      typeof handler !== "function"
-    ) {
-      return () => {};
-    }
-
-    const eventName = "meka:" + name;
-
-    document.addEventListener(
-      eventName,
-      handler
-    );
-
-    const cleanup = () => {
-      document.removeEventListener(
-        eventName,
-        handler
-      );
-    };
-
-    state.cleanupFunctions.push(cleanup);
-
-    return cleanup;
-  }
-
-  function onPage(name, handler) {
-    if (
-      typeof name !== "string" ||
-      typeof handler !== "function"
-    ) {
-      return () => {};
-    }
-
-    if (!state.pageHandlers.has(name)) {
-      state.pageHandlers.set(
-        name,
-        new Set()
-      );
-    }
-
-    const handlers = state.pageHandlers.get(name);
-
-    handlers.add(handler);
-
-    return () => {
-      handlers.delete(handler);
-    };
-  }
-
-  /* =======================================================
-     22. GLOBAL CLICK ACTIONS
-     ======================================================= */
-
-  function initializeGlobalActions() {
-    document.addEventListener("click", event => {
-      const action = event.target.closest(
-        "[data-action]"
-      );
-
-      if (!action) {
-        return;
-      }
-
-      const actionName = action.dataset.action;
-
-      switch (actionName) {
-        case "go-home":
-          event.preventDefault();
-          navigate("home");
-          break;
-
-        case "go-back":
-          event.preventDefault();
-
-          if (window.history.length > 1) {
-            window.history.back();
-          } else {
-            navigate("home");
+          if (!exists) {
+            MEKA.messages.push(payload.new);
+            mekaRenderMessages();
           }
-
-          break;
-
-        case "close-sidebar":
-          event.preventDefault();
-          closeSidebar();
-          break;
-
-        case "close-modal":
-          event.preventDefault();
-          closeModal();
-          break;
-
-        case "refresh-page":
-          event.preventDefault();
-          window.location.reload();
-          break;
-
-        case "scroll-top":
-          event.preventDefault();
-
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-          });
-
-          break;
-
-        case "show-app-version":
-          event.preventDefault();
-
-          toast(
-            MEKA.name + " — الإصدار " + MEKA.version,
-            "info",
-            4500
-          );
-
-          break;
-
-        default:
-          dispatch("action", {
-            name: actionName,
-            element: action
-          });
-      }
-    });
-  }
-
-  /* =======================================================
-     23. KEYBOARD SHORTCUTS
-     ======================================================= */
-
-  function initializeKeyboardShortcuts() {
-    document.addEventListener("keydown", event => {
-      const target = event.target;
-
-      const typing =
-        target instanceof HTMLElement &&
-        (
-          target.isContentEditable ||
-          ["INPUT", "TEXTAREA", "SELECT"].includes(
-            target.tagName
-          )
-        );
-
-      if (typing || event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
-
-      if (event.key === "Escape") {
-        closeSidebar();
-        closeAllDropdowns();
-
-        if (state.activeModal) {
-          closeModal();
+        } else {
+          await mekaLoadMessages(conversationId);
         }
       }
-    });
-  }
-
-  /* =======================================================
-     24. DOCUMENT INITIALIZATION
-     ======================================================= */
-
-  function initializeAccessibility() {
-    queryAll("[data-menu-toggle]").forEach(button => {
-      if (!button.hasAttribute("aria-expanded")) {
-        button.setAttribute(
-          "aria-expanded",
-          "false"
+    )
+    .subscribe(status => {
+      if (status === "CHANNEL_ERROR") {
+        console.warn(
+          "[MEKA] Realtime channel error. Check publication and permissions."
         );
       }
     });
+}
 
-    queryAll("[data-dropdown-toggle]").forEach(button => {
-      if (!button.hasAttribute("aria-expanded")) {
-        button.setAttribute(
-          "aria-expanded",
-          "false"
-        );
-      }
-    });
+/* =========================================================
+   OPEN CONVERSATION
+   ========================================================= */
 
-    queryAll("[data-tab-target]").forEach(tab => {
-      if (!tab.hasAttribute("role")) {
-        tab.setAttribute("role", "tab");
-      }
-    });
+async function mekaOpenConversation(conversation) {
+  if (!conversation?.id) return;
+
+  MEKA.activeConversation = conversation;
+
+  const titleElement = $(
+    "#chat-title, #conversation-title, [data-meka-chat-title]"
+  );
+
+  if (titleElement) {
+    titleElement.textContent =
+      mekaConversationTitle(conversation);
   }
 
-  function initialize() {
-    if (state.initialized) {
+  const chatScreen = $(
+    "#chat-screen, #conversation-screen, [data-meka-chat-screen]"
+  );
+
+  if (chatScreen) {
+    chatScreen.hidden = false;
+    chatScreen.classList.remove("hidden");
+  }
+
+  await mekaLoadMessages(conversation.id);
+
+  mekaStartMessageRealtime(conversation.id);
+
+  window.dispatchEvent(
+    new CustomEvent("meka:conversationopened", {
+      detail: { conversation }
+    })
+  );
+}
+
+/* =========================================================
+   PROFILE SETUP FORM
+   ========================================================= */
+
+function mekaBindProfileForm() {
+  const form = $(
+    "#profile-setup-form, #onboarding-form, [data-meka-profile-form]"
+  );
+
+  if (!form) return;
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const usernameInput = $(
+      "#setup-username, #username-input, [name='username']",
+      form
+    );
+
+    const nameInput = $(
+      "#setup-display-name, #display-name-input, [name='display_name']",
+      form
+    );
+
+    const bioInput = $(
+      "#setup-bio, #bio-input, [name='bio']",
+      form
+    );
+
+    const submitButton = $("button[type='submit']", form);
+
+    mekaSetBusy(submitButton, true, "جارٍ حفظ البيانات...");
+
+    try {
+      await mekaCreateProfile({
+        username: usernameInput?.value,
+        displayName: nameInput?.value,
+        bio: bioInput?.value
+      });
+
+      mekaShowScreen("main");
+
+      await mekaLoadConversations();
+
+      mekaToast("أهلًا بك في ميكا.", "success");
+    } catch (error) {
+      console.error("[MEKA] Profile setup error:", error);
+
+      mekaToast(
+        error.message || "تعذر حفظ الملف الشخصي.",
+        "error"
+      );
+    } finally {
+      mekaSetBusy(submitButton, false);
+    }
+  });
+}
+
+/* =========================================================
+   SEARCH FORM
+   ========================================================= */
+
+function mekaBindSearch() {
+  const input = $(
+    "#user-search, #search-users, [data-meka-search]"
+  );
+
+  const results = $(
+    "#search-results, #user-search-results, [data-meka-search-results]"
+  );
+
+  if (!input || !results) return;
+
+  let timer;
+
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+
+    timer = setTimeout(async () => {
+      const query = input.value.trim();
+
+      if (query.length < 2) {
+        results.innerHTML = "";
+        return;
+      }
+
+      results.textContent = "جارٍ البحث...";
+
+      try {
+        const users = await mekaSearchUsers(query);
+
+        mekaRenderSearchResults(users, results);
+      } catch (error) {
+        console.error("[MEKA] Search failed:", error);
+
+        results.textContent =
+          "تعذر البحث. تحقق من الاتصال وصلاحيات قاعدة البيانات.";
+      }
+    }, 300);
+  });
+}
+
+/* =========================================================
+   MESSAGE FORM
+   ========================================================= */
+
+function mekaBindMessageForm() {
+  const form = $(
+    "#message-form, #send-message-form, [data-meka-message-form]"
+  );
+
+  const input = $(
+    "#message-input, #message-text, [data-meka-message-input]"
+  );
+
+  if (!form || !input) return;
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const button = $("button[type='submit']", form);
+    const value = input.value;
+
+    mekaSetBusy(button, true, "إرسال...");
+
+    try {
+      await mekaSendMessage(value);
+
+      input.value = "";
+      input.focus();
+    } catch (error) {
+      console.error("[MEKA] Sending message failed:", error);
+
+      mekaToast(
+        error.message || "تعذر إرسال الرسالة.",
+        "error"
+      );
+    } finally {
+      mekaSetBusy(button, false);
+    }
+  });
+}
+
+/* =========================================================
+   CLICK HANDLERS
+   ========================================================= */
+
+function mekaBindActions() {
+  document.addEventListener("click", async event => {
+    const googleButton = event.target.closest(
+      "#google-login, #google-sign-in, [data-meka-google-login]"
+    );
+
+    if (googleButton) {
+      await mekaSignInWithGoogle(googleButton);
       return;
     }
 
-    state.initialized = true;
-
-    initializeAccessibility();
-    initializeTheme();
-    initializeNavigation();
-    initializeSidebar();
-    initializeModals();
-    initializeSearch();
-    initializePasswordToggles();
-    initializeForms();
-    initializeDropdowns();
-    initializeTabs();
-    initializeTooltips();
-    initializeBackToTop();
-    initializeNetworkStatus();
-    initializePreferences();
-    initializeGlobalActions();
-    initializeKeyboardShortcuts();
-
-    initializeSplash();
-
-    dispatch("initialized", {
-      version: MEKA.version
-    });
-
-    console.info(
-      "[MEKA X] Application initialized:",
-      MEKA.version
+    const signOutButton = event.target.closest(
+      "#logout-button, #sign-out-button, [data-meka-signout]"
     );
-  }
 
-  /* =======================================================
-     25. PUBLIC APPLICATION API
-     ======================================================= */
+    if (signOutButton) {
+      await mekaSignOut();
+      return;
+    }
 
-  window.MEKA = Object.freeze({
-    name: MEKA.name,
-    version: MEKA.version,
+    const conversationButton = event.target.closest(
+      "[data-meka-conversation-id]"
+    );
 
-    navigate,
-    registerPage,
-    getPageElement,
-    getPageTitle,
+    if (conversationButton) {
+      const id = conversationButton.dataset.mekaConversationId;
 
-    openSidebar,
-    closeSidebar,
-    toggleSidebar,
+      const conversation = MEKA.conversations.find(
+        item => String(item.id) === String(id)
+      );
 
-    openModal,
-    closeModal,
+      if (conversation) {
+        try {
+          await mekaOpenConversation(conversation);
+        } catch (error) {
+          console.error(error);
+          mekaToast("تعذر فتح المحادثة.", "error");
+        }
+      }
 
-    applyTheme,
+      return;
+    }
 
-    toast,
-    announce,
-    setLoading,
+    const userButton = event.target.closest(
+      "[data-meka-user-id]"
+    );
 
-    getStorage,
-    setStorage,
-    removeStorage,
+    if (userButton) {
+      try {
+        await mekaStartConversation(
+          userButton.dataset.mekaUserId
+        );
+      } catch (error) {
+        console.error("[MEKA] Start conversation failed:", error);
 
-    on,
-    onPage,
+        mekaToast(
+          error.message || "تعذر بدء المحادثة.",
+          "error"
+        );
+      }
 
-    getState() {
-      return {
-        initialized: state.initialized,
-        currentPage: state.currentPage,
-        sidebarOpen: state.sidebarOpen,
-        activeModal: state.activeModal?.id || null
-      };
-    },
+      return;
+    }
 
-    finishSplash,
+    const navigationButton = event.target.closest(
+      "[data-meka-section]"
+    );
 
-    refreshNetworkStatus: updateNetworkStatus
+    if (navigationButton) {
+      const section = navigationButton.dataset.mekaSection;
+
+      window.dispatchEvent(
+        new CustomEvent("meka:navigate", {
+          detail: { section }
+        })
+      );
+    }
   });
+}
 
-  /* =======================================================
-     26. START APPLICATION
-     ======================================================= */
+/* =========================================================
+   AUTH STATE ROUTING
+   ========================================================= */
 
-  if (document.readyState === "loading") {
-    document.addEventListener(
-      "DOMContentLoaded",
-      initialize,
-      { once: true }
-    );
-  } else {
-    initialize();
+async function mekaRouteUser(user) {
+  MEKA.user = user || null;
+
+  if (!user) {
+    MEKA.session = null;
+    MEKA.profile = null;
+
+    mekaStopMessageRealtime();
+    mekaShowScreen("auth");
+
+    return;
   }
 
-})();
+  try {
+    await mekaLoadMyProfile();
+
+    if (!MEKA.profile) {
+      mekaShowScreen("onboarding");
+      return;
+    }
+
+    mekaRenderMyProfile();
+
+    mekaShowScreen("main");
+
+    await mekaLoadConversations();
+
+    window.dispatchEvent(
+      new CustomEvent("meka:ready", {
+        detail: {
+          user: MEKA.user,
+          profile: MEKA.profile
+        }
+      })
+    );
+  } catch (error) {
+    console.error("[MEKA] User routing error:", error);
+
+    mekaToast(
+      "تعذر تحميل الملف الشخصي. راجع اتصال قاعدة البيانات وصلاحياتها.",
+      "error"
+    );
+
+    /*
+      Do not sign the user out when profile loading fails.
+      A database/RLS error does not mean the session is invalid.
+    */
+  }
+}
+
+/* =========================================================
+   APPLICATION STARTUP
+   ========================================================= */
+
+async function mekaStart() {
+  if (MEKA.initialized) return;
+
+  MEKA.initialized = true;
+
+  mekaBindActions();
+  mekaBindProfileForm();
+  mekaBindSearch();
+  mekaBindMessageForm();
+
+  try {
+    await mekaInitializeSupabase();
+
+    const {
+      data: { session },
+      error
+    } = await MEKA.db.auth.getSession();
+
+    if (error) throw error;
+
+    MEKA.session = session;
+    MEKA.user = session?.user || null;
+
+    await mekaRouteUser(MEKA.user);
+
+    const {
+      data: { subscription }
+    } = MEKA.db.auth.onAuthStateChange(
+      (event, session) => {
+        MEKA.session = session;
+        MEKA.user = session?.user || null;
+
+        if (event === "SIGNED_OUT") {
+          MEKA.profile = null;
+          MEKA.conversations = [];
+          MEKA.messages = [];
+          MEKA.activeConversation = null;
+
+          mekaStopMessageRealtime();
+          mekaShowScreen("auth");
+
+          return;
+        }
+
+        if (
+          event === "SIGNED_IN" ||
+          event === "INITIAL_SESSION" ||
+          event === "USER_UPDATED"
+        ) {
+          /*
+            Defer database work so the auth callback does not
+            hold up Supabase's internal auth processing.
+          */
+          setTimeout(() => {
+            mekaRouteUser(session?.user || null);
+          }, 0);
+        }
+      }
+    );
+
+    MEKA.authSubscription = subscription;
+
+    console.info("[MEKA] Application initialized.");
+  } catch (error) {
+    console.error("[MEKA] Startup error:", error);
+
+    mekaToast(
+      "تعذر تشغيل ميكا. تحقق من الإنترنت ومكتبة Supabase.",
+      "error"
+    );
+
+    mekaSetStatus("تعذر الاتصال. أعد تحميل الصفحة بعد التحقق من الإنترنت.");
+  }
+}
+
+/* =========================================================
+  
