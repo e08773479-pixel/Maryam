@@ -1,27 +1,26 @@
 {
   "id": "./",
-  "name": "MEKA — ميكا",
+  "name": "MEKA - ميكا",
   "short_name": "MEKA",
-  "description": "منصة ميكا للمراسلة والتواصل ومشاركة اللحظات",
+  "description": "ميكا - منصة متكاملة للمحادثات والتواصل والمكالمات والمجتمعات.",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#07110f",
-  "theme_color": "#07110f",
+  "orientation": "portrait-primary",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "categories": [
+    "social",
+    "communication"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "assets/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
   ]
