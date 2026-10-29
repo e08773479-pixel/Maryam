@@ -2464,6 +2464,40 @@
   ========================================== -->
 
   <script type="module" src="app.js"></script>
+<script>
+(function () {
+  "use strict";
 
+  // Safety fallback: prevent the splash screen from staying forever.
+  window.setTimeout(function () {
+    const splash = document.getElementById("splash-screen");
+    const auth = document.getElementById("auth-screen");
+
+    if (!splash || !auth) return;
+
+    const splashVisible =
+      !splash.hidden &&
+      !splash.classList.contains("hidden");
+
+    if (splashVisible) {
+      splash.hidden = true;
+      splash.classList.add("hidden");
+
+      auth.hidden = false;
+      auth.classList.remove("hidden");
+
+      const status = document.getElementById("splash-status");
+
+      if (status) {
+        status.textContent = "تعذر بدء التطبيق تلقائيًا. يمكنك تجربة تسجيل الدخول.";
+      }
+
+      console.error(
+        "[MEKA] Startup timeout: app.js did not leave the splash screen."
+      );
+    }
+  }, 12000);
+})();
+</script>
 </body>
   </html>
