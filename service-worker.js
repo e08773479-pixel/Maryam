@@ -5,7 +5,7 @@ const MEKA_CACHE_NAME = "meka-static-v1";
 const MEKA_STATIC_FILES = [
   "./",
   "./index.html",
-  "./styles.css",
+  "./style.css",
   "./manifest.json",
   "./logo.svg",
   "./icon.svg"
