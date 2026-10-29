@@ -1,803 +1,1956 @@
+/* =========================================================
+   MEKA X — APPLICATION CORE
+   File: app.js
+   Version: 1.0.0
+   ========================================================= */
+
 (() => {
   "use strict";
 
-  const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  /* =======================================================
+     1. APPLICATION CONFIGURATION
+     ======================================================= */
 
-  const config = window.MIKA_CONFIG || {
-    apiEndpoint: "/api/chat",
-    maxImageSizeMB: 8,
-    maxHistoryMessages: 24
+  const MEKA = {
+    name: "MEKA X",
+    version: "1.0.0",
+    storagePrefix: "meka_x_",
+    splashDuration: 5000,
+
+    selectors: {
+      splash: [
+        "#splashScreen",
+        "#splash-screen",
+        ".splash-screen",
+        ".splash"
+      ],
+
+      app: [
+        "#app",
+        "#appContainer",
+        "#mainApp",
+        ".app-container",
+        ".main-app"
+      ],
+
+      mainContent: [
+        "#mainContent",
+        "#main-content",
+        ".main-content",
+        "[data-main-content]"
+      ],
+
+      navigation: [
+        "[data-page]",
+        "[data-navigation]",
+        ".nav-item",
+        ".sidebar-link"
+      ],
+
+      menuToggle: [
+        "[data-menu-toggle]",
+        "#menuToggle",
+        "#sidebarToggle",
+        ".menu-toggle"
+      ],
+
+      sidebar: [
+        "[data-sidebar]",
+        "#sidebar",
+        ".sidebar",
+        ".app-sidebar"
+      ],
+
+      themeToggle: [
+        "[data-theme-toggle]",
+        "#themeToggle",
+        "#theme-toggle"
+      ],
+
+      modalOpen: "[data-modal-open]",
+      modalClose: "[data-modal-close]",
+
+      search: [
+        "[data-global-search]",
+        "#globalSearch",
+        "#searchInput"
+      ],
+
+      toastContainer: [
+        "[data-toast-container]",
+        "#toastContainer",
+        ".toast-container"
+      ]
+    }
   };
 
-  const STORAGE_KEY = "mika-chat-conversations-v1";
-  const THEME_KEY = "mika-chat-theme-v1";
-
-  let conversations = [];
-  let activeId = null;
-  let pendingImage = null;
-  let isSending = false;
-  let abortController = null;
-  let selectedMode = "auto";
-  let recognition = null;
-
-  const els = {
-    sidebar: $("#sidebar"),
-    history: $("#chatHistory"),
-    welcome: $("#welcome"),
-    messages: $("#messages"),
-    input: $("#promptInput"),
-    send: $("#sendButton"),
-    attachmentPreview: $("#attachmentPreview"),
-    imageInput: $("#imageInput"),
-    toastRegion: $("#toastRegion"),
-    modelMenu: $("#modelMenu"),
-    modelLabel: $("#modelLabel"),
-    settingsModal: $("#settingsModal"),
-    themeSelect: $("#themeSelect"),
-    saveChats: $("#saveChats")
+  const state = {
+    initialized: false,
+    currentPage: null,
+    sidebarOpen: false,
+    activeModal: null,
+    toastTimer: null,
+    splashTimer: null,
+    cleanupFunctions: [],
+    pageHandlers: new Map()
   };
 
-  function makeId() {
-    return crypto.randomUUID
-      ? crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  /* =======================================================
+     2. DOM HELPERS
+     ======================================================= */
+
+  function query(selector, root = document) {
+    try {
+      return root.querySelector(selector);
+    } catch {
+      return null;
+    }
   }
 
-  function toast(message) {
-    const node = document.createElement("div");
-    node.className = "toast";
-    node.textContent = message;
-    els.toastRegion.append(node);
+  function queryAll(selector, root = document) {
+    try {
+      return Array.from(root.querySelectorAll(selector));
+    } catch {
+      return [];
+    }
+  }
 
-    setTimeout(() => node.remove(), 3200);
+  function findFirst(selectors, root = document) {
+    for (const selector of selectors) {
+      const element = query(selector, root);
+
+      if (element) {
+        return element;
+      }
+    }
+
+    return null;
+  }
+
+  function findAll(selectors, root = document) {
+    const elements = new Set();
+
+    for (const selector of selectors) {
+      queryAll(selector, root).forEach(element => {
+        elements.add(element);
+      });
+    }
+
+    return Array.from(elements);
   }
 
   function escapeHTML(value) {
-    return String(value).replace(/[&<>"']/g, char => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[char]);
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  function load() {
+  function getStorage(key, fallback = null) {
     try {
-      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      conversations = Array.isArray(parsed) ? parsed : [];
+      const value = localStorage.getItem(
+        MEKA.storagePrefix + key
+      );
+
+      return value === null ? fallback : value;
     } catch {
-      conversations = [];
-    }
-
-    const theme = localStorage.getItem(THEME_KEY) || "dark";
-    applyTheme(theme);
-
-    els.saveChats.checked = localStorage.getItem("mika-save-chats") !== "false";
-
-    renderHistory();
-
-    if (conversations.length) {
-      openConversation(conversations[0].id);
-    } else {
-      showWelcome();
+      return fallback;
     }
   }
 
-  function persist() {
-    if (!els.saveChats.checked) return;
-
+  function setStorage(key, value) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations));
+      localStorage.setItem(
+        MEKA.storagePrefix + key,
+        String(value)
+      );
+
+      return true;
     } catch {
-      toast("مساحة التخزين ممتلئة؛ صدّر محادثاتك أو امسح بعضها.");
+      return false;
     }
   }
 
-  function activeConversation() {
-    return conversations.find(item => item.id === activeId);
-  }
+  function removeStorage(key) {
+    try {
+      localStorage.removeItem(
+        MEKA.storagePrefix + key
+      );
 
-  function createConversation() {
-    const chat = {
-      id: makeId(),
-      title: "محادثة جديدة",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      messages: []
-    };
-
-    conversations.unshift(chat);
-    activeId = chat.id;
-
-    persist();
-    renderHistory();
-    showWelcome();
-    closeSidebarMobile();
-    els.input.focus();
-  }
-
-  function showWelcome() {
-    els.welcome.classList.remove("hidden");
-    els.messages.classList.add("hidden");
-    els.messages.replaceChildren();
-  }
-
-  function openConversation(chatId) {
-    const chat = conversations.find(item => item.id === chatId);
-    if (!chat) return;
-
-    activeId = chat.id;
-    els.welcome.classList.add("hidden");
-    els.messages.classList.remove("hidden");
-    els.messages.replaceChildren();
-
-    chat.messages.forEach(message => {
-      appendMessage(message.role, message.content, {
-        imageData: message.imageData,
-        skipAction: message.role === "user"
-      });
-    });
-
-    renderHistory();
-    closeSidebarMobile();
-    scrollBottom();
-  }
-
-  function renderHistory() {
-    els.history.replaceChildren();
-
-    if (!conversations.length) {
-      const empty = document.createElement("div");
-      empty.className = "history-empty";
-      empty.textContent = "محادثاتك الجديدة هتظهر هنا.";
-      els.history.append(empty);
-      return;
+      return true;
+    } catch {
+      return false;
     }
-
-    conversations.slice(0, 80).forEach(chat => {
-      const row = document.createElement("button");
-      row.className = `history-item${chat.id === activeId ? " active" : ""}`;
-      row.type = "button";
-
-      const title = document.createElement("span");
-      title.className = "history-title";
-      title.textContent = chat.title || "محادثة جديدة";
-
-      const del = document.createElement("span");
-      del.className = "delete-one";
-      del.textContent = "×";
-      del.title = "حذف المحادثة";
-
-      del.addEventListener("click", event => {
-        event.stopPropagation();
-        deleteConversation(chat.id);
-      });
-
-      row.append(title, del);
-      row.addEventListener("click", () => openConversation(chat.id));
-      els.history.append(row);
-    });
   }
 
-  function deleteConversation(chatId) {
-    conversations = conversations.filter(chat => chat.id !== chatId);
-
-    if (activeId === chatId) {
-      activeId = null;
-
-      if (conversations.length) {
-        openConversation(conversations[0].id);
-      } else {
-        showWelcome();
-      }
-    }
-
-    persist();
-    renderHistory();
-  }
-
-  function appendMessage(role, content, options = {}) {
-    const wrap = document.createElement("article");
-    wrap.className = `message ${role === "user" ? "user" : "assistant"}`;
-
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = role === "user" ? "م" : "m";
-
-    const body = document.createElement("div");
-    body.className = "message-body";
-
-    const contentNode = document.createElement("div");
-    contentNode.className = "message-content";
-
-    if (options.typing) {
-      contentNode.innerHTML =
-        '<div class="typing-dots"><span></span><span></span><span></span></div>';
-
-      wrap.dataset.typing = "true";
-    } else {
-      contentNode.innerHTML = renderMarkdown(content || "");
-
-      if (options.imageData) {
-        const img = document.createElement("img");
-        img.src = options.imageData;
-        img.alt = "الصورة المرفقة";
-        img.style.cssText =
-          "max-width:240px;max-height:220px;display:block;border-radius:10px;margin-top:8px";
-
-        contentNode.append(img);
-      }
-    }
-
-    body.append(contentNode);
-
-    if (!options.typing && role === "assistant" && !options.skipAction) {
-      const actions = document.createElement("div");
-      actions.className = "message-actions";
-      actions.innerHTML =
-        '<button data-act="copy">نسخ</button>' +
-        '<button data-act="speak">استماع</button>' +
-        '<button data-act="regenerate">إعادة الإجابة</button>';
-
-      actions.addEventListener("click", event => {
-        const button = event.target.closest("button");
-        if (!button) return;
-
-        if (button.dataset.act === "copy") {
-          copyText(content).then(() => toast("اتنسخ الرد."));
-        }
-
-        if (button.dataset.act === "speak") speak(content);
-
-        if (button.dataset.act === "regenerate") regenerate();
-      });
-
-      body.append(actions);
-    }
-
-    wrap.append(avatar, body);
-    els.messages.append(wrap);
-
-    return wrap;
-  }
-
-  function renderMarkdown(text) {
-    const escaped = escapeHTML(text);
-    const codeBlocks = [];
-
-    let output = escaped.replace(
-      /```([\w-]*)\n?([\s\S]*?)```/g,
-      (_, language, code) => {
-        const token = `MIKACODEBLOCK${codeBlocks.length}TOKEN`;
-        codeBlocks.push(`<pre><code>${code.trim()}</code></pre>`);
-        return token;
-      }
+  function dispatch(name, detail = {}) {
+    document.dispatchEvent(
+      new CustomEvent("meka:" + name, {
+        detail
+      })
     );
-
-    output = output
-      .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-      .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-      .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.+?)\*/g, "<em>$1</em>")
-      .replace(/`([^`]+)`/g, "<code>$1</code>")
-      .replace(/^\s*[-*] (.+)$/gm, "• $1")
-      .replace(/\n/g, "<br>");
-
-    codeBlocks.forEach((block, index) => {
-      output = output.replace(`MIKACODEBLOCK${index}TOKEN`, block);
-    });
-
-    return output
-      .split(/<br><br>/)
-      .map(part => part.trim() ? `<p>${part}</p>` : "")
-      .join("");
   }
 
-  function scrollBottom() {
+  /* =======================================================
+     3. ACCESSIBLE ANNOUNCEMENTS
+     ======================================================= */
+
+  function announce(message) {
+    let region = query("#mekaLiveRegion");
+
+    if (!region) {
+      region = document.createElement("div");
+
+      region.id = "mekaLiveRegion";
+      region.setAttribute("role", "status");
+      region.setAttribute("aria-live", "polite");
+      region.setAttribute("aria-atomic", "true");
+
+      Object.assign(region.style, {
+        position: "absolute",
+        width: "1px",
+        height: "1px",
+        padding: "0",
+        margin: "-1px",
+        overflow: "hidden",
+        clip: "rect(0, 0, 0, 0)",
+        whiteSpace: "nowrap",
+        border: "0"
+      });
+
+      document.body.appendChild(region);
+    }
+
+    region.textContent = "";
+
     requestAnimationFrame(() => {
-      const conversation = $(".conversation");
-      conversation.scrollTop = conversation.scrollHeight;
+      region.textContent = String(message ?? "");
     });
   }
 
-  function setBusy(busy) {
-    isSending = busy;
+  /* =======================================================
+     4. TOAST NOTIFICATIONS
+     ======================================================= */
 
-    els.send.textContent = busy ? "■" : "↑";
-    els.send.title = busy ? "إيقاف الرد" : "إرسال الرسالة";
-    els.send.setAttribute(
-      "aria-label",
-      busy ? "إيقاف الرد" : "إرسال الرسالة"
+  function getToastContainer() {
+    let container = findFirst(
+      MEKA.selectors.toastContainer
     );
 
-    els.input.disabled = busy;
+    if (!container) {
+      container = document.createElement("div");
+
+      container.id = "mekaToastContainer";
+      container.className = "mx-toast-container";
+      container.setAttribute("aria-live", "polite");
+      container.setAttribute("aria-atomic", "false");
+
+      Object.assign(container.style, {
+        position: "fixed",
+        zIndex: "99999",
+        top: "20px",
+        insetInlineEnd: "20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        width: "min(360px, calc(100vw - 32px))",
+        pointerEvents: "none"
+      });
+
+      document.body.appendChild(container);
+    }
+
+    return container;
   }
 
-  async function sendMessage(overrideText) {
-    if (isSending) {
-      abortController?.abort();
+  function toast(message, type = "info", duration = 3200) {
+    const container = getToastContainer();
+    const item = document.createElement("div");
+
+    const allowedTypes = [
+      "success",
+      "error",
+      "warning",
+      "info"
+    ];
+
+    const safeType = allowedTypes.includes(type)
+      ? type
+      : "info";
+
+    item.className =
+      "mx-toast mx-toast-" + safeType;
+
+    item.setAttribute("role", "status");
+
+    Object.assign(item.style, {
+      pointerEvents: "auto",
+      padding: "13px 16px",
+      borderRadius: "14px",
+      background: "var(--mx-surface-raised, #161d31)",
+      color: "var(--mx-text, #f5f7ff)",
+      border: "1px solid var(--mx-border-light, #30364b)",
+      boxShadow: "var(--mx-shadow-lg, 0 18px 48px #0004)",
+      opacity: "0",
+      transform: "translateY(-8px)",
+      transition: "opacity 180ms ease, transform 180ms ease",
+      overflowWrap: "anywhere"
+    });
+
+    item.textContent = String(message ?? "");
+
+    container.appendChild(item);
+
+    requestAnimationFrame(() => {
+      item.style.opacity = "1";
+      item.style.transform = "translateY(0)";
+    });
+
+    const timeout = window.setTimeout(() => {
+      item.style.opacity = "0";
+      item.style.transform = "translateY(-8px)";
+
+      window.setTimeout(() => {
+        item.remove();
+      }, 200);
+    }, Math.max(500, duration));
+
+    state.cleanupFunctions.push(() => {
+      clearTimeout(timeout);
+      item.remove();
+    });
+
+    announce(message);
+
+    dispatch("toast", {
+      message,
+      type: safeType
+    });
+
+    return item;
+  }
+
+  /* =======================================================
+     5. LOADING INDICATOR
+     ======================================================= */
+
+  function setLoading(isLoading, message = "جارٍ التحميل...") {
+    document.documentElement.classList.toggle(
+      "is-loading",
+      Boolean(isLoading)
+    );
+
+    const indicator = query(
+      "[data-app-loading], #appLoading"
+    );
+
+    if (indicator) {
+      indicator.hidden = !isLoading;
+      indicator.setAttribute(
+        "aria-hidden",
+        String(!isLoading)
+      );
+
+      const label = query(
+        "[data-loading-message]",
+        indicator
+      );
+
+      if (label) {
+        label.textContent = message;
+      }
+    }
+
+    dispatch("loading", {
+      loading: Boolean(isLoading),
+      message
+    });
+  }
+
+  /* =======================================================
+     6. SPLASH SCREEN
+     ======================================================= */
+
+  function finishSplash() {
+    const splash = findFirst(
+      MEKA.selectors.splash
+    );
+
+    const app = findFirst(
+      MEKA.selectors.app
+    );
+
+    if (splash) {
+      splash.classList.add("is-hidden");
+      splash.setAttribute("aria-hidden", "true");
+      splash.style.pointerEvents = "none";
+
+      window.setTimeout(() => {
+        splash.hidden = true;
+        splash.style.display = "none";
+      }, 450);
+    }
+
+    if (app) {
+      app.hidden = false;
+      app.removeAttribute("aria-hidden");
+      app.classList.add("is-ready");
+    }
+
+    document.documentElement.classList.remove(
+      "is-starting"
+    );
+
+    document.documentElement.classList.add(
+      "app-ready"
+    );
+
+    setStorage("hasOpened", "true");
+
+    dispatch("splash-finished");
+
+    if (!state.currentPage) {
+      const firstNavigation = findAll(
+        MEKA.selectors.navigation
+      ).find(element => {
+        return element.dataset.page;
+      });
+
+      const initialPage =
+        firstNavigation?.dataset.page ||
+        getStorage("lastPage", "home");
+
+      navigate(initialPage, {
+        updateHistory: false,
+        silent: true
+      });
+    }
+  }
+
+  function initializeSplash() {
+    document.documentElement.classList.add(
+      "is-starting"
+    );
+
+    const splash = findFirst(
+      MEKA.selectors.splash
+    );
+
+    const app = findFirst(
+      MEKA.selectors.app
+    );
+
+    if (app) {
+      app.hidden = false;
+    }
+
+    if (!splash) {
+      finishSplash();
       return;
     }
 
-    const text = (overrideText ?? els.input.value).trim();
+    splash.hidden = false;
+    splash.removeAttribute("aria-hidden");
 
-    if (!text && !pendingImage) return;
+    state.splashTimer = window.setTimeout(
+      finishSplash,
+      MEKA.splashDuration
+    );
 
-    if (!activeConversation()) createConversation();
+    const skipButton = query(
+      "[data-skip-splash], #skipSplash"
+    );
 
-    const chat = activeConversation();
-    const imageData = pendingImage?.data || null;
+    if (skipButton) {
+      skipButton.addEventListener(
+        "click",
+        () => {
+          clearTimeout(state.splashTimer);
+          finishSplash();
+        },
+        { once: true }
+      );
+    }
+  }
 
-    const userMessage = {
-      role: "user",
-      content: text || "حلّل الصورة المرفقة.",
-      ...(imageData ? { imageData } : {})
-    };
+  /* =======================================================
+     7. PAGE REGISTRY
+     ======================================================= */
 
-    chat.messages.push(userMessage);
+  const defaultPages = {
+    home: {
+      title: "الرئيسية",
+      selectors: [
+        '[data-page-content="home"]',
+        "#homePage",
+        "#home"
+      ]
+    },
 
-    if (chat.title === "محادثة جديدة") {
-      chat.title = (text || "صورة مرفقة").slice(0, 36);
+    feed: {
+      title: "المنشورات",
+      selectors: [
+        '[data-page-content="feed"]',
+        "#feedPage",
+        "#feed"
+      ]
+    },
+
+    explore: {
+      title: "استكشف",
+      selectors: [
+        '[data-page-content="explore"]',
+        "#explorePage",
+        "#explore"
+      ]
+    },
+
+    messages: {
+      title: "الرسائل",
+      selectors: [
+        '[data-page-content="messages"]',
+        "#messagesPage",
+        "#messages"
+      ]
+    },
+
+    chat: {
+      title: "المحادثات",
+      selectors: [
+        '[data-page-content="chat"]',
+        "#chatPage",
+        "#chat"
+      ]
+    },
+
+    ai: {
+      title: "ميكا الذكي",
+      selectors: [
+        '[data-page-content="ai"]',
+        "#aiPage",
+        "#aiAssistant"
+      ]
+    },
+
+    notifications: {
+      title: "الإشعارات",
+      selectors: [
+        '[data-page-content="notifications"]',
+        "#notificationsPage",
+        "#notifications"
+      ]
+    },
+
+    profile: {
+      title: "الملف الشخصي",
+      selectors: [
+        '[data-page-content="profile"]',
+        "#profilePage",
+        "#profile"
+      ]
+    },
+
+    settings: {
+      title: "الإعدادات",
+      selectors: [
+        '[data-page-content="settings"]',
+        "#settingsPage",
+        "#settings"
+      ]
+    },
+
+    premium: {
+      title: "العضوية المميزة",
+      selectors: [
+        '[data-page-content="premium"]',
+        "#premiumPage",
+        "#premium"
+      ]
+    }
+  };
+
+  const pageRegistry = new Map(
+    Object.entries(defaultPages)
+  );
+
+  function registerPage(name, configuration) {
+    if (!name || typeof name !== "string") {
+      throw new TypeError(
+        "اسم الصفحة يجب أن يكون نصًا."
+      );
     }
 
-    chat.updatedAt = Date.now();
-    persist();
+    if (!configuration || typeof configuration !== "object") {
+      throw new TypeError(
+        "إعدادات الصفحة غير صحيحة."
+      );
+    }
 
-    els.welcome.classList.add("hidden");
-    els.messages.classList.remove("hidden");
+    pageRegistry.set(name, {
+      title: configuration.title || name,
+      selectors: Array.isArray(configuration.selectors)
+        ? configuration.selectors
+        : [],
+      onEnter: configuration.onEnter,
+      onLeave: configuration.onLeave
+    });
 
-    appendMessage("user", userMessage.content, { imageData });
+    dispatch("page-registered", {
+      name
+    });
+  }
 
-    els.input.value = "";
-    autoResize();
-    clearAttachment();
-    renderHistory();
-    scrollBottom();
+  function getPageElement(name) {
+    const page = pageRegistry.get(name);
 
-    const typing = appendMessage("assistant", "", { typing: true });
-    scrollBottom();
+    if (!page) {
+      return null;
+    }
 
-    setBusy(true);
-    abortController = new AbortController();
+    return findFirst(page.selectors);
+  }
 
-    try {
-      const history = chat.messages
-        .slice(-config.maxHistoryMessages)
-        .map(message => ({
-          role: message.role,
-          content: message.content,
-          ...(message.imageData ? { imageData: message.imageData } : {})
-        }));
+  function getPageTitle(name) {
+    const page = pageRegistry.get(name);
 
-      const response = await fetch(config.apiEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: history,
-          mode: selectedMode
-        }),
-        signal: abortController.signal
-      });
+    return page?.title || name;
+  }
 
-      const data = await response.json().catch(() => ({}));
+  /* =======================================================
+     8. PAGE NAVIGATION
+     ======================================================= */
 
-      if (!response.ok) {
-        throw new Error(data.error || `حصل خطأ من الخادم (${response.status}).`);
+  function updateNavigationActive(name) {
+    const navigationItems = findAll(
+      MEKA.selectors.navigation
+    );
+
+    navigationItems.forEach(item => {
+      const active = item.dataset.page === name;
+
+      item.classList.toggle("active", active);
+      item.classList.toggle("is-active", active);
+
+      if (active) {
+        item.setAttribute("aria-current", "page");
+      } else {
+        item.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  function updatePageTitle(name) {
+    const titleElement = findFirst([
+      "[data-page-title]",
+      "#pageTitle",
+      ".page-title"
+    ]);
+
+    if (titleElement) {
+      titleElement.textContent = getPageTitle(name);
+    }
+
+    document.title =
+      getPageTitle(name) + " | " + MEKA.name;
+  }
+
+  function navigate(
+    name,
+    options = {}
+  ) {
+    const {
+      updateHistory = true,
+      silent = false
+    } = options;
+
+    if (!name || typeof name !== "string") {
+      return false;
+    }
+
+    const configuration = pageRegistry.get(name);
+
+    if (!configuration) {
+      if (!silent) {
+        toast("القسم المطلوب غير مسجل داخل التطبيق.", "warning");
       }
 
-      const answer = data.reply || data.output || "وصل رد فارغ من الخدمة.";
+      return false;
+    }
 
-      typing.remove();
+    const target = getPageElement(name);
 
-      chat.messages.push({
-        role: "assistant",
-        content: answer
+    if (!target) {
+      dispatch("page-missing", {
+        name
       });
 
-      chat.updatedAt = Date.now();
+      if (!silent) {
+        toast(
+          "القسم مسجل، لكن عنصر الصفحة غير موجود في HTML.",
+          "warning"
+        );
+      }
 
-      persist();
-      appendMessage("assistant", answer);
-      renderHistory();
-      scrollBottom();
+      return false;
+    }
 
-    } catch (error) {
-      typing.remove();
+    if (state.currentPage === name) {
+      closeSidebar();
+      return true;
+    }
 
-      if (error.name === "AbortError") {
-        toast("تم إيقاف الطلب.");
-      } else {
-        appendMessage(
-          "assistant",
-          `**مش قادر أوصل لخدمة الذكاء الاصطناعي.**\n\n${error.message}\n\nتأكد إن الخادم شغال وإن مفتاح API مضبوط في ملف البيئة \`.env\`.`
+    const previousPage = state.currentPage;
+
+    if (previousPage) {
+      const previousConfig = pageRegistry.get(previousPage);
+
+      if (
+        previousConfig &&
+        typeof previousConfig.onLeave === "function"
+      ) {
+        try {
+          previousConfig.onLeave({
+            from: previousPage,
+            to: name
+          });
+        } catch (error) {
+          console.error(
+            "[MEKA X] Page leave error:",
+            error
+          );
+        }
+      }
+
+      const previousElement = getPageElement(previousPage);
+
+      if (previousElement) {
+        previousElement.hidden = true;
+        previousElement.setAttribute(
+          "aria-hidden",
+          "true"
         );
 
-        toast("راجع اتصال الخادم وإعدادات API.");
+        previousElement.classList.remove(
+          "page-entering",
+          "page-active"
+        );
+      }
+    }
+
+    target.hidden = false;
+    target.removeAttribute("aria-hidden");
+    target.classList.add("page-active", "page-entering");
+
+    requestAnimationFrame(() => {
+      target.classList.remove("page-entering");
+    });
+
+    state.currentPage = name;
+
+    updateNavigationActive(name);
+    updatePageTitle(name);
+    closeSidebar();
+
+    setStorage("lastPage", name);
+
+    if (updateHistory) {
+      try {
+        const url = new URL(window.location.href);
+
+        url.searchParams.set("page", name);
+
+        window.history.pushState(
+          {
+            mekaPage: name
+          },
+          "",
+          url
+        );
+      } catch {
+        // التنقل داخل التطبيق يستمر حتى لو تعذر تحديث الرابط.
+      }
+    }
+
+    if (typeof configuration.onEnter === "function") {
+      try {
+        configuration.onEnter({
+          from: previousPage,
+          to: name,
+          element: target
+        });
+      } catch (error) {
+        console.error(
+          "[MEKA X] Page enter error:",
+          error
+        );
+      }
+    }
+
+    dispatch("navigate", {
+      from: previousPage,
+      to: name,
+      element: target
+    });
+
+    if (!silent) {
+      announce("تم فتح قسم " + getPageTitle(name));
+    }
+
+    return true;
+  }
+
+  function initializeNavigation() {
+    document.addEventListener("click", event => {
+      const item = event.target.closest(
+        "[data-page]"
+      );
+
+      if (!item) {
+        return;
       }
 
-      scrollBottom();
+      const name = item.dataset.page;
 
-    } finally {
-      setBusy(false);
-      abortController = null;
+      if (!name) {
+        return;
+      }
+
+      event.preventDefault();
+
+      navigate(name);
+    });
+
+    window.addEventListener("popstate", event => {
+      let name = event.state?.mekaPage;
+
+      if (!name) {
+        try {
+          name = new URL(
+            window.location.href
+          ).searchParams.get("page");
+        } catch {
+          name = null;
+        }
+      }
+
+      if (name && pageRegistry.has(name)) {
+        navigate(name, {
+          updateHistory: false,
+          silent: true
+        });
+      }
+    });
+  }
+
+  /* =======================================================
+     9. SIDEBAR
+     ======================================================= */
+
+  function openSidebar() {
+    const sidebar = findFirst(
+      MEKA.selectors.sidebar
+    );
+
+    if (!sidebar) {
+      return false;
+    }
+
+    state.sidebarOpen = true;
+
+    sidebar.classList.add("is-open", "open");
+    sidebar.setAttribute("aria-expanded", "true");
+
+    document.documentElement.classList.add(
+      "sidebar-open"
+    );
+
+    const toggle = findFirst(
+      MEKA.selectors.menuToggle
+    );
+
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "true");
+    }
+
+    dispatch("sidebar-open");
+
+    return true;
+  }
+
+  function closeSidebar() {
+    const sidebar = findFirst(
+      MEKA.selectors.sidebar
+    );
+
+    state.sidebarOpen = false;
+
+    if (sidebar) {
+      sidebar.classList.remove("is-open", "open");
+      sidebar.setAttribute("aria-expanded", "false");
+    }
+
+    document.documentElement.classList.remove(
+      "sidebar-open"
+    );
+
+    const toggle = findFirst(
+      MEKA.selectors.menuToggle
+    );
+
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", "false");
+    }
+
+    dispatch("sidebar-close");
+  }
+
+  function toggleSidebar() {
+    if (state.sidebarOpen) {
+      closeSidebar();
+    } else {
+      openSidebar();
     }
   }
 
-  function autoResize() {
-    els.input.style.height = "auto";
-    els.input.style.height = `${Math.min(els.input.scrollHeight, 180)}px`;
+  function initializeSidebar() {
+    document.addEventListener("click", event => {
+      const toggle = event.target.closest(
+        MEKA.selectors.menuToggle.join(",")
+      );
+
+      if (toggle) {
+        event.preventDefault();
+        toggleSidebar();
+        return;
+      }
+
+      const closeButton = event.target.closest(
+        "[data-sidebar-close]"
+      );
+
+      if (closeButton) {
+        event.preventDefault();
+        closeSidebar();
+        return;
+      }
+
+      const sidebar = findFirst(
+        MEKA.selectors.sidebar
+      );
+
+      if (
+        state.sidebarOpen &&
+        sidebar &&
+        !sidebar.contains(event.target)
+      ) {
+        const menuButton = findFirst(
+          MEKA.selectors.menuToggle
+        );
+
+        if (!menuButton?.contains(event.target)) {
+          closeSidebar();
+        }
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && state.sidebarOpen) {
+        closeSidebar();
+      }
+    });
   }
 
-  function clearAttachment() {
-    pendingImage = null;
-    els.attachmentPreview.classList.add("hidden");
-    els.attachmentPreview.replaceChildren();
-    els.imageInput.value = "";
+  /* =======================================================
+     10. MODALS
+     ======================================================= */
+
+  function openModal(id) {
+    if (!id) {
+      return false;
+    }
+
+    const modal = query(
+      "#" + CSS.escape(id)
+    );
+
+    if (!modal) {
+      toast("النافذة المطلوبة غير موجودة.", "warning");
+      return false;
+    }
+
+    state.activeModal = modal;
+
+    modal.hidden = false;
+    modal.removeAttribute("aria-hidden");
+    modal.classList.add("is-open", "open");
+
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+
+    document.documentElement.classList.add(
+      "modal-open"
+    );
+
+    const focusable = query(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      modal
+    );
+
+    if (focusable) {
+      requestAnimationFrame(() => {
+        focusable.focus();
+      });
+    }
+
+    dispatch("modal-open", {
+      id
+    });
+
+    return true;
   }
 
-  function applyTheme(theme) {
-    let actual = theme;
+  function closeModal(modal = state.activeModal) {
+    if (!modal) {
+      return false;
+    }
 
-    if (theme === "system") {
-      actual = matchMedia("(prefers-color-scheme: light)").matches
+    modal.classList.remove("is-open", "open");
+    modal.setAttribute("aria-hidden", "true");
+    modal.hidden = true;
+
+    state.activeModal = null;
+
+    document.documentElement.classList.remove(
+      "modal-open"
+    );
+
+    dispatch("modal-close", {
+      id: modal.id
+    });
+
+    return true;
+  }
+
+  function initializeModals() {
+    document.addEventListener("click", event => {
+      const openButton = event.target.closest(
+        MEKA.selectors.modalOpen
+      );
+
+      if (openButton) {
+        event.preventDefault();
+
+        const id =
+          openButton.dataset.modalOpen;
+
+        openModal(id);
+        return;
+      }
+
+      const closeButton = event.target.closest(
+        MEKA.selectors.modalClose
+      );
+
+      if (closeButton) {
+        event.preventDefault();
+
+        closeModal(
+          closeButton.closest(
+            '[role="dialog"], .mx-modal, [data-modal]'
+          ) || state.activeModal
+        );
+
+        return;
+      }
+
+      if (
+        state.activeModal &&
+        event.target === state.activeModal &&
+        state.activeModal.dataset.closeOnBackdrop !== "false"
+      ) {
+        closeModal(state.activeModal);
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && state.activeModal) {
+        closeModal(state.activeModal);
+      }
+    });
+  }
+
+  /* =======================================================
+     11. THEME SWITCHING
+     ======================================================= */
+
+  const allowedThemes = [
+    "dark",
+    "light",
+    "purple",
+    "ocean"
+  ];
+
+  function applyTheme(theme, persist = true) {
+    const safeTheme = allowedThemes.includes(theme)
+      ? theme
+      : "dark";
+
+    const root = document.documentElement;
+
+    if (safeTheme === "dark") {
+      root.removeAttribute("data-theme");
+    } else {
+      root.dataset.theme = safeTheme;
+    }
+
+    document.body.dataset.theme = safeTheme;
+
+    root.style.colorScheme =
+      safeTheme === "light" ? "light" : "dark";
+
+    if (persist) {
+      setStorage("theme", safeTheme);
+    }
+
+    findAll(MEKA.selectors.themeToggle).forEach(button => {
+      button.setAttribute(
+        "aria-pressed",
+        String(safeTheme !== "dark")
+      );
+
+      button.dataset.currentTheme = safeTheme;
+    });
+
+    dispatch("theme-change", {
+      theme: safeTheme
+    });
+
+    return safeTheme;
+  }
+
+  function initializeTheme() {
+    const savedTheme = getStorage(
+      "theme",
+      "dark"
+    );
+
+    applyTheme(savedTheme, false);
+
+    document.addEventListener("click", event => {
+      const button = event.target.closest(
+        MEKA.selectors.themeToggle.join(",")
+      );
+
+      if (!button) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const current =
+        document.documentElement.dataset.theme || "dark";
+
+      const next = current === "dark"
         ? "light"
         : "dark";
-    }
 
-    document.body.classList.toggle("light", actual === "light");
+      applyTheme(next);
 
-    localStorage.setItem(THEME_KEY, theme);
-    els.themeSelect.value = theme;
-  }
+      toast(
+        next === "light"
+          ? "تم تفعيل المظهر الفاتح."
+          : "تم تفعيل المظهر الداكن.",
+        "success"
+      );
+    });
 
-  async function copyText(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      document.body.append(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      textarea.remove();
-    }
-  }
+    document.addEventListener("change", event => {
+      const selector = event.target.closest(
+        "[data-theme-select]"
+      );
 
-  function speak(text) {
-    if (!("speechSynthesis" in window)) {
-      return toast("ميزة القراءة الصوتية مش مدعومة في المتصفح ده.");
-    }
-
-    speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ar-EG";
-    speechSynthesis.speak(utterance);
-  }
-
-  async function regenerate() {
-    const chat = activeConversation();
-
-    if (!chat || isSending) return;
-
-    const lastAssistantIndex = chat.messages
-      .map(message => message.role)
-      .lastIndexOf("assistant");
-
-    if (lastAssistantIndex >= 0) {
-      chat.messages.splice(lastAssistantIndex, 1);
-    }
-
-    persist();
-    openConversation(chat.id);
-
-    await requestAnswer(chat);
-  }
-
-  async function requestAnswer(chat) {
-    const typing = appendMessage("assistant", "", { typing: true });
-
-    setBusy(true);
-    abortController = new AbortController();
-
-    try {
-      const response = await fetch(config.apiEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: chat.messages.slice(-config.maxHistoryMessages),
-          mode: selectedMode
-        }),
-        signal: abortController.signal
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "تعذر إعادة الإجابة.");
+      if (!selector) {
+        return;
       }
 
-      typing.remove();
-
-      const answer = data.reply || data.output || "";
-      chat.messages.push({ role: "assistant", content: answer });
-
-      persist();
-      appendMessage("assistant", answer);
-      scrollBottom();
-
-    } catch (error) {
-      typing.remove();
-      appendMessage("assistant", `تعذر إعادة الإجابة: ${error.message}`);
-
-    } finally {
-      setBusy(false);
-      abortController = null;
-    }
+      applyTheme(selector.value);
+    });
   }
 
-  function closeSidebarMobile() {
-    if (innerWidth <= 760) {
-      els.sidebar.classList.remove("open");
-    }
-  }
+  /* =======================================================
+     12. GLOBAL SEARCH
+     ======================================================= */
 
-  function exportChats() {
-    const blob = new Blob(
-      [JSON.stringify({
-        app: "MIKA CHAT",
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        conversations
-      }, null, 2)],
-      { type: "application/json" }
-    );
+  function initializeSearch() {
+    document.addEventListener("keydown", event => {
+      const isShortcut =
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "k";
 
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
+      if (!isShortcut) {
+        return;
+      }
 
-    anchor.href = url;
-    anchor.download = "mika-chat-conversations.json";
-    anchor.click();
+      const search = findFirst(
+        MEKA.selectors.search
+      );
 
-    URL.revokeObjectURL(url);
-    toast("تم تجهيز ملف التصدير.");
-  }
+      if (!search) {
+        return;
+      }
 
-  $("#newChat").addEventListener("click", createConversation);
-
-  $("#sendButton").addEventListener("click", () => sendMessage());
-
-  els.input.addEventListener("input", autoResize);
-
-  els.input.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      sendMessage();
-    }
-  });
-
-  $$(".suggestion-card").forEach(button => {
-    button.addEventListener("click", () => {
-      els.input.value = button.dataset.prompt;
-      autoResize();
-      els.input.focus();
+      search.focus();
+      search.select?.();
     });
-  });
 
-  $("#openSidebar").addEventListener("click", () => {
-    els.sidebar.classList.add("open");
-  });
+    document.addEventListener("input", event => {
+      const input = event.target.closest(
+        MEKA.selectors.search.join(",")
+      );
 
-  $("#closeSidebar").addEventListener("click", closeSidebarMobile);
+      if (!input) {
+        return;
+      }
 
-  $("#themeToggle").addEventListener("click", () => {
-    applyTheme(document.body.classList.contains("light") ? "dark" : "light");
-  });
-
-  $("#modelPicker").addEventListener("click", () => {
-    els.modelMenu.classList.toggle("hidden");
-  });
-
-  $$("#modelMenu button").forEach(button => {
-    button.addEventListener("click", () => {
-      selectedMode = button.dataset.model;
-
-      els.modelLabel.textContent = button
-        .querySelector("b")
-        .textContent
-        .replace(/^[✳ϟ◈]\s*/, "");
-
-      els.modelMenu.classList.add("hidden");
-
-      toast("تم تغيير وضع الواجهة. النموذج الفعلي يتحدد من إعدادات الخادم.");
+      dispatch("search", {
+        query: input.value.trim(),
+        input
+      });
     });
-  });
 
-  document.addEventListener("click", event => {
-    if (!event.target.closest(".model-picker-wrap")) {
-      els.modelMenu.classList.add("hidden");
-    }
-  });
+    document.addEventListener("keydown", event => {
+      const input = event.target.closest(
+        MEKA.selectors.search.join(",")
+      );
 
-  $("#settingsButton").addEventListener("click", () => {
-    els.settingsModal.classList.remove("hidden");
-  });
+      if (!input || event.key !== "Enter") {
+        return;
+      }
 
-  $("#closeSettings").addEventListener("click", () => {
-    els.settingsModal.classList.add("hidden");
-  });
+      dispatch("search-submit", {
+        query: input.value.trim(),
+        input
+      });
+    });
+  }
 
-  $("#doneSettings").addEventListener("click", () => {
-    els.settingsModal.classList.add("hidden");
-  });
+  /* =======================================================
+     13. PASSWORD VISIBILITY
+     ======================================================= */
 
-  els.settingsModal.addEventListener("click", event => {
-    if (event.target === els.settingsModal) {
-      els.settingsModal.classList.add("hidden");
-    }
-  });
+  function initializePasswordToggles() {
+    document.addEventListener("click", event => {
+      const button = event.target.closest(
+        "[data-toggle-password]"
+      );
 
-  els.themeSelect.addEventListener("change", () => {
-    applyTheme(els.themeSelect.value);
-  });
+      if (!button) {
+        return;
+      }
 
-  els.saveChats.addEventListener("change", () => {
-    localStorage.setItem("mika-save-chats", String(els.saveChats.checked));
+      const targetId =
+        button.dataset.togglePassword;
 
-    if (!els.saveChats.checked) {
-      localStorage.removeItem(STORAGE_KEY);
-    } else {
-      persist();
-    }
+      const input = targetId
+        ? query("#" + CSS.escape(targetId))
+        : button.parentElement?.querySelector(
+            'input[type="password"], input[type="text"]'
+          );
 
-    toast(
-      els.saveChats.checked
-        ? "الحفظ المحلي اتفعّل."
-        : "الحفظ المحلي اتوقف واتمسح السجل المحفوظ."
+      if (!input) {
+        return;
+      }
+
+      const reveal =
+        input.type === "password";
+
+      input.type = reveal
+        ? "text"
+        : "password";
+
+      button.setAttribute(
+        "aria-pressed",
+        String(reveal)
+      );
+
+      button.setAttribute(
+        "aria-label",
+        reveal
+          ? "إخفاء كلمة المرور"
+          : "إظهار كلمة المرور"
+      );
+    });
+  }
+
+  /* =======================================================
+     14. FORM VALIDATION
+     ======================================================= */
+
+  function initializeForms() {
+    document.addEventListener("submit", event => {
+      const form = event.target;
+
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        form.reportValidity();
+
+        toast(
+          "راجع البيانات المطلوبة قبل المتابعة.",
+          "warning"
+        );
+
+        return;
+      }
+
+      /*
+       * لا نمنع الإرسال الصحيح تلقائيًا.
+       * النماذج المرتبطة بتسجيل الدخول أو قاعدة البيانات
+       * يجب أن تُربط بوظيفتها الفعلية في ملفاتها المخصصة.
+       */
+      dispatch("form-valid", {
+        form,
+        formId: form.id || null
+      });
+    });
+  }
+
+  /* =======================================================
+     15. DROPDOWN MENUS
+     ======================================================= */
+
+  function closeAllDropdowns(except = null) {
+    queryAll("[data-dropdown]").forEach(dropdown => {
+      if (dropdown === except) {
+        return;
+      }
+
+      dropdown.classList.remove("is-open", "open");
+
+      const trigger = query(
+        "[data-dropdown-toggle]",
+        dropdown
+      );
+
+      if (trigger) {
+        trigger.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    });
+  }
+
+  function initializeDropdowns() {
+    document.addEventListener("click", event => {
+      const trigger = event.target.closest(
+        "[data-dropdown-toggle]"
+      );
+
+      if (trigger) {
+        event.preventDefault();
+
+        const dropdown = trigger.closest(
+          "[data-dropdown]"
+        );
+
+        if (!dropdown) {
+          return;
+        }
+
+        const isOpen =
+          dropdown.classList.contains("is-open");
+
+        closeAllDropdowns(dropdown);
+
+        dropdown.classList.toggle(
+          "is-open",
+          !isOpen
+        );
+
+        dropdown.classList.toggle(
+          "open",
+          !isOpen
+        );
+
+        trigger.setAttribute(
+          "aria-expanded",
+          String(!isOpen)
+        );
+
+        return;
+      }
+
+      if (!event.target.closest("[data-dropdown]")) {
+        closeAllDropdowns();
+      }
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeAllDropdowns();
+      }
+    });
+  }
+
+  /* =======================================================
+     16. TABS
+     ======================================================= */
+
+  function initializeTabs() {
+    document.addEventListener("click", event => {
+      const tab = event.target.closest(
+        "[data-tab-target]"
+      );
+
+      if (!tab) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const targetSelector =
+        tab.dataset.tabTarget;
+
+      const target = targetSelector
+        ? query(targetSelector)
+        : null;
+
+      if (!target) {
+        return;
+      }
+
+      const group = tab.closest(
+        "[data-tabs]"
+      );
+
+      const scope = group?.parentElement || document;
+
+      if (group) {
+        queryAll("[data-tab-target]", group).forEach(item => {
+          const selected = item === tab;
+
+          item.classList.toggle("active", selected);
+          item.setAttribute(
+            "aria-selected",
+            String(selected)
+          );
+
+          item.setAttribute(
+            "tabindex",
+            selected ? "0" : "-1"
+          );
+        });
+      }
+
+      const panels = queryAll(
+        "[data-tab-panel]",
+        scope
+      );
+
+      panels.forEach(panel => {
+        const active = panel === target;
+
+        panel.hidden = !active;
+        panel.classList.toggle("active", active);
+
+        panel.setAttribute(
+          "aria-hidden",
+          String(!active)
+        );
+      });
+
+      dispatch("tab-change", {
+        tab,
+        target
+      });
+    });
+  }
+
+  /* =======================================================
+     17. TOOLTIP TEXT
+     ======================================================= */
+
+  function initializeTooltips() {
+    document.addEventListener("mouseover", event => {
+      const element = event.target.closest(
+        "[data-tooltip]"
+      );
+
+      if (!element) {
+        return;
+      }
+
+      const text = element.dataset.tooltip;
+
+      if (!text) {
+        return;
+      }
+
+      element.setAttribute(
+        "aria-label",
+        element.getAttribute("aria-label") || text
+      );
+    });
+  }
+
+  /* =======================================================
+     18. BACK TO TOP
+     ======================================================= */
+
+  function initializeBackToTop() {
+    document.addEventListener("click", event => {
+      const button = event.target.closest(
+        "[data-back-to-top]"
+      );
+
+      if (!button) {
+        return;
+      }
+
+      event.preventDefault();
+
+      window.scrollTo({
+        top: 0,
+        behavior: window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches
+          ? "auto"
+          : "smooth"
+      });
+    });
+  }
+
+  /* =======================================================
+     19. NETWORK STATUS
+     ======================================================= */
+
+  function updateNetworkStatus() {
+    const online = navigator.onLine;
+
+    document.documentElement.classList.toggle(
+      "is-online",
+      online
     );
-  });
 
-  $("#exportChats").addEventListener("click", exportChats);
+    document.documentElement.classList.toggle(
+      "is-offline",
+      !online
+    );
 
-  $("#clearHistory").addEventListener("click", () => {
-    if (!conversations.length) {
-      return toast("سجل المحادثات فاضي.");
-    }
+    const indicators = queryAll(
+      "[data-network-status]"
+    );
 
-    if (confirm("متأكد إنك عايز تمسح كل المحادثات المحفوظة؟")) {
-      conversations = [];
-      activeId = null;
-      persist();
-      renderHistory();
-      showWelcome();
-      toast("تم مسح المحادثات.");
-    }
-  });
+    indicators.forEach(indicator => {
+      indicator.textContent = online
+        ? "متصل بالإنترنت"
+        : "لا يوجد اتصال بالإنترنت";
 
-  els.imageInput.addEventListener("change", async () => {
-    const file = els.imageInput.files?.[0];
+      indicator.classList.toggle(
+        "is-online",
+        online
+      );
 
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      return toast("اختار ملف صورة صالح.");
-    }
-
-    if (file.size > config.maxImageSizeMB * 1024 * 1024) {
-      els.imageInput.value = "";
-      return toast(`حجم الصورة لازم يكون أقل من ${config.maxImageSizeMB} ميجابايت.`);
-    }
-
-    const data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      indicator.classList.toggle(
+        "is-offline",
+        !online
+      );
     });
 
-    pendingImage = { data, name: file.name };
+    dispatch("network-status", {
+      online
+    });
+  }
 
-    const img = document.createElement("img");
-    img.src = data;
-    img.alt = "";
+  function initializeNetworkStatus() {
+    window.addEventListener(
+      "online",
+      () => {
+        updateNetworkStatus();
 
-    const name = document.createElement("span");
-    name.textContent = file.name;
+        toast(
+          "عاد الاتصال بالإنترنت.",
+          "success"
+        );
+      }
+    );
 
-    const remove = document.createElement("button");
-    remove.textContent = "×";
-    remove.setAttribute("aria-label", "إزالة الصورة");
-    remove.onclick = clearAttachment;
+    window.addEventListener(
+      "offline",
+      () => {
+        updateNetworkStatus();
 
-    els.attachmentPreview.replaceChildren(img, name, remove);
-    els.attachmentPreview.classList.remove("hidden");
-  });
+        toast(
+          "الاتصال بالإنترنت غير متاح حاليًا.",
+          "warning"
+        );
+      }
+    );
 
-  $("#voiceInput").addEventListener("click", () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    updateNetworkStatus();
+  }
 
-    if (!SpeechRecognition) {
-      return toast("الإملاء الصوتي مش مدعوم في المتصفح ده. جرّب Chrome.");
+  /* =======================================================
+     20. LOCAL PREFERENCES
+     ======================================================= */
+
+  function initializePreferences() {
+    const reducedMotion = getStorage(
+      "reducedMotion",
+      null
+    );
+
+    if (reducedMotion !== null) {
+      document.documentElement.classList.toggle(
+        "reduce-motion",
+        reducedMotion === "true"
+      );
     }
 
-    if (recognition) {
-      recognition.stop();
-      recognition = null;
+    const compactMode = getStorage(
+      "compactMode",
+      "false"
+    );
+
+    document.documentElement.classList.toggle(
+      "compact-mode",
+      compactMode === "true"
+    );
+
+    document.addEventListener("change", event => {
+      const control = event.target.closest(
+        "[data-preference]"
+      );
+
+      if (!control) {
+        return;
+      }
+
+      const preference =
+        control.dataset.preference;
+
+      if (!preference) {
+        return;
+      }
+
+      if (control.type === "checkbox") {
+        setStorage(
+          "preference_" + preference,
+          control.checked
+        );
+      } else {
+        setStorage(
+          "preference_" + preference,
+          control.value
+        );
+      }
+
+      dispatch("preference-change", {
+        preference,
+        value: control.type === "checkbox"
+          ? control.checked
+          : control.value
+      });
+    });
+  }
+
+  /* =======================================================
+     21. CUSTOM PAGE HANDLERS
+     ======================================================= */
+
+  function on(name, handler) {
+    if (
+      typeof name !== "string" ||
+      typeof handler !== "function"
+    ) {
+      return () => {};
+    }
+
+    const eventName = "meka:" + name;
+
+    document.addEventListener(
+      eventName,
+      handler
+    );
+
+    const cleanup = () => {
+      document.removeEventListener(
+        eventName,
+        handler
+      );
+    };
+
+    state.cleanupFunctions.push(cleanup);
+
+    return cleanup;
+  }
+
+  function onPage(name, handler) {
+    if (
+      typeof name !== "string" ||
+      typeof handler !== "function"
+    ) {
+      return () => {};
+    }
+
+    if (!state.pageHandlers.has(name)) {
+      state.pageHandlers.set(
+        name,
+        new Set()
+      );
+    }
+
+    const handlers = state.pageHandlers.get(name);
+
+    handlers.add(handler);
+
+    return () => {
+      handlers.delete(handler);
+    };
+  }
+
+  /* =======================================================
+     22. GLOBAL CLICK ACTIONS
+     ======================================================= */
+
+  function initializeGlobalActions() {
+    document.addEventListener("click", event => {
+      const action = event.target.closest(
+        "[data-action]"
+      );
+
+      if (!action) {
+        return;
+      }
+
+      const actionName = action.dataset.action;
+
+      switch (actionName) {
+        case "go-home":
+          event.preventDefault();
+          navigate("home");
+          break;
+
+        case "go-back":
+          event.preventDefault();
+
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            navigate("home");
+          }
+
+          break;
+
+        case "close-sidebar":
+          event.preventDefault();
+          closeSidebar();
+          break;
+
+        case "close-modal":
+          event.preventDefault();
+          closeModal();
+          break;
+
+        case "refresh-page":
+          event.preventDefault();
+          window.location.reload();
+          break;
+
+        case "scroll-top":
+          event.preventDefault();
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+
+          break;
+
+        case "show-app-version":
+          event.preventDefault();
+
+          toast(
+            MEKA.name + " — الإصدار " + MEKA.version,
+            "info",
+            4500
+          );
+
+          break;
+
+        default:
+          dispatch("action", {
+            name: actionName,
+            element: action
+          });
+      }
+    });
+  }
+
+  /* =======================================================
+     23. KEYBOARD SHORTCUTS
+     ======================================================= */
+
+  function initializeKeyboardShortcuts() {
+    document.addEventListener("keydown", event => {
+      const target = event.target;
+
+      const typing =
+        target instanceof HTMLElement &&
+        (
+          target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(
+            target.tagName
+          )
+        );
+
+      if (typing || event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        closeSidebar();
+        closeAllDropdowns();
+
+        if (state.activeModal) {
+          closeModal();
+        }
+      }
+    });
+  }
+
+  /* =======================================================
+     24. DOCUMENT INITIALIZATION
+     ======================================================= */
+
+  function initializeAccessibility() {
+    queryAll("[data-menu-toggle]").forEach(button => {
+      if (!button.hasAttribute("aria-expanded")) {
+        button.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    });
+
+    queryAll("[data-dropdown-toggle]").forEach(button => {
+      if (!button.hasAttribute("aria-expanded")) {
+        button.setAttribute(
+          "aria-expanded",
+          "false"
+        );
+      }
+    });
+
+    queryAll("[data-tab-target]").forEach(tab => {
+      if (!tab.hasAttribute("role")) {
+        tab.setAttribute("role", "tab");
+      }
+    });
+  }
+
+  function initialize() {
+    if (state.initialized) {
       return;
     }
 
-    recognition = new SpeechRecognition();
-    recognition.lang = "ar-EG";
-    recognition.interimResults = true;
+    state.initialized = true;
 
-    recognition.onresult = event => {
-      let transcript = "";
+    initializeAccessibility();
+    initializeTheme();
+    initializeNavigation();
+    initializeSidebar();
+    initializeModals();
+    initializeSearch();
+    initializePasswordToggles();
+    initializeForms();
+    initializeDropdowns();
+    initializeTabs();
+    initializeTooltips();
+    initializeBackToTop();
+    initializeNetworkStatus();
+    initializePreferences();
+    initializeGlobalActions();
+    initializeKeyboardShortcuts();
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
+    initializeSplash();
 
-      els.input.value = transcript;
-      autoResize();
-    };
-
-    recognition.onerror = () => toast("ما قدرناش نسمع الكلام بوضوح.");
-    recognition.onend = () => { recognition = null; };
-
-    recognition.start();
-    toast("اتكلم دلوقتي...");
-  });
-
-  $("#shareButton").addEventListener("click", async () => {
-    const chat = activeConversation();
-
-    if (!chat || !chat.messages.length) {
-      return toast("ابدأ محادثة الأول علشان تشاركها.");
-    }
-
-    const text = chat.messages
-      .map(message => `${message.role === "user" ? "أنت" : "MIKA"}: ${message.content}`)
-      .join("\n\n");
-
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: chat.title, text });
-      } catch {}
-    } else {
-      await copyText(text);
-      toast("نسخت المحادثة؛ تقدر تبعتها لأي حد.");
-    }
-  });
-
-  $$("[data-action]").forEach(button => {
-    button.addEventListener("click", () => {
-      if (button.dataset.action === "image") {
-        toast("توليد الصور يحتاج ربط مزوّد توليد صور.");
-      }
-
-      if (button.dataset.action === "voice") {
-        toast("المتاح حاليًا الإملاء الصوتي وقراءة الرد؛ الصوت المباشر يحتاج خدمة إضافية.");
-      }
+    dispatch("initialized", {
+      version: MEKA.version
     });
+
+    console.info(
+      "[MEKA X] Application initialized:",
+      MEKA.version
+    );
+  }
+
+  /* =======================================================
+     25. PUBLIC APPLICATION API
+     ======================================================= */
+
+  window.MEKA = Object.freeze({
+    name: MEKA.name,
+    version: MEKA.version,
+
+    navigate,
+    registerPage,
+    getPageElement,
+    getPageTitle,
+
+    openSidebar,
+    closeSidebar,
+    toggleSidebar,
+
+    openModal,
+    closeModal,
+
+    applyTheme,
+
+    toast,
+    announce,
+    setLoading,
+
+    getStorage,
+    setStorage,
+    removeStorage,
+
+    on,
+    onPage,
+
+    getState() {
+      return {
+        initialized: state.initialized,
+        currentPage: state.currentPage,
+        sidebarOpen: state.sidebarOpen,
+        activeModal: state.activeModal?.id || null
+      };
+    },
+
+    finishSplash,
+
+    refreshNetworkStatus: updateNetworkStatus
   });
 
-  document.addEventListener("keydown", event => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
-      event.preventDefault();
-      createConversation();
-    }
+  /* =======================================================
+     26. START APPLICATION
+     ======================================================= */
 
-    if (event.key === "Escape") {
-      els.settingsModal.classList.add("hidden");
-      closeSidebarMobile();
-      els.modelMenu.classList.add("hidden");
-    }
-  });
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialize,
+      { once: true }
+    );
+  } else {
+    initialize();
+  }
 
-  load();
 })();
