@@ -1634,4 +1634,29 @@ async function mekaStart() {
 }
 
 /* =========================================================
-  
+  /* MEKA Service Worker Registration */
+
+if (
+  "serviceWorker" in navigator &&
+  (
+    location.protocol === "https:" ||
+    location.hostname === "localhost"
+  )
+) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("./service-worker.js")
+      .then(registration => {
+        console.info(
+          "[MEKA] Service Worker registered:",
+          registration.scope
+        );
+      })
+      .catch(error => {
+        console.error(
+          "[MEKA] Service Worker registration failed:",
+          error
+        );
+      });
+  });
+}
