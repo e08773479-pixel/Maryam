@@ -1,0 +1,1418 @@
+/* =========================================================
+   MEKA X — ANIMATIONS SYSTEM
+   Version: 1.0
+   Transitions, Loaders, Interactions & Micro Animations
+   ========================================================= */
+
+/* =========================
+   1. Animation Variables
+   ========================= */
+
+:root {
+  --motion-fast: 140ms;
+  --motion-normal: 220ms;
+  --motion-slow: 360ms;
+  --motion-slower: 520ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* =========================
+   2. Core Keyframes
+   ========================= */
+
+@keyframes meka-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes meka-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes meka-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes meka-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes meka-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes meka-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes meka-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes meka-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes meka-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.035);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes meka-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes meka-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.72;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes meka-pulse-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes meka-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes meka-shimmer {
+  0% {
+    background-position: 180% 0;
+  }
+
+  100% {
+    background-position: -180% 0;
+  }
+}
+
+@keyframes meka-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  45% {
+    transform: translateY(-6px);
+  }
+
+  65% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes meka-heart-beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.18);
+  }
+
+  30% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.12);
+  }
+
+  60% {
+    transform: scale(1);
+  }
+}
+
+@keyframes meka-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes meka-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes meka-progress-rtl {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-250%);
+  }
+}
+
+@keyframes meka-dot-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes meka-wave {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes meka-border-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgba(124, 92, 255, 0);
+  }
+
+  50% {
+    box-shadow: 0 0 22px rgba(124, 92, 255, 0.2);
+  }
+}
+
+@keyframes meka-notification-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes meka-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes meka-story-ring {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes meka-orbit {
+  from {
+    transform: rotate(0deg) translateX(12px) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(12px) rotate(-360deg);
+  }
+}
+
+@keyframes meka-typing {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.65);
+    opacity: 0.45;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   3. App Entry Animation
+   ========================= */
+
+.app-shell {
+  animation: meka-fade-in 420ms var(--ease-standard) both;
+}
+
+.app-layout {
+  animation: meka-fade-in 380ms var(--ease-enter) both;
+}
+
+.main-content {
+  animation: meka-fade-in 320ms var(--ease-enter) both;
+}
+
+.page-heading {
+  animation: meka-slide-up 420ms var(--ease-enter) both;
+}
+
+.page-heading > * {
+  animation: meka-slide-up 420ms var(--ease-enter) both;
+}
+
+.page-heading > :nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.page-heading > :nth-child(3) {
+  animation-delay: 90ms;
+}
+
+/* =========================
+   4. Splash Screen
+   ========================= */
+
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  animation: meka-fade-in 300ms ease both;
+  will-change: opacity;
+}
+
+.splash-screen.is-leaving {
+  animation: meka-fade-out 260ms ease forwards;
+  pointer-events: none;
+}
+
+.splash-logo,
+.splash-screen .brand-logo {
+  animation:
+    meka-pop-in 650ms var(--ease-spring) both,
+    meka-border-glow 2.5s ease-in-out 700ms infinite;
+}
+
+.splash-title {
+  animation: meka-slide-up 520ms var(--ease-enter) 100ms both;
+}
+
+.splash-subtitle {
+  animation: meka-fade-in 650ms ease 280ms both;
+}
+
+.splash-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.splash-progress::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.75),
+    transparent
+  );
+  animation: meka-progress 1.5s ease-in-out infinite;
+}
+
+html[dir="rtl"] .splash-progress::after {
+  animation-name: meka-progress-rtl;
+}
+
+/* =========================
+   5. Navigation Interactions
+   ========================= */
+
+.nav-item,
+.mobile-nav-item,
+.sidebar-link,
+.settings-nav-button {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+.nav-item:hover,
+.sidebar-link:hover,
+.settings-nav-button:hover {
+  transform: translateX(-2px);
+}
+
+html[dir="ltr"] .nav-item:hover,
+html[dir="ltr"] .sidebar-link:hover,
+html[dir="ltr"] .settings-nav-button:hover {
+  transform: translateX(2px);
+}
+
+.nav-item.is-active,
+.nav-item.active {
+  animation: meka-slide-up 220ms ease both;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.94);
+}
+
+.mobile-nav-item.is-active svg,
+.mobile-nav-item.active svg {
+  animation: meka-pop-in 260ms var(--ease-spring) both;
+}
+
+/* =========================
+   6. Sidebar Animation
+   ========================= */
+
+.sidebar {
+  transition:
+    transform var(--motion-normal) var(--ease-standard),
+    opacity var(--motion-normal) ease,
+    box-shadow var(--motion-normal) ease;
+}
+
+.sidebar.is-open {
+  animation: meka-slide-right 240ms var(--ease-enter) both;
+}
+
+html[dir="ltr"] .sidebar.is-open {
+  animation-name: meka-slide-left;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(3, 5, 14, 0.58);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: meka-fade-in 180ms ease both;
+}
+
+.sidebar-backdrop.is-leaving {
+  animation: meka-fade-out 180ms ease both;
+}
+
+/* =========================
+   7. Buttons and Click Feedback
+   ========================= */
+
+.button,
+button,
+.icon-button {
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease;
+}
+
+.button:active,
+.icon-button:active {
+  transform: scale(0.97);
+}
+
+.button:disabled,
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.button.is-loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.button.is-loading::after {
+  content: "";
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-inline-start: 9px;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  vertical-align: -2px;
+  animation: meka-rotate 700ms linear infinite;
+}
+
+.button-success {
+  animation: meka-pop-in 280ms var(--ease-spring) both;
+}
+
+.button-error,
+.input-error {
+  animation: meka-shake 320ms ease both;
+}
+
+/* =========================
+   8. Cards and Panels
+   ========================= */
+
+.panel,
+.card,
+.post-card,
+.story-card,
+.subscription-card,
+.notification-card,
+.search-result-card {
+  transition:
+    border-color var(--motion-normal) ease,
+    box-shadow var(--motion-normal) ease,
+    background-color var(--motion-normal) ease,
+    transform var(--motion-normal) var(--ease-standard);
+}
+
+.post-card,
+.notification-card,
+.search-result-card {
+  animation: meka-slide-up 360ms var(--ease-enter) both;
+}
+
+.feed-list > :nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.feed-list > :nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.feed-list > :nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.feed-list > :nth-child(4) {
+  animation-delay: 135ms;
+}
+
+.feed-list > :nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+
+.story-card {
+  animation: meka-scale-in 320ms var(--ease-enter) both;
+}
+
+.story-card:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.story-card:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.story-card:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.story-card:nth-child(5) {
+  animation-delay: 140ms;
+}
+
+.story-card:nth-child(n + 6) {
+  animation-delay: 175ms;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .post-card:hover,
+  .search-result-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .subscription-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .icon-button:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* =========================
+   9. Stories
+   ========================= */
+
+.story-ring {
+  background-size: 200% 200%;
+  animation: meka-story-ring 3s linear infinite;
+}
+
+.story-avatar.is-unseen {
+  animation: meka-border-glow 2s ease-in-out infinite;
+}
+
+.story-card:active {
+  transform: scale(0.96);
+}
+
+.story-viewer {
+  animation: meka-fade-in 240ms ease both;
+}
+
+.story-viewer-content {
+  animation: meka-scale-in 280ms var(--ease-enter) both;
+}
+
+.story-progress-bar > span {
+  transform-origin: right center;
+  animation: none;
+}
+
+html[dir="ltr"] .story-progress-bar > span {
+  transform-origin: left center;
+}
+
+/* =========================
+   10. Composer and Uploads
+   ========================= */
+
+.composer-panel {
+  transition:
+    border-color var(--motion-normal) ease,
+    box-shadow var(--motion-normal) ease;
+}
+
+.composer-panel:focus-within {
+  animation: meka-border-glow 1.8s ease-in-out infinite;
+}
+
+.composer-placeholder,
+.composer-input {
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+
+.upload-preview {
+  animation: meka-scale-in 220ms var(--ease-enter) both;
+}
+
+.upload-preview.is-removing {
+  animation: meka-scale-out 180ms ease both;
+}
+
+.upload-progress-bar > span {
+  transition: width 220ms ease;
+}
+
+.upload-complete {
+  animation: meka-pop-in 280ms var(--ease-spring) both;
+}
+
+/* =========================
+   11. Likes and Reactions
+   ========================= */
+
+.like-button,
+.reaction-button {
+  transform-origin: center;
+}
+
+.like-button.is-active,
+.reaction-button.is-active {
+  animation: meka-heart-beat 420ms ease both;
+}
+
+.reaction-picker {
+  transform-origin: bottom center;
+  animation: meka-pop-in 220ms var(--ease-spring) both;
+}
+
+.reaction-option {
+  transition: transform 150ms var(--ease-standard);
+}
+
+.reaction-option:hover {
+  transform: scale(1.22);
+}
+
+.reaction-option:active {
+  transform: scale(0.9);
+}
+
+.post-reaction-count {
+  animation: meka-fade-in 180ms ease both;
+}
+
+/* =========================
+   12. Chat Messages
+   ========================= */
+
+.message-bubble {
+  animation: meka-message-in 220ms var(--ease-enter) both;
+  transform-origin: bottom right;
+}
+
+html[dir="ltr"] .message-bubble {
+  transform-origin: bottom left;
+}
+
+.message-bubble.is-sending {
+  opacity: 0.7;
+}
+
+.message-bubble.is-failed {
+  animation: meka-shake 300ms ease both;
+}
+
+.message-bubble.is-read .message-status {
+  animation: meka-pop-in 200ms var(--ease-spring) both;
+}
+
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-indicator span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  animation: meka-typing 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.message-list > .message-bubble:nth-last-child(1) {
+  animation-delay: 0ms;
+}
+
+/* =========================
+   13. AI Chat
+   ========================= */
+
+.ai-message {
+  animation: meka-message-in 260ms var(--ease-enter) both;
+}
+
+.ai-message.is-thinking {
+  animation: meka-pulse 1.8s ease-in-out infinite;
+}
+
+.ai-thinking-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ai-thinking-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: meka-dot-bounce 1.1s ease-in-out infinite;
+}
+
+.ai-thinking-indicator span:nth-child(2) {
+  animation-delay: 130ms;
+}
+
+.ai-thinking-indicator span:nth-child(3) {
+  animation-delay: 260ms;
+}
+
+.ai-suggestion {
+  transition:
+    transform var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease;
+}
+
+.ai-suggestion:active {
+  transform: scale(0.98);
+}
+
+.ai-response-cursor::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-inline-start: 3px;
+  vertical-align: -2px;
+  background: currentColor;
+  animation: meka-cursor-blink 800ms steps(2, start) infinite;
+}
+
+@keyframes meka-cursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* =========================
+   14. Search
+   ========================= */
+
+.global-search,
+.search-input-wrap {
+  transition:
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    background-color var(--motion-fast) ease;
+}
+
+.global-search:focus-within,
+.search-input-wrap:focus-within {
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.13);
+}
+
+.search-dropdown {
+  transform-origin: top center;
+  animation: meka-slide-down 200ms var(--ease-enter) both;
+}
+
+.search-result-item {
+  animation: meka-fade-in 180ms ease both;
+}
+
+.search-result-item:nth-child(2) {
+  animation-delay: 25ms;
+}
+
+.search-result-item:nth-child(3) {
+  animation-delay: 50ms;
+}
+
+.search-result-item:nth-child(4) {
+  animation-delay: 75ms;
+}
+
+.search-highlight {
+  animation: meka-fade-in 180ms ease both;
+}
+
+/* =========================
+   15. Notifications
+   ========================= */
+
+.notification-badge {
+  animation: meka-pop-in 260ms var(--ease-spring) both;
+}
+
+.notification-badge.is-updating {
+  animation: meka-bounce 350ms ease both;
+}
+
+.notification-dropdown {
+  transform-origin: top right;
+  animation: meka-notification-in 220ms var(--ease-enter) both;
+}
+
+html[dir="ltr"] .notification-dropdown {
+  transform-origin: top left;
+}
+
+.notification-item {
+  animation: meka-slide-up 220ms var(--ease-enter) both;
+}
+
+.notification-item.is-unread {
+  transition: background-color 180ms ease;
+}
+
+.toast {
+  animation: meka-notification-in 250ms var(--ease-enter) both;
+}
+
+.toast.is-leaving {
+  animation: meka-fade-out 200ms ease both;
+}
+
+/* =========================
+   16. Modal and Dialog
+   ========================= */
+
+.modal-overlay,
+.dialog-backdrop {
+  animation: meka-fade-in 180ms ease both;
+}
+
+.modal-dialog,
+.dialog-panel {
+  animation: meka-pop-in 280ms var(--ease-spring) both;
+}
+
+.modal-overlay.is-leaving,
+.dialog-backdrop.is-leaving {
+  animation: meka-fade-out 180ms ease both;
+}
+
+.modal-dialog.is-leaving,
+.dialog-panel.is-leaving {
+  animation: meka-scale-out 180ms ease both;
+}
+
+/* =========================
+   17. Dropdowns and Tooltips
+   ========================= */
+
+.dropdown-menu {
+  transform-origin: top center;
+  animation: meka-slide-down 180ms var(--ease-enter) both;
+}
+
+.dropdown-menu.is-closing {
+  animation: meka-fade-out 120ms ease both;
+}
+
+.tooltip {
+  animation: meka-fade-in 160ms ease both;
+}
+
+.popover {
+  transform-origin: top center;
+  animation: meka-scale-in 180ms var(--ease-enter) both;
+}
+
+/* =========================
+   18. Authentication
+   ========================= */
+
+.auth-panel {
+  animation: meka-scale-in 350ms var(--ease-enter) both;
+}
+
+.auth-logo {
+  animation: meka-pop-in 500ms var(--ease-spring) both;
+}
+
+.auth-intro {
+  animation: meka-slide-up 420ms var(--ease-enter) 70ms both;
+}
+
+.auth-form {
+  animation: meka-slide-up 420ms var(--ease-enter) 130ms both;
+}
+
+.auth-form .form-field {
+  animation: meka-slide-up 300ms var(--ease-enter) both;
+}
+
+.auth-form .form-field:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.auth-form .form-field:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.auth-form .form-field:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.form-field input,
+.form-field textarea,
+.form-field select {
+  transition:
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    background-color var(--motion-fast) ease;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.form-field select:focus {
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.12);
+}
+
+.form-message {
+  animation: meka-slide-up 200ms ease both;
+}
+
+.form-message.is-error {
+  animation: meka-shake 300ms ease both;
+}
+
+.form-message.is-success {
+  animation: meka-pop-in 260ms var(--ease-spring) both;
+}
+
+/* =========================
+   19. Profile
+   ========================= */
+
+.profile-cover {
+  animation: meka-fade-in 420ms ease both;
+}
+
+.profile-avatar {
+  animation: meka-pop-in 420ms var(--ease-spring) 80ms both;
+}
+
+.profile-main-info {
+  animation: meka-slide-up 360ms var(--ease-enter) 100ms both;
+}
+
+.profile-stat {
+  animation: meka-slide-up 320ms var(--ease-enter) both;
+}
+
+.profile-stat:nth-child(2) {
+  animation-delay: 45ms;
+}
+
+.profile-stat:nth-child(3) {
+  animation-delay: 90ms;
+}
+
+.profile-stat:nth-child(4) {
+  animation-delay: 135ms;
+}
+
+/* =========================
+   20. Premium and Subscriptions
+   ========================= */
+
+.premium-hero {
+  animation: meka-scale-in 400ms var(--ease-enter) both;
+}
+
+.premium-hero-art {
+  animation: meka-float 4s ease-in-out infinite;
+}
+
+.premium-badge {
+  animation: meka-border-glow 2.5s ease-in-out infinite;
+}
+
+.subscription-card {
+  animation: meka-slide-up 350ms var(--ease-enter) both;
+}
+
+.subscription-card:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.subscription-card:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.subscription-card.is-featured {
+  animation:
+    meka-slide-up 350ms var(--ease-enter) both,
+    meka-border-glow 3s ease-in-out 500ms infinite;
+}
+
+.subscription-card .button {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* =========================
+   21. Video Cards
+   ========================= */
+
+.video-card {
+  animation: meka-fade-in 300ms ease both;
+}
+
+.video-thumbnail img,
+.video-thumbnail video {
+  transition: transform 300ms var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .video-card:hover .video-thumbnail img,
+  .video-card:hover .video-thumbnail video {
+    transform: scale(1.035);
+  }
+}
+
+.video-play-button {
+  transition:
+    transform 180ms var(--ease-spring),
+    opacity 180ms ease;
+}
+
+.video-card:hover .video-play-button {
+  transform: scale(1.08);
+}
+
+.video-playing-indicator span {
+  animation: meka-wave 650ms ease-in-out infinite;
+}
+
+.video-playing-indicator span:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.video-playing-indicator span:nth-child(3) {
+  animation-delay: 200ms;
+}
+
+.video-playing-indicator span:nth-child(4) {
+  animation-delay: 300ms;
+}
+
+/* =========================
+   22. Loading and Skeletons
+   ========================= */
+
+.spinner,
+.loading-spinner,
+.loader-ring {
+  animation: meka-rotate 800ms linear infinite;
+}
+
+.skeleton,
+.skeleton-line,
+.skeleton-avatar,
+.skeleton-card {
+  background-image: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.055) 40%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.055) 60%,
+    transparent 80%
+  );
+  background-size: 220% 100%;
+  animation: meka-shimmer 1.7s ease-in-out infinite;
+}
+
+.loading-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: meka-dot-bounce 1.2s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+.progress-bar > span {
+  transition: width 250ms ease;
+}
+
+/* =========================
+   23. Empty States
+   ========================= */
+
+.empty-state {
+  animation: meka-fade-in 320ms ease both;
+}
+
+.empty-state-icon {
+  animation: meka-float 3.5s ease-in-out infinite;
+}
+
+.empty-state h3 {
+  animation: meka-slide-up 280ms var(--ease-enter) 60ms both;
+}
+
+.empty-state p {
+  animation: meka-slide-up 280ms var(--ease-enter) 110ms both;
+}
+
+.empty-state .button {
+  animation: meka-slide-up 280ms var(--ease-enter) 160ms both;
+}
+
+/* =========================
+   24. Settings
+   ========================= */
+
+.settings-content {
+  animation: meka-fade-in 220ms ease both;
+}
+
+.settings-section {
+  animation: meka-slide-up 260ms var(--ease-enter) both;
+}
+
+.setting-row {
+  transition: background-color 180ms ease;
+}
+
+.toggle-switch .toggle-thumb {
+  transition: transform 200ms var(--ease-standard);
+}
+
+.toggle-switch input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(-18px);
+}
+
+html[dir="ltr"] .toggle-switch input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(18px);
+}
+
+/* =========================
+   25. Tabs and Page Switching
+   ========================= */
+
+.tab-button {
+  position: relative;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.tab-button::after {
+  content: "";
+  position: absolute;
+  inset-inline: 12px;
+  inset-block-end: 0;
+  height: 2px;
+  border-radius: 99px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform 220ms var(--ease-standard);
+}
+
+.tab-button.is-active::after,
+.tab-button.active::after {
+  transform: scaleX(1);
+}
+
+.page-enter {
+  animation: meka-slide-up 280ms var(--ease-enter) both;
+}
+
+.page-leave {
+  animation: meka-fade-out 160ms ease both;
+}
+
+/* =========================
+   26. Focus and Accessibility
+   ========================= */
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent, #8b7bff);
+  outline-offset: 3px;
+}
+
+@media (hover: none) {
+  .button:active,
+  .icon-button:active {
+    opacity: 0.82;
+  }
+}
+
+/* =========================
+   27. Responsive Motion
+   ========================= */
+
+@media (max-width: 767px) {
+  .app-shell,
+  .app-layout,
+  .main-content {
+    animation-duration: 220ms;
+  }
+
+  .post-card,
+  .notification-card,
+  .search-result-card {
+    animation-duration: 240ms;
+  }
+
+  .premium-hero-art {
+    animation-duration: 5s;
+  }
+
+  .sidebar,
+  .modal-dialog,
+  .dialog-panel {
+    will-change: transform, opacity;
+  }
+}
+
+/* =========================
+   28. Reduced Motion
+   ========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-snap-type: none !important;
+  }
+
+  .premium-hero-art,
+  .empty-state-icon,
+  .story-ring,
+  .premium-badge {
+    animation: none !important;
+  }
+
+  .splash-screen.is-leaving,
+  .modal-overlay.is-leaving,
+  .dialog-backdrop.is-leaving {
+    opacity: 0;
+  }
+}
+
+/* =========================
+   29. Disable Motion When Requested
+   ========================= */
+
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* =========================
+   END — MEKA X ANIMATIONS
+   ========================= */
