@@ -2465,33 +2465,24 @@
 
   <script type="module" src="app.js"></script>
 <script>
-(function () {
-  "use strict";
-
-  // للانتقال التلقائي بعد 5 ثوانٍ بالضبط (5000 مللي ثانية)
-  window.setTimeout(function () {
+  // تنفيذ الانتقال بعد 5 ثوانٍ بشكل قسري ومستقل عن أي ملف آخر
+  setTimeout(function () {
     const splash = document.getElementById("splash-screen");
     const auth = document.getElementById("auth-screen");
 
-    if (!splash || !auth) return;
-
-    const splashVisible =
-      !splash.hidden &&
-      !splash.classList.contains("hidden");
-
-    if (splashVisible) {
-      splash.hidden = true;
+    if (splash) {
+      splash.style.display = "none";
       splash.classList.add("hidden");
-
-      auth.hidden = false;
-      auth.classList.remove("hidden");
-
-      console.log(
-        "[MEKA] Splash screen hidden after 5 seconds."
-      );
+      splash.hidden = true;
     }
-  }, 5000); // تم تعديل الوقت هنا إلى 5000ms
-})();
+
+    if (auth) {
+      auth.style.display = "block";
+      auth.classList.remove("hidden");
+      auth.hidden = false;
+    }
+  }, 5000); // 5000 تعني 5 ثوانٍ بالضبط
 </script>
+
 </body>
 </html>
