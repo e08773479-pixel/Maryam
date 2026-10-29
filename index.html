@@ -1,396 +1,969 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-app="MEKA-X">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#10131b">
-  <meta name="description" content="MIKA CHAT — مساعدك الذكي للمحادثة والإبداع والبرمجة.">
+  <meta name="theme-color" content="#090914">
+  <meta name="color-scheme" content="dark">
+  <meta name="application-name" content="MEKA X">
+  <meta name="description" content="ميكا إكس — منصتك الاجتماعية للتواصل والمشاركة والمحادثات والذكاء الاصطناعي.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <title>MIKA CHAT — مساعدك الذكي</title>
+  <title>MEKA X — عالمك، بطريقتك</title>
+
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./responsive.css">
+  <link rel="stylesheet" href="./animations.css">
+  <link rel="stylesheet" href="./components.css">
+  <link rel="stylesheet" href="./themes.css">
+
+  <script>
+    (() => {
+      try {
+        const saved = localStorage.getItem("meka-x-theme");
+        if (saved) document.documentElement.dataset.theme = saved;
+      } catch (_) {}
+    })();
+  </script>
 </head>
 
 <body>
+  <a class="skip-link" href="#mainContent">تخطَّ إلى المحتوى</a>
 
-<div class="app-shell">
-
-  <aside class="sidebar" id="sidebar">
-
-    <div class="brand-row">
-
-      <div class="brand-mark">
-        <span>m</span>
-        <i></i>
+  <!-- شاشة البداية -->
+  <section id="appLoader" class="app-loader" aria-label="جاري تشغيل ميكا إكس">
+    <div class="loader-content">
+      <div class="brand-mark brand-mark-large" aria-hidden="true">
+        <svg viewBox="0 0 64 64" role="img">
+          <defs>
+            <linearGradient id="mekaLogoGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#9B7BFF"/>
+              <stop offset="100%" stop-color="#4B8DFF"/>
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#mekaLogoGradient)"/>
+          <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
+        </svg>
       </div>
 
-      <div class="brand-copy">
-        <strong>MIKA <span>CHAT</span></strong>
-        <small>فكرتك تبدأ هنا</small>
+      <div class="loader-brand-name">MEKA <span>X</span></div>
+      <p class="loader-description">عالمك، بطريقتك</p>
+
+      <div class="loader-track" role="progressbar" aria-label="تقدم التشغيل">
+        <span id="loaderProgress"></span>
       </div>
 
-      <button class="icon-btn mobile-close" id="closeSidebar" aria-label="إغلاق القائمة">
-        ×
-      </button>
-
+      <p id="loaderStatus" class="loader-status" aria-live="polite">جاري تجهيز عالمك...</p>
     </div>
-
-    <button class="new-chat-btn" id="newChat">
-      <span class="plus">＋</span>
-      <span>محادثة جديدة</span>
-      <kbd>Ctrl K</kbd>
-    </button>
-
-    <div class="side-section">
-
-      <div class="section-label">مساحة العمل</div>
-
-      <button class="side-link active" data-view="chat">
-        <span class="side-icon">✳</span>
-        الدردشة
-        <span class="link-dot"></span>
-      </button>
-
-      <button class="side-link" data-action="image">
-        <span class="side-icon">▧</span>
-        أفكار الصور
-        <span class="mini-tag">تحتاج ربطًا</span>
-      </button>
-
-      <button class="side-link" data-action="voice">
-        <span class="side-icon">♫</span>
-        المحادثة الصوتية
-      </button>
-
-    </div>
-
-    <div class="history-head">
-      <span>المحادثات الأخيرة</span>
-      <button class="tiny-icon" id="clearHistory" title="مسح المحادثات">⌫</button>
-    </div>
-
-    <div class="chat-history" id="chatHistory">
-      <div class="history-empty">
-        محادثاتك الجديدة هتظهر هنا.
-      </div>
-    </div>
-
-    <div class="sidebar-bottom">
-
-      <div class="profile-card">
-
-        <div class="avatar user-avatar">م</div>
-
-        <div class="profile-info">
-          <strong>مساحة شخصية</strong>
-          <small>محادثات على جهازك</small>
-        </div>
-
-        <button class="tiny-icon" id="settingsButton" aria-label="الإعدادات">
-          ⚙
-        </button>
-
-      </div>
-
-      <div class="sidebar-foot">
-        MIKA CHAT <span>•</span> مساحة أفكارك
-      </div>
-
-    </div>
-
-  </aside>
-
-
-  <main class="main-panel">
-
-    <header class="topbar">
-
-      <div class="topbar-start">
-
-        <button class="icon-btn menu-toggle" id="openSidebar" aria-label="فتح القائمة">
-          ☰
-        </button>
-
-        <div class="mobile-brand">
-          <div class="brand-mark small">
-            <span>m</span>
-            <i></i>
-          </div>
-
-          <strong>MIKA <span>CHAT</span></strong>
-        </div>
-
-        <div class="model-picker-wrap">
-
-          <button class="model-picker" id="modelPicker">
-            <span class="status-pip"></span>
-            <span id="modelLabel">MIKA الذكي</span>
-            <span class="chevron">⌄</span>
-          </button>
-
-          <div class="model-menu hidden" id="modelMenu">
-
-            <button data-model="auto">
-              <b>✳ MIKA الذكي</b>
-              <small>النموذج المحدد في إعدادات الخادم</small>
-            </button>
-
-            <button data-model="fast">
-              <b>ϟ إجابة سريعة</b>
-              <small>يستخدم النموذج الذي تحدده للخدمة السريعة</small>
-            </button>
-
-            <button data-model="reasoning">
-              <b>◈ تفكير متعمق</b>
-              <small>حسب النموذج المتاح لحسابك</small>
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="topbar-actions">
-
-        <button class="icon-btn" id="themeToggle" title="تبديل المظهر">
-          ☼
-        </button>
-
-        <button class="share-btn" id="shareButton">
-          <span>↗</span>
-          مشاركة
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <section class="conversation" id="conversation" aria-live="polite">
-
-      <div class="welcome" id="welcome">
-
-        <div class="welcome-orb">
-
-          <div class="orb-core">m</div>
-
-          <span class="orb-ring ring-one"></span>
-          <span class="orb-ring ring-two"></span>
-
-          <span class="orb-spark spark-one">✦</span>
-          <span class="orb-spark spark-two">✧</span>
-
-        </div>
-
-        <div class="eyebrow">
-          <span class="eyebrow-line"></span>
-          مساحة أفكارك الذكية
-          <span class="eyebrow-line"></span>
-        </div>
-
-        <h1>
-          أهلًا بيك،
-          <em>نفكّر سوا؟</em>
-        </h1>
-
-        <p class="welcome-desc">
-          اسأل، اكتشف، اكتب، حلّل، وابدأ من أي فكرة مهما كانت كبيرة.
-        </p>
-
-        <div class="suggestion-grid">
-
-          <button class="suggestion-card"
-                  data-prompt="ساعدني أعمل خطة واضحة لمشروع جديد من الفكرة لحد التنفيذ.">
-
-            <span class="suggestion-icon purple">✧</span>
-
-            <span>
-              <b>خطط لمشروعك</b>
-              <small>حوّل الفكرة لخطوات عملية</small>
-            </span>
-
-            <i>↙</i>
-
-          </button>
-
-          <button class="suggestion-card"
-                  data-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة، مع أمثلة واقعية.">
-
-            <span class="suggestion-icon blue">◉</span>
-
-            <span>
-              <b>افهم أي موضوع</b>
-              <small>شرح واضح بأمثلة</small>
-            </span>
-
-            <i>↙</i>
-
-          </button>
-
-          <button class="suggestion-card"
-                  data-prompt="اكتب لي كودًا منظمًا واحترافيًا واشرح طريقة تشغيله واختباره.">
-
-            <span class="suggestion-icon green">{ }</span>
-
-            <span>
-              <b>اكتب كودًا</b>
-              <small>ابنِ وراجع وطوّر</small>
-            </span>
-
-            <i>↙</i>
-
-          </button>
-
-          <button class="suggestion-card"
-                  data-prompt="اقترح أفكارًا إبداعية وغير تقليدية لمحتوى أو مشروع رقمي.">
-
-            <span class="suggestion-icon orange">✳</span>
-
-            <span>
-              <b>أطلق إبداعك</b>
-              <small>أفكار جديدة من زوايا مختلفة</small>
-            </span>
-
-            <i>↙</i>
-
-          </button>
-
-        </div>
-
-      </div>
-
-      <div class="messages hidden" id="messages"></div>
-
-    </section>
-
-
-    <footer class="composer-area">
-
-      <div class="composer-wrap">
-
-        <div class="attachment-preview hidden" id="attachmentPreview"></div>
-
-        <textarea
-          id="promptInput"
-          rows="1"
-          placeholder="اكتب سؤالك هنا... اسأل MIKA أي حاجة"
-          aria-label="اكتب رسالتك"></textarea>
-
-        <div class="composer-tools">
-
-          <div class="tools-left">
-
-            <label class="tool-btn" for="imageInput" title="إرفاق صورة">
-              ＋ <span>إرفاق صورة</span>
-            </label>
-
-            <input type="file" id="imageInput" accept="image/*" hidden>
-
-            <button class="tool-btn" id="voiceInput" title="الإملاء الصوتي">
-              ♩ <span>إملاء صوتي</span>
-            </button>
-
-          </div>
-
-          <div class="tools-right">
-
-            <span class="composer-hint">
-              Enter للإرسال · Shift + Enter لسطر جديد
-            </span>
-
-            <button class="send-btn" id="sendButton" aria-label="إرسال الرسالة">
-              ↑
-            </button>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="disclaimer">
-        قد يخطئ MIKA أحيانًا. راجع المعلومات المهمة قبل الاعتماد عليها.
-      </div>
-
-    </footer>
-
-  </main>
-
-</div>
-
-
-<div class="toast-region" id="toastRegion" aria-live="polite"></div>
-
-
-<div class="modal-backdrop hidden" id="settingsModal">
-
-  <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-
-    <div class="modal-head">
-
-      <div>
-        <span class="modal-kicker">تخصيص تجربتك</span>
-        <h2 id="settingsTitle">إعدادات MIKA</h2>
-      </div>
-
-      <button class="icon-btn" id="closeSettings" aria-label="إغلاق">
-        ×
-      </button>
-
-    </div>
-
-    <div class="setting-row">
-
-      <div>
-        <b>المظهر</b>
-        <small>اختار الشكل المريح ليك</small>
-      </div>
-
-      <select id="themeSelect">
-        <option value="dark">داكن</option>
-        <option value="light">فاتح</option>
-        <option value="system">حسب الجهاز</option>
-      </select>
-
-    </div>
-
-    <div class="setting-row">
-
-      <div>
-        <b>حفظ المحادثات</b>
-        <small>حفظ محلي داخل المتصفح الحالي</small>
-      </div>
-
-      <label class="switch">
-        <input type="checkbox" id="saveChats" checked>
-        <span></span>
-      </label>
-
-    </div>
-
-    <div class="setting-note">
-      <b>الخصوصية:</b>
-      المحادثات المحفوظة هنا موجودة في تخزين المتصفح على جهازك.
-      لا تضع معلومات شديدة الحساسية.
-    </div>
-
-    <div class="modal-actions">
-      <button class="secondary-btn" id="exportChats">تصدير المحادثات</button>
-      <button class="primary-btn" id="doneSettings">تم</button>
-    </div>
-
   </section>
 
-</div>
+  <!-- رسائل النظام -->
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
 
+  <!-- خلفية التطبيق -->
+  <div class="ambient-background" aria-hidden="true">
+    <span class="ambient-orb ambient-orb-one"></span>
+    <span class="ambient-orb ambient-orb-two"></span>
+    <span class="ambient-grid"></span>
+  </div>
 
-<script src="config.js"></script>
-<script src="app.js"></script>
+  <!-- واجهة الدخول -->
+  <section id="authScreen" class="auth-screen is-hidden" aria-labelledby="authHeading">
+    <div class="auth-decoration" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
 
+    <div class="auth-panel">
+      <a class="brand-lockup" href="#welcome" aria-label="ميكا إكس">
+        <span class="brand-mark">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#mekaAuthGradient)"/>
+            <defs>
+              <linearGradient id="mekaAuthGradient" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#9B7BFF"/>
+                <stop offset="100%" stop-color="#4B8DFF"/>
+              </linearGradient>
+            </defs>
+            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="brand-lockup-text">
+          <strong>MEKA <span>X</span></strong>
+          <small>عالمك، بطريقتك</small>
+        </span>
+      </a>
+
+      <div class="auth-heading-block">
+        <span class="eyebrow">مرحبًا بك في عالم جديد</span>
+        <h1 id="authHeading">خلّيك جزء من ميكا إكس</h1>
+        <p id="authSubtitle">سجّل دخولك للمتابعة والتواصل مع مجتمعك.</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist" aria-label="نوع الحساب">
+        <button id="loginTab" class="auth-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="loginForm">
+          تسجيل الدخول
+        </button>
+        <button id="registerTab" class="auth-tab" type="button" role="tab" aria-selected="false" aria-controls="registerForm">
+          إنشاء حساب
+        </button>
+      </div>
+
+      <form id="loginForm" class="auth-form" autocomplete="on">
+        <label for="loginEmail">البريد الإلكتروني</label>
+        <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required maxlength="254">
+
+        <div class="label-row">
+          <label for="loginPassword">كلمة المرور</label>
+          <button id="forgotPasswordButton" class="text-button" type="button">نسيت كلمة المرور؟</button>
+        </div>
+
+        <div class="password-field">
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required minlength="6">
+          <button class="password-toggle" type="button" data-password-toggle="loginPassword" aria-label="إظهار كلمة المرور">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <button class="primary-button auth-submit" type="submit">
+          <span>دخول إلى حسابي</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+        </button>
+      </form>
+
+      <form id="registerForm" class="auth-form is-hidden" autocomplete="on">
+        <label for="registerName">الاسم الذي سيظهر للناس</label>
+        <input id="registerName" name="displayName" type="text" autocomplete="name" placeholder="اكتب اسمك" required minlength="2" maxlength="60">
+
+        <label for="registerUsername">اسم المستخدم</label>
+        <input id="registerUsername" name="username" type="text" autocomplete="username" placeholder="مثال: meka_user" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" aria-describedby="usernameHelp">
+        <small id="usernameHelp" class="field-help">استخدم الحروف الإنجليزية والأرقام والشرطة السفلية فقط.</small>
+
+        <label for="registerEmail">البريد الإلكتروني</label>
+        <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required maxlength="254">
+
+        <label for="registerPassword">كلمة المرور</label>
+        <div class="password-field">
+          <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل" required minlength="6" maxlength="128">
+          <button class="password-toggle" type="button" data-password-toggle="registerPassword" aria-label="إظهار كلمة المرور">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <label class="checkbox-row">
+          <input id="acceptTerms" type="checkbox" required>
+          <span>أوافق على شروط الاستخدام وسياسة الخصوصية.</span>
+        </label>
+
+        <button class="primary-button auth-submit" type="submit">
+          <span>إنشاء حساب جديد</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7h14"/></svg>
+        </button>
+      </form>
+
+      <div class="auth-divider"><span>أو تابع باستخدام</span></div>
+
+      <button id="googleAuthButton" class="google-button" type="button">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 4)"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.65 5.94c4.47-4.13 7.12-10.2 7.12-17.59Z" transform="translate(0 0)"/>
+          <path fill="#FBBC05" d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z" transform="translate(0 0)"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.81l-7.65-5.94c-2.13 1.43-4.85 2.27-8.25 2.27-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" transform="translate(0 0)"/>
+        </svg>
+        <span>المتابعة باستخدام Google</span>
+      </button>
+
+      <p class="auth-footnote">بياناتك وحسابك يخضعان لإعدادات الأمان والخصوصية.</p>
+      <button id="backToWelcomeButton" class="back-link" type="button">العودة إلى صفحة البداية</button>
+    </div>
+
+    <aside class="auth-side">
+      <div class="auth-side-glow"></div>
+      <span class="auth-side-kicker">MEKA X EXPERIENCE</span>
+      <h2>كل عالمك<br><span>في مكان واحد.</span></h2>
+      <p>تواصل، شارك لحظاتك، اكتشف محتوى جديدًا، واستمتع بتجربة اجتماعية مصممة لك.</p>
+
+      <div class="auth-feature-list">
+        <div class="auth-feature">
+          <span class="feature-icon">01</span>
+          <div><strong>مجتمعك أقرب</strong><small>منشورات وقصص وتفاعلات</small></div>
+        </div>
+        <div class="auth-feature">
+          <span class="feature-icon">02</span>
+          <div><strong>محادثاتك في مكان واحد</strong><small>تواصل مع حساباتك وجهات اتصالك</small></div>
+        </div>
+        <div class="auth-feature">
+          <span class="feature-icon">03</span>
+          <div><strong>أدوات ذكية</strong><small>مساحة للمساعد الذكي والإنتاجية</small></div>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <!-- صفحة الترحيب -->
+  <section id="welcomeScreen" class="welcome-screen is-hidden" aria-labelledby="welcomeTitle">
+    <header class="welcome-header">
+      <a class="brand-lockup" href="#welcome" aria-label="MEKA X">
+        <span class="brand-mark">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#welcomeLogoGradient)"/>
+            <defs><linearGradient id="welcomeLogoGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9B7BFF"/><stop offset="1" stop-color="#4B8DFF"/></linearGradient></defs>
+            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="brand-lockup-text"><strong>MEKA <span>X</span></strong><small>عالمك، بطريقتك</small></span>
+      </a>
+
+      <button id="welcomeLoginButton" class="outline-button" type="button">تسجيل الدخول</button>
+    </header>
+
+    <main class="welcome-main" id="welcome">
+      <div class="welcome-copy">
+        <span class="welcome-badge"><span class="status-dot"></span> مساحة جديدة للتواصل والإبداع</span>
+        <h1 id="welcomeTitle">عالمك الاجتماعي<br><span>بشكل مختلف.</span></h1>
+        <p>مكان يجمع منشوراتك، قصصك، محادثاتك، الفيديوهات القصيرة، وأدواتك الذكية في تجربة واحدة.</p>
+
+        <div class="welcome-actions">
+          <button id="welcomeRegisterButton" class="primary-button" type="button">
+            <span>ابدأ رحلتك</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+          </button>
+          <button id="explorePreviewButton" class="outline-button" type="button">اكتشف المميزات</button>
+        </div>
+
+        <div class="welcome-trust-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>تجربة تضع الخصوصية والتحكم في حسابك ضمن أولوياتها.</span>
+        </div>
+      </div>
+
+      <div class="welcome-visual" aria-label="معاينة تصميم ميكا إكس">
+        <div class="visual-orbit orbit-one"></div>
+        <div class="visual-orbit orbit-two"></div>
+
+        <div class="visual-card visual-card-main">
+          <div class="visual-card-top">
+            <span class="visual-avatar">M</span>
+            <div><strong>MEKA X</strong><small>مساحتك الخاصة</small></div>
+            <span class="visual-live-dot"></span>
+          </div>
+
+          <div class="visual-gradient-art">
+            <div class="art-ring ring-one"></div>
+            <div class="art-ring ring-two"></div>
+            <div class="art-center-logo">M<span>X</span></div>
+          </div>
+
+          <div class="visual-card-caption">
+            <strong>أفكارك تستحق أن تُشارك</strong>
+            <span>ابدأ بإنشاء حسابك واكتشف المنصة.</span>
+          </div>
+
+          <div class="visual-card-bottom">
+            <span><i></i> منشورات</span>
+            <span><i></i> قصص</span>
+            <span><i></i> محادثات</span>
+          </div>
+        </div>
+
+        <div class="floating-chip chip-top"><span class="chip-symbol">✦</span><span>أدوات ذكية</span></div>
+        <div class="floating-chip chip-bottom"><span class="chip-symbol">↗</span><span>تواصل بسهولة</span></div>
+      </div>
+    </main>
+
+    <section id="featuresSection" class="welcome-features">
+      <div class="section-heading">
+        <span class="eyebrow">اكتشف MEKA X</span>
+        <h2>تجربة واحدة، إمكانيات متعددة</h2>
+        <p>كل قسم له وظيفة واضحة، وستتوافر الوظائف التي تم إعداد خدماتها وربطها بنجاح.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-card-icon">01</span>
+          <h3>المجتمع والمنشورات</h3>
+          <p>شارك أفكارك وصورك وتفاعل مع المحتوى وفق إعدادات الخصوصية.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card-icon">02</span>
+          <h3>الرسائل والمحادثات</h3>
+          <p>مساحة للمراسلة وإدارة المحادثات، مع اعتماد الميزات الفعلية على إعدادات الخدمة.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card-icon">03</span>
+          <h3>الفيديوهات القصيرة</h3>
+          <p>استكشف محتوى الفيديو وشاركه عندما تتوافر ملفات الوسائط والصلاحيات اللازمة.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-card-icon">04</span>
+          <h3>المساعد الذكي</h3>
+          <p>واجهة للمساعد الذكي تُربط بخدمة نموذج ذكاء اصطناعي من جهة آمنة.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="welcome-footer">
+      <span>© <span id="currentYear"></span> MEKA X</span>
+      <span>عالمك، بطريقتك.</span>
+    </footer>
+  </section>
+
+  <!-- التطبيق بعد تسجيل الدخول -->
+  <div id="appShell" class="app-shell is-hidden">
+    <aside id="sidebar" class="sidebar">
+      <a class="brand-lockup sidebar-brand" href="#home" data-route="home" aria-label="الصفحة الرئيسية">
+        <span class="brand-mark">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#sidebarLogoGradient)"/>
+            <defs><linearGradient id="sidebarLogoGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9B7BFF"/><stop offset="1" stop-color="#4B8DFF"/></linearGradient></defs>
+            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="brand-lockup-text"><strong>MEKA <span>X</span></strong><small>عالمك، بطريقتك</small></span>
+      </a>
+
+      <button id="sidebarCloseButton" class="icon-button sidebar-close" type="button" aria-label="إغلاق القائمة">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+
+      <div class="sidebar-section-label">مساحتك</div>
+
+      <nav class="main-navigation" aria-label="التنقل الرئيسي">
+        <button class="nav-item is-active" type="button" data-route="home">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
+          <span>الرئيسية</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="explore">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5M8 13l2-5 5-2-2 5z"/></svg>
+          <span>استكشف</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="stories">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="6"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>
+          <span>القصص</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="messages">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9.7 9.7 0 0 1-4-.8L3 21l1.5-4.2A8.2 8.2 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
+          <span>الرسائل</span>
+          <span id="unreadMessagesBadge" class="nav-badge is-hidden">0</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="videos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="m10 8 6 4-6 4z"/></svg>
+          <span>الفيديوهات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+          <span>الإشعارات</span>
+          <span id="notificationsBadge" class="nav-badge is-hidden">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-section-label sidebar-section-spaced">أدواتك</div>
+
+      <nav class="secondary-navigation" aria-label="الأدوات">
+        <button class="nav-item" type="button" data-route="ai">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="m19 14 1.2 2.8L23 18l-2.8 1.2L19 22l-1.2-2.8L15 18l2.8-1.2z"/></svg>
+          <span>المساعد الذكي</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="saved">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1Z"/></svg>
+          <span>المحفوظات</span>
+        </button>
+
+        <button class="nav-item" type="button" data-route="subscriptions">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
+          <span>العضوية المميزة</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-user-card">
+        <button id="sidebarProfileButton" class="sidebar-user-button" type="button" data-route="profile">
+          <span id="sidebarAvatar" class="user-avatar avatar-placeholder">M</span>
+          <span class="sidebar-user-info">
+            <strong id="sidebarDisplayName">حسابي</strong>
+            <small id="sidebarUsername">@user</small>
+          </span>
+          <svg class="sidebar-user-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+
+        <button id="settingsNavButton" class="nav-item" type="button" data-route="settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z"/></svg>
+          <span>الإعدادات</span>
+        </button>
+      </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <div class="app-main-column">
+      <header class="app-topbar">
+        <button id="sidebarOpenButton" class="icon-button mobile-menu-button" type="button" aria-label="فتح القائمة">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <div class="topbar-title">
+          <strong id="currentPageTitle">الرئيسية</strong>
+          <small id="currentPageSubtitle">مساحتك الاجتماعية</small>
+        </div>
+
+        <form id="globalSearchForm" class="global-search" role="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <input id="globalSearchInput" type="search" placeholder="ابحث عن أشخاص أو منشورات..." maxlength="100" aria-label="البحث">
+          <button type="submit">بحث</button>
+        </form>
+
+        <div class="topbar-actions">
+          <button id="themeToggleButton" class="icon-button" type="button" aria-label="تغيير المظهر" title="تغيير المظهر">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </button>
+
+          <button id="topNotificationsButton" class="icon-button notification-button" type="button" data-route="notifications" aria-label="الإشعارات">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+            <span id="topNotificationsDot" class="notification-dot is-hidden"></span>
+          </button>
+        </div>
+      </header>
+
+      <main id="mainContent" class="app-content" tabindex="-1">
+        <!-- الصفحة الرئيسية -->
+        <section class="app-view is-active" data-view="home">
+          <div class="welcome-banner">
+            <div>
+              <span class="eyebrow">مساحتك تبدأ هنا</span>
+              <h1>أهلًا بيك في <span>MEKA X</span></h1>
+              <p>اكتشف محتوى جديدًا وشارك لحظاتك مع مجتمعك.</p>
+            </div>
+            <div class="banner-decoration" aria-hidden="true">
+              <span class="banner-orb"></span>
+              <span class="banner-x">X</span>
+            </div>
+          </div>
+
+          <section class="composer-card">
+            <div class="composer-top">
+              <span id="composerAvatar" class="user-avatar avatar-placeholder">M</span>
+              <button id="openComposerButton" class="composer-prompt" type="button">إيه اللي حابب تشاركه النهارده؟</button>
+            </div>
+
+            <div id="composerExpanded" class="composer-expanded is-hidden">
+              <label class="visually-hidden" for="postText">محتوى المنشور</label>
+              <textarea id="postText" rows="4" maxlength="5000" placeholder="اكتب منشورك هنا..."></textarea>
+              <div id="selectedMediaPreview" class="selected-media-preview is-hidden"></div>
+            </div>
+
+            <div class="composer-bottom">
+              <div class="composer-tools">
+                <button id="attachPostImageButton" class="composer-tool" type="button">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  <span>صورة</span>
+                </button>
+
+                <button id="attachPostVideoButton" class="composer-tool" type="button">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/></svg>
+                  <span>فيديو</span>
+                </button>
+              </div>
+
+              <button id="publishPostButton" class="primary-button small-button" type="button" disabled>نشر</button>
+            </div>
+
+            <input id="postImageInput" class="visually-hidden" type="file" accept="image/*" multiple>
+            <input id="postVideoInput" class="visually-hidden" type="file" accept="video/*">
+          </section>
+
+          <div class="feed-heading">
+            <div><h2>آخر المنشورات</h2><p>محتوى مجتمعك في مكان واحد</p></div>
+            <button id="refreshFeedButton" class="icon-button" type="button" aria-label="تحديث المنشورات" title="تحديث">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/></svg>
+            </button>
+          </div>
+
+          <div id="feedStatus" class="inline-status" role="status">جاري تجهيز المنشورات...</div>
+          <div id="feedList" class="feed-list"></div>
+          <button id="loadMorePostsButton" class="outline-button load-more-button is-hidden" type="button">تحميل المزيد</button>
+        </section>
+
+        <!-- الاستكشاف -->
+        <section class="app-view" data-view="explore">
+          <div class="view-heading">
+            <span class="eyebrow">اكتشف الجديد</span>
+            <h1>استكشف <span>MEKA X</span></h1>
+            <p>ابحث عن حسابات ومحتوى يهمك.</p>
+          </div>
+
+          <form id="exploreSearchForm" class="large-search-form" role="search">
+            <input id="exploreSearchInput" type="search" maxlength="100" placeholder="اسم شخص أو كلمة للبحث..." aria-label="البحث في الاستكشاف">
+            <button class="primary-button" type="submit">بحث</button>
+          </form>
+
+          <div id="exploreResultsStatus" class="inline-status" role="status">اكتب كلمة للبحث.</div>
+          <div id="exploreResults" class="search-results"></div>
+        </section>
+
+        <!-- القصص -->
+        <section class="app-view" data-view="stories">
+          <div class="view-heading">
+            <span class="eyebrow">لحظات سريعة</span>
+            <h1>القصص</h1>
+            <p>شارك لحظة أو شاهد القصص المتاحة لك.</p>
+          </div>
+
+          <div class="story-create-card">
+            <span class="story-create-symbol">+</span>
+            <div><strong>أضف قصتك</strong><small>اختر صورة أو فيديو من جهازك.</small></div>
+            <button id="createStoryButton" class="primary-button small-button" type="button">إنشاء قصة</button>
+            <input id="storyMediaInput" class="visually-hidden" type="file" accept="image/*,video/*">
+          </div>
+
+          <div id="storiesStatus" class="inline-status" role="status">جاري تحميل القصص...</div>
+          <div id="storiesList" class="stories-list"></div>
+        </section>
+
+        <!-- الرسائل -->
+        <section class="app-view" data-view="messages">
+          <div class="view-heading">
+            <span class="eyebrow">ابقَ على اتصال</span>
+            <h1>رسائلك</h1>
+            <p>محادثاتك في مساحة واحدة.</p>
+          </div>
+
+          <div class="messages-layout">
+            <aside class="conversation-panel">
+              <div class="conversation-panel-heading">
+                <h2>المحادثات</h2>
+                <button id="newConversationButton" class="icon-button" type="button" aria-label="محادثة جديدة" title="محادثة جديدة">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+
+              <label class="conversation-search">
+                <span class="visually-hidden">البحث في المحادثات</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+                <input id="conversationSearchInput" type="search" maxlength="100" placeholder="ابحث في المحادثات">
+              </label>
+
+              <div id="conversationsStatus" class="inline-status" role="status">جاري تحميل المحادثات...</div>
+              <div id="conversationsList" class="conversations-list"></div>
+            </aside>
+
+            <section class="chat-panel" aria-label="نافذة المحادثة">
+              <div id="chatEmptyState" class="chat-empty-state">
+                <div class="chat-empty-art">
+                  <svg viewBox="0 0 80 80" aria-hidden="true"><path d="M12 16h42a8 8 0 0 1 8 8v23a8 8 0 0 1-8 8H34L18 67v-12h-6a8 8 0 0 1-8-8V24a8 8 0 0 1 8-8Z"/><path d="M28 31h24M28 41h16"/><path d="M57 36h8a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-3v7l-10-7"/></svg>
+                </div>
+                <h2>ابدأ محادثة جديدة</h2>
+                <p>اختر محادثة من القائمة أو ابحث عن حساب لبدء التواصل.</p>
+                <button id="startConversationButton" class="primary-button" type="button">محادثة جديدة</button>
+              </div>
+
+              <div id="chatActiveState" class="chat-active-state is-hidden">
+                <header class="chat-header">
+                  <span id="chatAvatar" class="user-avatar avatar-placeholder">M</span>
+                  <div class="chat-header-user"><strong id="chatContactName">المحادثة</strong><small id="chatContactStatus">متاح</small></div>
+                  <div class="chat-header-actions">
+                    <button id="voiceCallButton" class="icon-button" type="button" aria-label="اتصال صوتي" title="اتصال صوتي">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 3.1a2 2 0 0 1-.6 1.8L7.5 10a16 16 0 0 0 6 6l1.4-1.5a2 2 0 0 1 1.8-.6l3.1.5a2 2 0 0 1 2.2 2.5Z"/></svg>
+                    </button>
+                    <button id="videoCallButton" class="icon-button" type="button" aria-label="اتصال فيديو" title="اتصال فيديو">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="m15 10 6-4v12l-6-4z"/></svg>
+                    </button>
+                  </div>
+                </header>
+
+                <div id="messagesStatus" class="inline-status" role="status"></div>
+                <div id="messagesList" class="messages-list" aria-live="polite"></div>
+
+                <form id="messageForm" class="message-composer">
+                  <label class="visually-hidden" for="messageInput">اكتب رسالتك</label>
+                  <textarea id="messageInput" rows="1" maxlength="10000" placeholder="اكتب رسالتك..." required></textarea>
+                  <button id="sendMessageButton" class="primary-button send-message-button" type="submit" aria-label="إرسال الرسالة">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                  </button>
+                </form>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- الفيديوهات القصيرة -->
+        <section class="app-view" data-view="videos">
+          <div class="view-heading">
+            <span class="eyebrow">شاهد وشارك</span>
+            <h1>الفيديوهات القصيرة</h1>
+            <p>اكتشف الفيديوهات المتاحة لك.</p>
+          </div>
+
+          <div class="video-actions">
+            <button id="uploadShortVideoButton" class="primary-button" type="button">إضافة فيديو</button>
+            <input id="shortVideoInput" class="visually-hidden" type="file" accept="video/*">
+          </div>
+
+          <div id="videosStatus" class="inline-status" role="status">جاري تحميل الفيديوهات...</div>
+          <div id="shortVideosList" class="short-videos-list"></div>
+        </section>
+
+        <!-- الإشعارات -->
+        <section class="app-view" data-view="notifications">
+          <div class="view-heading">
+            <span class="eyebrow">ابقَ على اطلاع</span>
+            <h1>الإشعارات</h1>
+            <p>تابع التحديثات المتعلقة بحسابك.</p>
+          </div>
+
+          <div class="section-toolbar">
+            <span id="notificationsStatus" class="inline-status" role="status">جاري تحميل الإشعارات...</span>
+            <button id="markNotificationsReadButton" class="outline-button small-button" type="button">تحديد كمقروءة</button>
+          </div>
+
+          <div id="notificationsList" class="notifications-list"></div>
+        </section>
+
+        <!-- المساعد الذكي -->
+        <section class="app-view" data-view="ai">
+          <div class="view-heading ai-view-heading">
+            <span class="eyebrow">MEKA INTELLIGENCE</span>
+            <h1>مساعدك <span>الذكي</span></h1>
+            <p>مساحة للمساعدة في الكتابة والتفكير والتعلم.</p>
+          </div>
+
+          <div class="ai-workspace">
+            <aside class="ai-history-panel">
+              <button id="newAIConversationButton" class="primary-button ai-new-chat-button" type="button">محادثة جديدة</button>
+              <h2>محادثاتك</h2>
+              <div id="aiConversationsStatus" class="inline-status" role="status">جاري تحميل المحادثات...</div>
+              <div id="aiConversationsList" class="ai-conversations-list"></div>
+            </aside>
+
+            <section class="ai-chat-panel">
+              <div id="aiWelcomeState" class="ai-welcome-state">
+                <div class="ai-orb" aria-hidden="true"><span></span><span></span><span></span></div>
+                <h2>إزاي أقدر أساعدك؟</h2>
+                <p>اكتب سؤالك أو اختر نقطة بداية.</p>
+                <div class="ai-suggestions">
+                  <button type="button" data-ai-prompt="ساعدني في تنظيم وقتي ومهامي.">تنظيم الوقت</button>
+                  <button type="button" data-ai-prompt="ساعدني في كتابة نص واضح ومميز.">الكتابة والإبداع</button>
+                  <button type="button" data-ai-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة.">التعلم والفهم</button>
+                </div>
+              </div>
+
+              <div id="aiMessagesList" class="ai-messages-list" aria-live="polite"></div>
+
+              <form id="aiPromptForm" class="ai-prompt-form">
+                <label class="visually-hidden" for="aiPromptInput">اكتب رسالتك للمساعد</label>
+                <textarea id="aiPromptInput" rows="2" maxlength="12000" placeholder="اسأل ميكا أي سؤال..." required></textarea>
+                <div class="ai-prompt-footer">
+                  <span>تحقق من المعلومات المهمة قبل الاعتماد عليها.</span>
+                  <button id="sendAIPromptButton" class="primary-button" type="submit" aria-label="إرسال السؤال">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                    <span>إرسال</span>
+                  </button>
+                </div>
+              </form>
+              <div id="aiStatus" class="inline-status" role="status"></div>
+            </section>
+          </div>
+        </section>
+
+        <!-- المحفوظات -->
+        <section class="app-view" data-view="saved">
+          <div class="view-heading">
+            <span class="eyebrow">احتفظ بما يهمك</span>
+            <h1>المحفوظات</h1>
+            <p>المنشورات والفيديوهات التي حفظتها.</p>
+          </div>
+
+          <div class="content-tabs" role="tablist" aria-label="نوع المحفوظات">
+            <button class="content-tab is-active" type="button" data-saved-type="posts" role="tab" aria-selected="true">المنشورات</button>
+            <button class="content-tab" type="button" data-saved-type="videos" role="tab" aria-selected="false">الفيديوهات</button>
+          </div>
+
+          <div id="savedStatus" class="inline-status" role="status">جاري تحميل المحفوظات...</div>
+          <div id="savedItemsList" class="saved-items-list"></div>
+        </section>
+
+        <!-- الاشتراكات -->
+        <section class="app-view" data-view="subscriptions">
+          <div class="view-heading">
+            <span class="eyebrow">MEKA X PLUS</span>
+            <h1>ارتقِ بتجربتك</h1>
+            <p>راجع الخطط المتاحة وميزاتها قبل الاشتراك.</p>
+          </div>
+
+          <div id="subscriptionStatus" class="inline-status" role="status">جاري تحميل الخطط...</div>
+          <div id="subscriptionPlansList" class="subscription-plans-list"></div>
+
+          <div class="subscription-notice">
+            لن يتم تفعيل عضوية مدفوعة بمجرد الضغط على زر. يجب تأكيد الدفع من مزود دفع موثوق.
+          </div>
+        </section>
+
+        <!-- الملف الشخصي -->
+        <section class="app-view" data-view="profile">
+          <div class="view-heading">
+            <span class="eyebrow">مساحتك الشخصية</span>
+            <h1>الملف الشخصي</h1>
+            <p>حدّث المعلومات التي تريد مشاركتها.</p>
+          </div>
+
+          <form id="profileForm" class="profile-editor">
+            <div class="profile-cover-preview" id="profileCoverPreview">
+              <button id="changeCoverButton" class="outline-button small-button" type="button">تغيير الغلاف</button>
+              <input id="profileCoverInput" class="visually-hidden" type="file" accept="image/*">
+            </div>
+
+            <div class="profile-avatar-editor">
+              <span id="profileAvatarPreview" class="profile-large-avatar avatar-placeholder">M</span>
+              <button id="changeAvatarButton" class="outline-button small-button" type="button">تغيير الصورة</button>
+              <input id="profileAvatarInput" class="visually-hidden" type="file" accept="image/*">
+            </div>
+
+            <label for="profileDisplayName">الاسم الظاهر</label>
+            <input id="profileDisplayName" name="displayName" type="text" maxlength="60" minlength="2" required>
+
+            <label for="profileUsername">اسم المستخدم</label>
+            <input id="profileUsername" name="username" type="text" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]+" required>
+
+            <label for="profileBio">نبذة عنك</label>
+            <textarea id="profileBio" name="bio" rows="4" maxlength="500" placeholder="اكتب نبذة قصيرة عنك..."></textarea>
+
+            <label for="profileWebsite">موقعك الإلكتروني</label>
+            <input id="profileWebsite" name="website" type="url" maxlength="500" placeholder="https://example.com">
+
+            <div class="profile-form-actions">
+              <button class="primary-button" type="submit">حفظ التغييرات</button>
+              <span id="profileStatus" class="inline-status" role="status"></span>
+            </div>
+          </form>
+
+          <div class="profile-content-heading"><h2>منشوراتي</h2></div>
+          <div id="profilePostsList" class="feed-list"></div>
+        </section>
+
+        <!-- الإعدادات -->
+        <section class="app-view" data-view="settings">
+          <div class="view-heading">
+            <span class="eyebrow">تحكم في تجربتك</span>
+            <h1>الإعدادات</h1>
+            <p>إدارة الحساب والمظهر والخصوصية.</p>
+          </div>
+
+          <div class="settings-layout">
+            <section class="settings-card">
+              <h2>المظهر</h2>
+              <p>اختر المظهر المناسب لك.</p>
+              <label for="themeSelect">لون الواجهة</label>
+              <select id="themeSelect">
+                <option value="dark">داكن — بنفسجي وأزرق</option>
+                <option value="midnight">منتصف الليل</option>
+              </select>
+            </section>
+
+            <section class="settings-card">
+              <h2>الخصوصية</h2>
+              <p>إعدادات الحساب التي يدعمها النظام.</p>
+              <label class="settings-switch-row" for="privateProfileToggle">
+                <span><strong>حساب خاص</strong><small>يحتاج هذا الخيار إلى دعم متوافق من قاعدة البيانات.</small></span>
+                <input id="privateProfileToggle" type="checkbox">
+              </label>
+            </section>
+
+            <section class="settings-card">
+              <h2>الجلسة والحساب</h2>
+              <p>إدارة جلسة الدخول الحالية.</p>
+              <button id="signOutButton" class="danger-button" type="button">تسجيل الخروج</button>
+            </section>
+          </div>
+        </section>
+
+        <!-- صفحة نتائج البحث -->
+        <section class="app-view" data-view="search">
+          <div class="view-heading">
+            <span class="eyebrow">نتائج البحث</span>
+            <h1>نتائج <span>البحث</span></h1>
+            <p id="searchQueryLabel">اكتب كلمة للبحث.</p>
+          </div>
+          <div id="searchPageStatus" class="inline-status" role="status"></div>
+          <div id="searchPageResults" class="search-results"></div>
+        </section>
+      </main>
+
+      <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
+        <button class="mobile-nav-item is-active" type="button" data-route="home" aria-label="الرئيسية">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10h-6v-7H9v7H3z"/></svg>
+          <span>الرئيسية</span>
+        </button>
+        <button class="mobile-nav-item" type="button" data-route="explore" aria-label="استكشف">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
+          <span>استكشف</span>
+        </button>
+        <button class="mobile-nav-item mobile-create-button" type="button" id="mobileCreatePostButton" aria-label="إنشاء منشور">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="mobile-nav-item" type="button" data-route="messages" aria-label="الرسائل">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9.7 9.7 0 0 1-4-.8L3 21l1.5-4.2A8.2 8.2 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/></svg>
+          <span>الرسائل</span>
+        </button>
+        <button class="mobile-nav-item" type="button" data-route="profile" aria-label="حسابي">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <span>حسابي</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <!-- نافذة إنشاء محادثة -->
+  <dialog id="newConversationDialog" class="app-dialog">
+    <form method="dialog" class="dialog-close-form">
+      <button class="icon-button" aria-label="إغلاق" value="cancel" type="submit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </form>
+    <div class="dialog-content">
+      <span class="eyebrow">تواصل مباشر</span>
+      <h2>محادثة جديدة</h2>
+      <p>ابحث عن اسم مستخدم لبدء محادثة.</p>
+      <form id="newConversationForm">
+        <label for="newConversationUsername">اسم المستخدم</label>
+        <input id="newConversationUsername" type="text" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]+" placeholder="username" required>
+        <button class="primary-button" type="submit">متابعة</button>
+      </form>
+      <div id="newConversationStatus" class="inline-status" role="status"></div>
+    </div>
+  </dialog>
+
+  <!-- عارض الوسائط -->
+  <dialog id="mediaViewerDialog" class="media-viewer-dialog">
+    <form method="dialog" class="media-viewer-close">
+      <button class="icon-button" type="submit" aria-label="إغلاق عارض الوسائط">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </form>
+    <div id="mediaViewerContent" class="media-viewer-content"></div>
+  </dialog>
+
+  <!-- رسائل وتعليمات عند تعذر تحميل التطبيق -->
+  <noscript>
+    <div class="noscript-message">
+      يحتاج MEKA X إلى تفعيل JavaScript حتى يعمل. فعّل JavaScript في المتصفح ثم أعد تحميل الصفحة.
+    </div>
+  </noscript>
+
+  <!-- المكتبة العامة لـ Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+  <!-- ملفات التطبيق: كلها في جذر المستودع -->
+  <script defer src="./config.js"></script>
+  <script defer src="./storage.js"></script>
+  <script defer src="./validators.js"></script>
+  <script defer src="./database.js"></script>
+  <script defer src="./ui.js"></script>
+  <script defer src="./router.js"></script>
+  <script defer src="./auth.js"></script>
+  <script defer src="./google-auth.js"></script>
+  <script defer src="./register.js"></script>
+  <script defer src="./login.js"></script>
+  <script defer src="./onboarding.js"></script>
+  <script defer src="./profiles.js"></script>
+  <script defer src="./media.js"></script>
+  <script defer src="./upload.js"></script>
+  <script defer src="./posts.js"></script>
+  <script defer src="./comments.js"></script>
+  <script defer src="./reactions.js"></script>
+  <script defer src="./stories.js"></script>
+  <script defer src="./conversations.js"></script>
+  <script defer src="./messages.js"></script>
+  <script defer src="./voice-messages.js"></script>
+  <script defer src="./calls.js"></script>
+  <script defer src="./search.js"></script>
+  <script defer src="./notifications.js"></script>
+  <script defer src="./short-videos.js"></script>
+  <script defer src="./video-player.js"></script>
+  <script defer src="./ai-conversations.js"></script>
+  <script defer src="./ai-assistant.js"></script>
+  <script defer src="./subscriptions.js"></script>
+  <script defer src="./payments.js"></script>
+  <script defer src="./privacy.js"></script>
+  <script defer src="./security.js"></script>
+  <script defer src="./settings.js"></script>
+  <script defer src="./language.js"></script>
+  <script defer src="./accessibility.js"></script>
+  <script defer src="./feed.js"></script>
+  <script defer src="./app.js"></script>
+
+  <!-- حماية من بقاء شاشة البداية للأبد -->
+  <script>
+    (() => {
+      const startedAt = Date.now();
+      const MINIMUM_SPLASH_MS = 5000;
+      let appReady = false;
+      let splashRemoved = false;
+
+      function hideSplash() {
+        if (splashRemoved) return;
+
+        const elapsed = Date.now() - startedAt;
+        const remaining = Math.max(0, MINIMUM_SPLASH_MS - elapsed);
+
+        window.setTimeout(() => {
+          if (splashRemoved) return;
+          splashRemoved = true;
+
+          const loader = document.getElementById("appLoader");
+          if (loader) {
+            loader.classList.add("is-hidden");
+            window.setTimeout(() => loader.remove(), 650);
+          }
+
+          document.dispatchEvent(new CustomEvent("meka:splash-hidden"));
+        }, remaining);
+      }
+
+      window.MEKA_SPLASH = {
+        ready() {
+          appReady = true;
+          hideSplash();
+        },
+        fail(message) {
+          const status = document.getElementById("loaderStatus");
+          if (status) {
+            status.textContent = message || "تعذر إكمال التشغيل. تحقق من الاتصال ثم أعد المحاولة.";
+          }
+          hideSplash();
+        }
+      };
+
+      window.addEventListener("load", () => {
+        if (!appReady) hideSplash();
+      }, { once: true });
+
+      window.setTimeout(() => {
+        if (!appReady) {
+          const status = document.getElementById("loaderStatus");
+          if (status) status.textContent = "جاري فتح التطبيق...";
+          hideSplash();
+        }
+      }, 12000);
+    })();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const year = document.getElementById("currentYear");
+      if (year) year.textContent = String(new Date().getFullYear());
+    });
+  </script>
 </body>
-          </html>
+  </html>
