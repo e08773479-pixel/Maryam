@@ -1,4 +1,11 @@
-"use strict";
+/* Start MEKA after the page has loaded */
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    mekaStart();
+  }, { once: true });
+} else {
+  mekaStart();
+}"use strict";
 
 /* =========================================================
    MEKA — APPLICATION CORE
