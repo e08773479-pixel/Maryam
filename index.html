@@ -1,969 +1,2109 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-app="MEKA-X">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#090914">
-  <meta name="color-scheme" content="dark">
-  <meta name="application-name" content="MEKA X">
-  <meta name="description" content="ميكا إكس — منصتك الاجتماعية للتواصل والمشاركة والمحادثات والذكاء الاصطناعي.">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07130f">
+<meta name="description" content="NOVA — منصة التواصل والمراسلة">
+<title>NOVA — نوفا</title>
 
-  <title>MEKA X — عالمك، بطريقتك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="manifest" href="./manifest.json">
+<style>
+:root {
+  --bg:#07130f;
+  --panel:#0d1c16;
+  --panel2:#12251c;
+  --green:#20d47b;
+  --green2:#13a960;
+  --text:#f0f8f3;
+  --muted:#91a69a;
+  --border:rgba(255,255,255,.075);
+  --danger:#ff6474;
+}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+* { box-sizing:border-box; }
 
-  <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./responsive.css">
-  <link rel="stylesheet" href="./animations.css">
-  <link rel="stylesheet" href="./components.css">
-  <link rel="stylesheet" href="./themes.css">
+html,body {
+  margin:0;
+  min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Cairo',sans-serif;
+}
 
-  <script>
-    (() => {
-      try {
-        const saved = localStorage.getItem("meka-x-theme");
-        if (saved) document.documentElement.dataset.theme = saved;
-      } catch (_) {}
-    })();
-  </script>
+body { min-height:100dvh; }
+
+button,input,textarea { font:inherit; }
+button { cursor:pointer; }
+button:disabled { opacity:.5;cursor:not-allowed; }
+.hidden { display:none!important; }
+
+button:focus-visible,input:focus-visible,textarea:focus-visible {
+  outline:2px solid var(--green);
+  outline-offset:2px;
+}
+
+#splash {
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:radial-gradient(ellipse at center,#153b29 0%,#07130f 68%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:18px;
+}
+
+.brand-mark {
+  width:76px;
+  height:76px;
+  border-radius:25px;
+  background:linear-gradient(145deg,#38f49a,#0c9a56);
+  display:grid;
+  place-items:center;
+  color:#052214;
+  font-weight:900;
+  font-size:40px;
+  box-shadow:0 12px 50px #20d47b35;
+}
+
+.loader {
+  width:27px;
+  height:27px;
+  border-radius:50%;
+  border:3px solid #ffffff20;
+  border-top-color:var(--green);
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.muted { color:var(--muted); }
+.small { font-size:12px; }
+
+.btn {
+  border:0;
+  border-radius:13px;
+  padding:12px 17px;
+  font-weight:800;
+  background:var(--green);
+  color:#052315;
+  transition:.2s;
+}
+
+.btn:hover { filter:brightness(1.07); }
+
+.btn.secondary {
+  background:var(--panel2);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+
+.btn.full { width:100%; }
+
+input,textarea {
+  width:100%;
+  padding:13px 14px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:#07140f;
+  color:var(--text);
+  outline:none;
+}
+
+input:focus,textarea:focus { border-color:#20d47b80; }
+
+label {
+  display:block;
+  font-size:13px;
+  margin:12px 0 6px;
+  color:#c7d8ce;
+}
+
+.auth-wrap {
+  min-height:100dvh;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:radial-gradient(ellipse at 50% 0%,#173a2a 0%,var(--bg) 65%);
+}
+
+.auth-card {
+  width:min(100%,430px);
+  padding:27px;
+  border:1px solid var(--border);
+  border-radius:26px;
+  background:#0c1b14ed;
+  box-shadow:0 25px 90px #0005;
+}
+
+.auth-brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:23px;
+}
+
+.auth-brand .brand-mark {
+  width:51px;
+  height:51px;
+  font-size:27px;
+  border-radius:17px;
+}
+
+.auth-brand h1 { font-size:24px;margin:0; }
+.auth-brand p { margin:0;color:var(--muted);font-size:12px; }
+.auth-card h2 { margin:0 0 5px; }
+
+.auth-card .intro {
+  font-size:13px;
+  color:var(--muted);
+  margin:0 0 20px;
+}
+
+.auth-actions {
+  display:flex;
+  gap:9px;
+  margin-top:17px;
+}
+
+.auth-actions button { flex:1; }
+#authError { color:#ff9ba7;font-size:13px;margin-top:12px; }
+
+.app {
+  height:100dvh;
+  display:flex;
+  overflow:hidden;
+}
+
+.sidebar {
+  width:360px;
+  max-width:100%;
+  flex-shrink:0;
+  border-left:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  background:#0a1912;
+}
+
+.side-head {
+  padding:20px;
+  border-bottom:1px solid var(--border);
+}
+
+.topline {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.brand-small {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand-small .brand-mark {
+  width:40px;
+  height:40px;
+  border-radius:14px;
+  font-size:22px;
+}
+
+.brand-small h2 { font-size:20px;margin:0; }
+
+.icon-btn {
+  width:41px;
+  height:41px;
+  flex-shrink:0;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:13px;
+}
+
+.search { margin-top:16px; }
+
+.side-tabs {
+  display:flex;
+  gap:7px;
+  margin-top:13px;
+}
+
+.side-tabs button {
+  flex:1;
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:8px 3px;
+  background:transparent;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.side-tabs button.active {
+  background:#173b29;
+  color:var(--green);
+  border-color:#20d47b40;
+}
+
+.list-head {
+  padding:15px 19px 5px;
+  font-size:13px;
+  color:var(--muted);
+}
+
+.chat-list {
+  overflow:auto;
+  flex:1;
+  padding:4px 9px;
+}
+
+.chat-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 10px;
+  border-radius:15px;
+  cursor:pointer;
+  border:1px solid transparent;
+}
+
+.chat-row:hover { background:#ffffff06; }
+
+.chat-row.active {
+  background:#153525;
+  border-color:#20d47b1b;
+}
+
+.avatar {
+  width:47px;
+  height:47px;
+  border-radius:50%;
+  flex-shrink:0;
+  background:linear-gradient(140deg,#246b4c,#183b2a);
+  display:grid;
+  place-items:center;
+  font-size:18px;
+  font-weight:800;
+  overflow:hidden;
+  color:#d9ffea;
+}
+
+.avatar img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.chat-meta { min-width:0;flex:1; }
+.chat-name { font-size:14px;font-weight:800; }
+
+.chat-preview {
+  color:var(--muted);
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin-top:3px;
+}
+
+.side-bottom {
+  padding:13px;
+  border-top:1px solid var(--border);
+}
+
+.me-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.me-info { flex:1;min-width:0; }
+.me-info strong { display:block;font-size:13px; }
+.me-info small { color:var(--muted); }
+
+.main {
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(ellipse at 80% 10%,#17362622,transparent 40%),
+    var(--bg);
+}
+
+.empty-state {
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:25px;
+}
+
+.empty-box { max-width:370px; }
+
+.empty-box .brand-mark {
+  margin:0 auto 22px;
+  width:85px;
+  height:85px;
+  font-size:43px;
+}
+
+.empty-box h2 { font-size:25px;margin:0 0 8px; }
+
+.empty-box p {
+  font-size:14px;
+  line-height:1.9;
+  color:var(--muted);
+}
+
+.chat-screen {
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+
+.chat-head {
+  padding:13px 19px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid var(--border);
+  background:#091710d9;
+}
+
+.chat-head-info { flex:1;min-width:0; }
+.chat-head-info strong { display:block;font-size:14px; }
+.chat-head-info small { font-size:11px;color:var(--muted); }
+
+.messages {
+  flex:1;
+  overflow-y:auto;
+  padding:22px max(18px,calc((100% - 850px)/2));
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.message {
+  max-width:min(82%,570px);
+  padding:10px 13px 7px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:#12231a;
+  align-self:flex-start;
+  overflow-wrap:anywhere;
+}
+
+.message.mine {
+  align-self:flex-end;
+  background:#164b30;
+  border-color:#20d47b1b;
+  border-bottom-right-radius:5px;
+}
+
+.message.theirs { border-bottom-left-radius:5px; }
+
+.message-author {
+  font-size:11px;
+  color:#9be5b9;
+  margin-bottom:4px;
+}
+
+.message-body {
+  font-size:14px;
+  line-height:1.8;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.message-time {
+  text-align:left;
+  font-size:10px;
+  color:#a8c0b0;
+  margin-top:4px;
+}
+
+.date-note {
+  text-align:center;
+  color:var(--muted);
+  font-size:11px;
+  padding:8px;
+}
+
+.composer-wrap {
+  padding:13px 18px 18px;
+  border-top:1px solid var(--border);
+}
+
+.composer {
+  display:flex;
+  align-items:flex-end;
+  gap:9px;
+  max-width:950px;
+  margin:auto;
+}
+
+.composer textarea {
+  resize:none;
+  min-height:46px;
+  max-height:130px;
+  flex:1;
+}
+
+.send-btn {
+  width:48px;
+  height:46px;
+  border:0;
+  border-radius:14px;
+  background:var(--green);
+  color:#062315;
+  font-weight:900;
+  flex-shrink:0;
+}
+
+#attachBtn { font-size:22px; }
+
+#attachmentPreview {
+  max-width:950px;
+  margin:8px auto 0;
+}
+
+.attachment-preview {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.attachment-card {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:9px;
+  border-radius:12px;
+  background:#07140f;
+  border:1px solid var(--border);
+  max-width:100%;
+}
+
+.attachment-card a {
+  color:#9be5b9;
+  overflow-wrap:anywhere;
+  text-decoration:none;
+}
+
+.attachment-card img {
+  display:block;
+  max-width:100%;
+  width:190px;
+  max-height:230px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+.attachment-media {
+  display:block;
+  max-width:100%;
+  width:min(360px,100%);
+  border-radius:12px;
+}
+
+.attachment-media audio { width:100%; }
+
+.message-attachments {
+  display:grid;
+  gap:8px;
+  margin-top:8px;
+}
+
+.upload-progress {
+  height:4px;
+  overflow:hidden;
+  background:#ffffff15;
+  border-radius:5px;
+  margin-top:8px;
+}
+
+.upload-progress > div {
+  width:0;
+  height:100%;
+  background:var(--green);
+  transition:width .2s;
+}
+
+.notice {
+  position:fixed;
+  z-index:2000;
+  bottom:25px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#193c29;
+  border:1px solid #20d47b55;
+  padding:12px 18px;
+  border-radius:13px;
+  box-shadow:0 10px 35px #0006;
+  max-width:90%;
+  font-size:13px;
+}
+
+.modal-backdrop {
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:#0009;
+  display:grid;
+  place-items:center;
+  padding:18px;
+}
+
+.modal {
+  width:min(100%,440px);
+  max-height:90dvh;
+  overflow:auto;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:23px;
+  padding:23px;
+}
+
+.modal h3 { margin:0 0 15px; }
+
+.modal-actions {
+  display:flex;
+  gap:9px;
+  margin-top:18px;
+}
+
+.modal-actions > * { flex:1; }
+.mobile-only { display:none; }
+
+@media(max-width:760px) {
+  .sidebar { width:100%;border-left:0; }
+  .main { display:none; }
+  .app.chat-open .sidebar { display:none; }
+  .app.chat-open .main { display:flex;width:100%; }
+  .mobile-only { display:inline-grid;place-items:center; }
+  .side-head { padding:14px; }
+  .messages { padding:15px 12px; }
+  .composer-wrap { padding:10px 10px max(10px,env(safe-area-inset-bottom)); }
+  .chat-head { padding:10px 12px; }
+  .message { max-width:90%; }
+}
+</style>
 </head>
 
 <body>
-  <a class="skip-link" href="#mainContent">تخطَّ إلى المحتوى</a>
+<div id="splash">
+  <div class="brand-mark">N</div>
+  <div style="font-size:24px;font-weight:900;letter-spacing:2px">NOVA</div>
+  <div class="muted small">تواصل بلا حدود</div>
+  <div class="loader"></div>
+</div>
 
-  <!-- شاشة البداية -->
-  <section id="appLoader" class="app-loader" aria-label="جاري تشغيل ميكا إكس">
-    <div class="loader-content">
-      <div class="brand-mark brand-mark-large" aria-hidden="true">
-        <svg viewBox="0 0 64 64" role="img">
-          <defs>
-            <linearGradient id="mekaLogoGradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#9B7BFF"/>
-              <stop offset="100%" stop-color="#4B8DFF"/>
-            </linearGradient>
-          </defs>
-          <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#mekaLogoGradient)"/>
-          <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
-        </svg>
+<section id="auth" class="auth-wrap hidden">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-mark">N</div>
+      <div>
+        <h1>NOVA</h1>
+        <p>منصة التواصل الحديثة</p>
       </div>
-
-      <div class="loader-brand-name">MEKA <span>X</span></div>
-      <p class="loader-description">عالمك، بطريقتك</p>
-
-      <div class="loader-track" role="progressbar" aria-label="تقدم التشغيل">
-        <span id="loaderProgress"></span>
-      </div>
-
-      <p id="loaderStatus" class="loader-status" aria-live="polite">جاري تجهيز عالمك...</p>
     </div>
-  </section>
 
-  <!-- رسائل النظام -->
-  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <h2 id="authTitle">أهلًا بعودتك</h2>
+    <p class="intro" id="authIntro">سجّل الدخول للمتابعة إلى نوفا.</p>
 
-  <!-- خلفية التطبيق -->
-  <div class="ambient-background" aria-hidden="true">
-    <span class="ambient-orb ambient-orb-one"></span>
-    <span class="ambient-orb ambient-orb-two"></span>
-    <span class="ambient-grid"></span>
+    <form id="authForm">
+      <div id="nameField" class="hidden">
+        <label for="displayName">اسمك الظاهر</label>
+        <input id="displayName" maxlength="60" autocomplete="name" placeholder="اكتب اسمك">
+      </div>
+
+      <label for="email">البريد الإلكتروني</label>
+      <input id="email" type="email" required autocomplete="email" placeholder="name@example.com">
+
+      <label for="password">كلمة المرور</label>
+      <input id="password" type="password" required minlength="6" autocomplete="current-password" placeholder="6 أحرف على الأقل">
+
+      <div class="auth-actions">
+        <button class="btn" id="authSubmit" type="submit">تسجيل الدخول</button>
+        <button class="btn secondary" id="toggleAuth" type="button">حساب جديد</button>
+      </div>
+
+      <div id="authError" role="alert"></div>
+    </form>
+
+    <p class="muted small" style="line-height:1.9;margin-top:18px">
+      قد يتطلب إنشاء الحساب تأكيد البريد الإلكتروني حسب إعدادات المشروع.
+    </p>
   </div>
+</section>
 
-  <!-- واجهة الدخول -->
-  <section id="authScreen" class="auth-screen is-hidden" aria-labelledby="authHeading">
-    <div class="auth-decoration" aria-hidden="true">
-      <span></span><span></span><span></span>
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="side-head">
+      <div class="topline">
+        <div class="brand-small">
+          <div class="brand-mark">N</div>
+          <div>
+            <h2>NOVA</h2>
+            <div class="muted small">نوفا للتواصل</div>
+          </div>
+        </div>
+        <button id="newChatBtn" class="icon-btn" title="محادثة جديدة" aria-label="محادثة جديدة">＋</button>
+      </div>
+
+      <input id="searchChats" class="search" placeholder="ابحث في محادثاتك..." aria-label="البحث في المحادثات">
+
+      <div class="side-tabs">
+        <button class="active" data-filter="all">الكل</button>
+        <button data-filter="direct">الأفراد</button>
+        <button data-filter="group">المجموعات</button>
+      </div>
     </div>
 
-    <div class="auth-panel">
-      <a class="brand-lockup" href="#welcome" aria-label="ميكا إكس">
-        <span class="brand-mark">
-          <svg viewBox="0 0 64 64" aria-hidden="true">
-            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#mekaAuthGradient)"/>
-            <defs>
-              <linearGradient id="mekaAuthGradient" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#9B7BFF"/>
-                <stop offset="100%" stop-color="#4B8DFF"/>
-              </linearGradient>
-            </defs>
-            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
-          </svg>
-        </span>
-        <span class="brand-lockup-text">
-          <strong>MEKA <span>X</span></strong>
-          <small>عالمك، بطريقتك</small>
-        </span>
-      </a>
+    <div class="list-head">محادثاتك</div>
 
-      <div class="auth-heading-block">
-        <span class="eyebrow">مرحبًا بك في عالم جديد</span>
-        <h1 id="authHeading">خلّيك جزء من ميكا إكس</h1>
-        <p id="authSubtitle">سجّل دخولك للمتابعة والتواصل مع مجتمعك.</p>
-      </div>
-
-      <div class="auth-tabs" role="tablist" aria-label="نوع الحساب">
-        <button id="loginTab" class="auth-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="loginForm">
-          تسجيل الدخول
-        </button>
-        <button id="registerTab" class="auth-tab" type="button" role="tab" aria-selected="false" aria-controls="registerForm">
-          إنشاء حساب
-        </button>
-      </div>
-
-      <form id="loginForm" class="auth-form" autocomplete="on">
-        <label for="loginEmail">البريد الإلكتروني</label>
-        <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required maxlength="254">
-
-        <div class="label-row">
-          <label for="loginPassword">كلمة المرور</label>
-          <button id="forgotPasswordButton" class="text-button" type="button">نسيت كلمة المرور؟</button>
-        </div>
-
-        <div class="password-field">
-          <input id="loginPassword" name="password" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" required minlength="6">
-          <button class="password-toggle" type="button" data-password-toggle="loginPassword" aria-label="إظهار كلمة المرور">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-
-        <button class="primary-button auth-submit" type="submit">
-          <span>دخول إلى حسابي</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-        </button>
-      </form>
-
-      <form id="registerForm" class="auth-form is-hidden" autocomplete="on">
-        <label for="registerName">الاسم الذي سيظهر للناس</label>
-        <input id="registerName" name="displayName" type="text" autocomplete="name" placeholder="اكتب اسمك" required minlength="2" maxlength="60">
-
-        <label for="registerUsername">اسم المستخدم</label>
-        <input id="registerUsername" name="username" type="text" autocomplete="username" placeholder="مثال: meka_user" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" aria-describedby="usernameHelp">
-        <small id="usernameHelp" class="field-help">استخدم الحروف الإنجليزية والأرقام والشرطة السفلية فقط.</small>
-
-        <label for="registerEmail">البريد الإلكتروني</label>
-        <input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required maxlength="254">
-
-        <label for="registerPassword">كلمة المرور</label>
-        <div class="password-field">
-          <input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل" required minlength="6" maxlength="128">
-          <button class="password-toggle" type="button" data-password-toggle="registerPassword" aria-label="إظهار كلمة المرور">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-
-        <label class="checkbox-row">
-          <input id="acceptTerms" type="checkbox" required>
-          <span>أوافق على شروط الاستخدام وسياسة الخصوصية.</span>
-        </label>
-
-        <button class="primary-button auth-submit" type="submit">
-          <span>إنشاء حساب جديد</span>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-7-7h14"/></svg>
-        </button>
-      </form>
-
-      <div class="auth-divider"><span>أو تابع باستخدام</span></div>
-
-      <button id="googleAuthButton" class="google-button" type="button">
-        <svg viewBox="0 0 48 48" aria-hidden="true">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 4)"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.65 5.94c4.47-4.13 7.12-10.2 7.12-17.59Z" transform="translate(0 0)"/>
-          <path fill="#FBBC05" d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.9 23.9 0 0 0 0 21.56l7.98-6.19Z" transform="translate(0 0)"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.81l-7.65-5.94c-2.13 1.43-4.85 2.27-8.25 2.27-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" transform="translate(0 0)"/>
-        </svg>
-        <span>المتابعة باستخدام Google</span>
-      </button>
-
-      <p class="auth-footnote">بياناتك وحسابك يخضعان لإعدادات الأمان والخصوصية.</p>
-      <button id="backToWelcomeButton" class="back-link" type="button">العودة إلى صفحة البداية</button>
+    <div id="chatList" class="chat-list">
+      <div class="muted small" style="padding:20px">جارٍ تحميل المحادثات...</div>
     </div>
 
-    <aside class="auth-side">
-      <div class="auth-side-glow"></div>
-      <span class="auth-side-kicker">MEKA X EXPERIENCE</span>
-      <h2>كل عالمك<br><span>في مكان واحد.</span></h2>
-      <p>تواصل، شارك لحظاتك، اكتشف محتوى جديدًا، واستمتع بتجربة اجتماعية مصممة لك.</p>
-
-      <div class="auth-feature-list">
-        <div class="auth-feature">
-          <span class="feature-icon">01</span>
-          <div><strong>مجتمعك أقرب</strong><small>منشورات وقصص وتفاعلات</small></div>
+    <div class="side-bottom">
+      <div class="me-row">
+        <div id="myAvatar" class="avatar">N</div>
+        <div class="me-info">
+          <strong id="myName">حسابي</strong>
+          <small id="myEmail"></small>
         </div>
-        <div class="auth-feature">
-          <span class="feature-icon">02</span>
-          <div><strong>محادثاتك في مكان واحد</strong><small>تواصل مع حساباتك وجهات اتصالك</small></div>
-        </div>
-        <div class="auth-feature">
-          <span class="feature-icon">03</span>
-          <div><strong>أدوات ذكية</strong><small>مساحة للمساعد الذكي والإنتاجية</small></div>
-        </div>
+        <button id="profileBtn" class="icon-btn" title="الملف الشخصي" aria-label="الملف الشخصي">⚙</button>
+        <button id="logoutBtn" class="icon-btn" title="تسجيل الخروج" aria-label="تسجيل الخروج">↪</button>
       </div>
-    </aside>
-  </section>
+    </div>
+  </aside>
 
-  <!-- صفحة الترحيب -->
-  <section id="welcomeScreen" class="welcome-screen is-hidden" aria-labelledby="welcomeTitle">
-    <header class="welcome-header">
-      <a class="brand-lockup" href="#welcome" aria-label="MEKA X">
-        <span class="brand-mark">
-          <svg viewBox="0 0 64 64" aria-hidden="true">
-            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#welcomeLogoGradient)"/>
-            <defs><linearGradient id="welcomeLogoGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9B7BFF"/><stop offset="1" stop-color="#4B8DFF"/></linearGradient></defs>
-            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
-          </svg>
-        </span>
-        <span class="brand-lockup-text"><strong>MEKA <span>X</span></strong><small>عالمك، بطريقتك</small></span>
-      </a>
-
-      <button id="welcomeLoginButton" class="outline-button" type="button">تسجيل الدخول</button>
-    </header>
-
-    <main class="welcome-main" id="welcome">
-      <div class="welcome-copy">
-        <span class="welcome-badge"><span class="status-dot"></span> مساحة جديدة للتواصل والإبداع</span>
-        <h1 id="welcomeTitle">عالمك الاجتماعي<br><span>بشكل مختلف.</span></h1>
-        <p>مكان يجمع منشوراتك، قصصك، محادثاتك، الفيديوهات القصيرة، وأدواتك الذكية في تجربة واحدة.</p>
-
-        <div class="welcome-actions">
-          <button id="welcomeRegisterButton" class="primary-button" type="button">
-            <span>ابدأ رحلتك</span>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
-          </button>
-          <button id="explorePreviewButton" class="outline-button" type="button">اكتشف المميزات</button>
-        </div>
-
-        <div class="welcome-trust-note">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg>
-          <span>تجربة تضع الخصوصية والتحكم في حسابك ضمن أولوياتها.</span>
-        </div>
+  <main class="main">
+    <div id="welcome" class="empty-state">
+      <div class="empty-box">
+        <div class="brand-mark">N</div>
+        <h2>أهلًا بك في نوفا</h2>
+        <p>مساحتك للتواصل والمحادثات. ابدأ محادثة جديدة وتواصل مع الأشخاص الموجودين على المنصة.</p>
+        <button class="btn" id="welcomeNewChat">＋ محادثة جديدة</button>
       </div>
+    </div>
 
-      <div class="welcome-visual" aria-label="معاينة تصميم ميكا إكس">
-        <div class="visual-orbit orbit-one"></div>
-        <div class="visual-orbit orbit-two"></div>
-
-        <div class="visual-card visual-card-main">
-          <div class="visual-card-top">
-            <span class="visual-avatar">M</span>
-            <div><strong>MEKA X</strong><small>مساحتك الخاصة</small></div>
-            <span class="visual-live-dot"></span>
-          </div>
-
-          <div class="visual-gradient-art">
-            <div class="art-ring ring-one"></div>
-            <div class="art-ring ring-two"></div>
-            <div class="art-center-logo">M<span>X</span></div>
-          </div>
-
-          <div class="visual-card-caption">
-            <strong>أفكارك تستحق أن تُشارك</strong>
-            <span>ابدأ بإنشاء حسابك واكتشف المنصة.</span>
-          </div>
-
-          <div class="visual-card-bottom">
-            <span><i></i> منشورات</span>
-            <span><i></i> قصص</span>
-            <span><i></i> محادثات</span>
-          </div>
+    <section id="chatScreen" class="chat-screen hidden">
+      <header class="chat-head">
+        <button id="backBtn" class="icon-btn mobile-only" aria-label="رجوع">→</button>
+        <div id="activeAvatar" class="avatar">N</div>
+        <div class="chat-head-info">
+          <strong id="activeTitle">المحادثة</strong>
+          <small id="activeSubtitle">NOVA</small>
         </div>
-
-        <div class="floating-chip chip-top"><span class="chip-symbol">✦</span><span>أدوات ذكية</span></div>
-        <div class="floating-chip chip-bottom"><span class="chip-symbol">↗</span><span>تواصل بسهولة</span></div>
-      </div>
-    </main>
-
-    <section id="featuresSection" class="welcome-features">
-      <div class="section-heading">
-        <span class="eyebrow">اكتشف MEKA X</span>
-        <h2>تجربة واحدة، إمكانيات متعددة</h2>
-        <p>كل قسم له وظيفة واضحة، وستتوافر الوظائف التي تم إعداد خدماتها وربطها بنجاح.</p>
-      </div>
-
-      <div class="feature-grid">
-        <article class="feature-card">
-          <span class="feature-card-icon">01</span>
-          <h3>المجتمع والمنشورات</h3>
-          <p>شارك أفكارك وصورك وتفاعل مع المحتوى وفق إعدادات الخصوصية.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-card-icon">02</span>
-          <h3>الرسائل والمحادثات</h3>
-          <p>مساحة للمراسلة وإدارة المحادثات، مع اعتماد الميزات الفعلية على إعدادات الخدمة.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-card-icon">03</span>
-          <h3>الفيديوهات القصيرة</h3>
-          <p>استكشف محتوى الفيديو وشاركه عندما تتوافر ملفات الوسائط والصلاحيات اللازمة.</p>
-        </article>
-        <article class="feature-card">
-          <span class="feature-card-icon">04</span>
-          <h3>المساعد الذكي</h3>
-          <p>واجهة للمساعد الذكي تُربط بخدمة نموذج ذكاء اصطناعي من جهة آمنة.</p>
-        </article>
-      </div>
-    </section>
-
-    <footer class="welcome-footer">
-      <span>© <span id="currentYear"></span> MEKA X</span>
-      <span>عالمك، بطريقتك.</span>
-    </footer>
-  </section>
-
-  <!-- التطبيق بعد تسجيل الدخول -->
-  <div id="appShell" class="app-shell is-hidden">
-    <aside id="sidebar" class="sidebar">
-      <a class="brand-lockup sidebar-brand" href="#home" data-route="home" aria-label="الصفحة الرئيسية">
-        <span class="brand-mark">
-          <svg viewBox="0 0 64 64" aria-hidden="true">
-            <rect x="3" y="3" width="58" height="58" rx="19" fill="url(#sidebarLogoGradient)"/>
-            <defs><linearGradient id="sidebarLogoGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9B7BFF"/><stop offset="1" stop-color="#4B8DFF"/></linearGradient></defs>
-            <path d="M15 43V22h7l10 12 10-12h7v21h-8V33L32 43 23 33v10z" fill="#fff"/>
-          </svg>
-        </span>
-        <span class="brand-lockup-text"><strong>MEKA <span>X</span></strong><small>عالمك، بطريقتك</small></span>
-      </a>
-
-      <button id="sidebarCloseButton" class="icon-button sidebar-close" type="button" aria-label="إغلاق القائمة">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
-      </button>
-
-      <div class="sidebar-section-label">مساحتك</div>
-
-      <nav class="main-navigation" aria-label="التنقل الرئيسي">
-        <button class="nav-item is-active" type="button" data-route="home">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>
-          <span>الرئيسية</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="explore">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5M8 13l2-5 5-2-2 5z"/></svg>
-          <span>استكشف</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="stories">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="6"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>
-          <span>القصص</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="messages">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9.7 9.7 0 0 1-4-.8L3 21l1.5-4.2A8.2 8.2 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
-          <span>الرسائل</span>
-          <span id="unreadMessagesBadge" class="nav-badge is-hidden">0</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="videos">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="m10 8 6 4-6 4z"/></svg>
-          <span>الفيديوهات</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="notifications">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
-          <span>الإشعارات</span>
-          <span id="notificationsBadge" class="nav-badge is-hidden">0</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-section-label sidebar-section-spaced">أدواتك</div>
-
-      <nav class="secondary-navigation" aria-label="الأدوات">
-        <button class="nav-item" type="button" data-route="ai">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="m19 14 1.2 2.8L23 18l-2.8 1.2L19 22l-1.2-2.8L15 18l2.8-1.2z"/></svg>
-          <span>المساعد الذكي</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="saved">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1Z"/></svg>
-          <span>المحفوظات</span>
-        </button>
-
-        <button class="nav-item" type="button" data-route="subscriptions">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
-          <span>العضوية المميزة</span>
-        </button>
-      </nav>
-
-      <div class="sidebar-spacer"></div>
-
-      <div class="sidebar-user-card">
-        <button id="sidebarProfileButton" class="sidebar-user-button" type="button" data-route="profile">
-          <span id="sidebarAvatar" class="user-avatar avatar-placeholder">M</span>
-          <span class="sidebar-user-info">
-            <strong id="sidebarDisplayName">حسابي</strong>
-            <small id="sidebarUsername">@user</small>
-          </span>
-          <svg class="sidebar-user-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-
-        <button id="settingsNavButton" class="nav-item" type="button" data-route="settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.4 2.4-1.7-.7a8 8 0 0 1-1.7 1l-.3 1.8h-2.8l-.3-1.8a8 8 0 0 1-1.7-1l-1.7.7-1.4-2.4 1.4-1.1a7 7 0 0 1 0-2l-1.4-1.1 1.4-2.4 1.7.7a8 8 0 0 1 1.7-1l.3-1.8h2.8l.3 1.8a8 8 0 0 1 1.7 1l1.7-.7 1.4 2.4-1.4 1.1a7 7 0 0 1 0 2Z"/></svg>
-          <span>الإعدادات</span>
-        </button>
-      </div>
-    </aside>
-
-    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
-
-    <div class="app-main-column">
-      <header class="app-topbar">
-        <button id="sidebarOpenButton" class="icon-button mobile-menu-button" type="button" aria-label="فتح القائمة">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-
-        <div class="topbar-title">
-          <strong id="currentPageTitle">الرئيسية</strong>
-          <small id="currentPageSubtitle">مساحتك الاجتماعية</small>
-        </div>
-
-        <form id="globalSearchForm" class="global-search" role="search">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
-          <input id="globalSearchInput" type="search" placeholder="ابحث عن أشخاص أو منشورات..." maxlength="100" aria-label="البحث">
-          <button type="submit">بحث</button>
-        </form>
-
-        <div class="topbar-actions">
-          <button id="themeToggleButton" class="icon-button" type="button" aria-label="تغيير المظهر" title="تغيير المظهر">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-          </button>
-
-          <button id="topNotificationsButton" class="icon-button notification-button" type="button" data-route="notifications" aria-label="الإشعارات">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
-            <span id="topNotificationsDot" class="notification-dot is-hidden"></span>
-          </button>
-        </div>
+        <button id="refreshMessages" class="icon-btn" title="تحديث الرسائل" aria-label="تحديث الرسائل">↻</button>
       </header>
 
-      <main id="mainContent" class="app-content" tabindex="-1">
-        <!-- الصفحة الرئيسية -->
-        <section class="app-view is-active" data-view="home">
-          <div class="welcome-banner">
-            <div>
-              <span class="eyebrow">مساحتك تبدأ هنا</span>
-              <h1>أهلًا بيك في <span>MEKA X</span></h1>
-              <p>اكتشف محتوى جديدًا وشارك لحظاتك مع مجتمعك.</p>
-            </div>
-            <div class="banner-decoration" aria-hidden="true">
-              <span class="banner-orb"></span>
-              <span class="banner-x">X</span>
-            </div>
-          </div>
-
-          <section class="composer-card">
-            <div class="composer-top">
-              <span id="composerAvatar" class="user-avatar avatar-placeholder">M</span>
-              <button id="openComposerButton" class="composer-prompt" type="button">إيه اللي حابب تشاركه النهارده؟</button>
-            </div>
-
-            <div id="composerExpanded" class="composer-expanded is-hidden">
-              <label class="visually-hidden" for="postText">محتوى المنشور</label>
-              <textarea id="postText" rows="4" maxlength="5000" placeholder="اكتب منشورك هنا..."></textarea>
-              <div id="selectedMediaPreview" class="selected-media-preview is-hidden"></div>
-            </div>
-
-            <div class="composer-bottom">
-              <div class="composer-tools">
-                <button id="attachPostImageButton" class="composer-tool" type="button">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                  <span>صورة</span>
-                </button>
-
-                <button id="attachPostVideoButton" class="composer-tool" type="button">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 8 6 4-6 4z"/></svg>
-                  <span>فيديو</span>
-                </button>
-              </div>
-
-              <button id="publishPostButton" class="primary-button small-button" type="button" disabled>نشر</button>
-            </div>
-
-            <input id="postImageInput" class="visually-hidden" type="file" accept="image/*" multiple>
-            <input id="postVideoInput" class="visually-hidden" type="file" accept="video/*">
-          </section>
-
-          <div class="feed-heading">
-            <div><h2>آخر المنشورات</h2><p>محتوى مجتمعك في مكان واحد</p></div>
-            <button id="refreshFeedButton" class="icon-button" type="button" aria-label="تحديث المنشورات" title="تحديث">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9a7 7 0 0 1 12-2L20 12M4 12l2.5 5a7 7 0 0 0 12-2"/></svg>
-            </button>
-          </div>
-
-          <div id="feedStatus" class="inline-status" role="status">جاري تجهيز المنشورات...</div>
-          <div id="feedList" class="feed-list"></div>
-          <button id="loadMorePostsButton" class="outline-button load-more-button is-hidden" type="button">تحميل المزيد</button>
-        </section>
-
-        <!-- الاستكشاف -->
-        <section class="app-view" data-view="explore">
-          <div class="view-heading">
-            <span class="eyebrow">اكتشف الجديد</span>
-            <h1>استكشف <span>MEKA X</span></h1>
-            <p>ابحث عن حسابات ومحتوى يهمك.</p>
-          </div>
-
-          <form id="exploreSearchForm" class="large-search-form" role="search">
-            <input id="exploreSearchInput" type="search" maxlength="100" placeholder="اسم شخص أو كلمة للبحث..." aria-label="البحث في الاستكشاف">
-            <button class="primary-button" type="submit">بحث</button>
-          </form>
-
-          <div id="exploreResultsStatus" class="inline-status" role="status">اكتب كلمة للبحث.</div>
-          <div id="exploreResults" class="search-results"></div>
-        </section>
-
-        <!-- القصص -->
-        <section class="app-view" data-view="stories">
-          <div class="view-heading">
-            <span class="eyebrow">لحظات سريعة</span>
-            <h1>القصص</h1>
-            <p>شارك لحظة أو شاهد القصص المتاحة لك.</p>
-          </div>
-
-          <div class="story-create-card">
-            <span class="story-create-symbol">+</span>
-            <div><strong>أضف قصتك</strong><small>اختر صورة أو فيديو من جهازك.</small></div>
-            <button id="createStoryButton" class="primary-button small-button" type="button">إنشاء قصة</button>
-            <input id="storyMediaInput" class="visually-hidden" type="file" accept="image/*,video/*">
-          </div>
-
-          <div id="storiesStatus" class="inline-status" role="status">جاري تحميل القصص...</div>
-          <div id="storiesList" class="stories-list"></div>
-        </section>
-
-        <!-- الرسائل -->
-        <section class="app-view" data-view="messages">
-          <div class="view-heading">
-            <span class="eyebrow">ابقَ على اتصال</span>
-            <h1>رسائلك</h1>
-            <p>محادثاتك في مساحة واحدة.</p>
-          </div>
-
-          <div class="messages-layout">
-            <aside class="conversation-panel">
-              <div class="conversation-panel-heading">
-                <h2>المحادثات</h2>
-                <button id="newConversationButton" class="icon-button" type="button" aria-label="محادثة جديدة" title="محادثة جديدة">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-                </button>
-              </div>
-
-              <label class="conversation-search">
-                <span class="visually-hidden">البحث في المحادثات</span>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
-                <input id="conversationSearchInput" type="search" maxlength="100" placeholder="ابحث في المحادثات">
-              </label>
-
-              <div id="conversationsStatus" class="inline-status" role="status">جاري تحميل المحادثات...</div>
-              <div id="conversationsList" class="conversations-list"></div>
-            </aside>
-
-            <section class="chat-panel" aria-label="نافذة المحادثة">
-              <div id="chatEmptyState" class="chat-empty-state">
-                <div class="chat-empty-art">
-                  <svg viewBox="0 0 80 80" aria-hidden="true"><path d="M12 16h42a8 8 0 0 1 8 8v23a8 8 0 0 1-8 8H34L18 67v-12h-6a8 8 0 0 1-8-8V24a8 8 0 0 1 8-8Z"/><path d="M28 31h24M28 41h16"/><path d="M57 36h8a8 8 0 0 1 8 8v14a8 8 0 0 1-8 8h-3v7l-10-7"/></svg>
-                </div>
-                <h2>ابدأ محادثة جديدة</h2>
-                <p>اختر محادثة من القائمة أو ابحث عن حساب لبدء التواصل.</p>
-                <button id="startConversationButton" class="primary-button" type="button">محادثة جديدة</button>
-              </div>
-
-              <div id="chatActiveState" class="chat-active-state is-hidden">
-                <header class="chat-header">
-                  <span id="chatAvatar" class="user-avatar avatar-placeholder">M</span>
-                  <div class="chat-header-user"><strong id="chatContactName">المحادثة</strong><small id="chatContactStatus">متاح</small></div>
-                  <div class="chat-header-actions">
-                    <button id="voiceCallButton" class="icon-button" type="button" aria-label="اتصال صوتي" title="اتصال صوتي">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 3.1a2 2 0 0 1-.6 1.8L7.5 10a16 16 0 0 0 6 6l1.4-1.5a2 2 0 0 1 1.8-.6l3.1.5a2 2 0 0 1 2.2 2.5Z"/></svg>
-                    </button>
-                    <button id="videoCallButton" class="icon-button" type="button" aria-label="اتصال فيديو" title="اتصال فيديو">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2"/><path d="m15 10 6-4v12l-6-4z"/></svg>
-                    </button>
-                  </div>
-                </header>
-
-                <div id="messagesStatus" class="inline-status" role="status"></div>
-                <div id="messagesList" class="messages-list" aria-live="polite"></div>
-
-                <form id="messageForm" class="message-composer">
-                  <label class="visually-hidden" for="messageInput">اكتب رسالتك</label>
-                  <textarea id="messageInput" rows="1" maxlength="10000" placeholder="اكتب رسالتك..." required></textarea>
-                  <button id="sendMessageButton" class="primary-button send-message-button" type="submit" aria-label="إرسال الرسالة">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                  </button>
-                </form>
-              </div>
-            </section>
-          </div>
-        </section>
-
-        <!-- الفيديوهات القصيرة -->
-        <section class="app-view" data-view="videos">
-          <div class="view-heading">
-            <span class="eyebrow">شاهد وشارك</span>
-            <h1>الفيديوهات القصيرة</h1>
-            <p>اكتشف الفيديوهات المتاحة لك.</p>
-          </div>
-
-          <div class="video-actions">
-            <button id="uploadShortVideoButton" class="primary-button" type="button">إضافة فيديو</button>
-            <input id="shortVideoInput" class="visually-hidden" type="file" accept="video/*">
-          </div>
-
-          <div id="videosStatus" class="inline-status" role="status">جاري تحميل الفيديوهات...</div>
-          <div id="shortVideosList" class="short-videos-list"></div>
-        </section>
-
-        <!-- الإشعارات -->
-        <section class="app-view" data-view="notifications">
-          <div class="view-heading">
-            <span class="eyebrow">ابقَ على اطلاع</span>
-            <h1>الإشعارات</h1>
-            <p>تابع التحديثات المتعلقة بحسابك.</p>
-          </div>
-
-          <div class="section-toolbar">
-            <span id="notificationsStatus" class="inline-status" role="status">جاري تحميل الإشعارات...</span>
-            <button id="markNotificationsReadButton" class="outline-button small-button" type="button">تحديد كمقروءة</button>
-          </div>
-
-          <div id="notificationsList" class="notifications-list"></div>
-        </section>
-
-        <!-- المساعد الذكي -->
-        <section class="app-view" data-view="ai">
-          <div class="view-heading ai-view-heading">
-            <span class="eyebrow">MEKA INTELLIGENCE</span>
-            <h1>مساعدك <span>الذكي</span></h1>
-            <p>مساحة للمساعدة في الكتابة والتفكير والتعلم.</p>
-          </div>
-
-          <div class="ai-workspace">
-            <aside class="ai-history-panel">
-              <button id="newAIConversationButton" class="primary-button ai-new-chat-button" type="button">محادثة جديدة</button>
-              <h2>محادثاتك</h2>
-              <div id="aiConversationsStatus" class="inline-status" role="status">جاري تحميل المحادثات...</div>
-              <div id="aiConversationsList" class="ai-conversations-list"></div>
-            </aside>
-
-            <section class="ai-chat-panel">
-              <div id="aiWelcomeState" class="ai-welcome-state">
-                <div class="ai-orb" aria-hidden="true"><span></span><span></span><span></span></div>
-                <h2>إزاي أقدر أساعدك؟</h2>
-                <p>اكتب سؤالك أو اختر نقطة بداية.</p>
-                <div class="ai-suggestions">
-                  <button type="button" data-ai-prompt="ساعدني في تنظيم وقتي ومهامي.">تنظيم الوقت</button>
-                  <button type="button" data-ai-prompt="ساعدني في كتابة نص واضح ومميز.">الكتابة والإبداع</button>
-                  <button type="button" data-ai-prompt="اشرح لي موضوعًا صعبًا بطريقة بسيطة.">التعلم والفهم</button>
-                </div>
-              </div>
-
-              <div id="aiMessagesList" class="ai-messages-list" aria-live="polite"></div>
-
-              <form id="aiPromptForm" class="ai-prompt-form">
-                <label class="visually-hidden" for="aiPromptInput">اكتب رسالتك للمساعد</label>
-                <textarea id="aiPromptInput" rows="2" maxlength="12000" placeholder="اسأل ميكا أي سؤال..." required></textarea>
-                <div class="ai-prompt-footer">
-                  <span>تحقق من المعلومات المهمة قبل الاعتماد عليها.</span>
-                  <button id="sendAIPromptButton" class="primary-button" type="submit" aria-label="إرسال السؤال">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                    <span>إرسال</span>
-                  </button>
-                </div>
-              </form>
-              <div id="aiStatus" class="inline-status" role="status"></div>
-            </section>
-          </div>
-        </section>
-
-        <!-- المحفوظات -->
-        <section class="app-view" data-view="saved">
-          <div class="view-heading">
-            <span class="eyebrow">احتفظ بما يهمك</span>
-            <h1>المحفوظات</h1>
-            <p>المنشورات والفيديوهات التي حفظتها.</p>
-          </div>
-
-          <div class="content-tabs" role="tablist" aria-label="نوع المحفوظات">
-            <button class="content-tab is-active" type="button" data-saved-type="posts" role="tab" aria-selected="true">المنشورات</button>
-            <button class="content-tab" type="button" data-saved-type="videos" role="tab" aria-selected="false">الفيديوهات</button>
-          </div>
-
-          <div id="savedStatus" class="inline-status" role="status">جاري تحميل المحفوظات...</div>
-          <div id="savedItemsList" class="saved-items-list"></div>
-        </section>
-
-        <!-- الاشتراكات -->
-        <section class="app-view" data-view="subscriptions">
-          <div class="view-heading">
-            <span class="eyebrow">MEKA X PLUS</span>
-            <h1>ارتقِ بتجربتك</h1>
-            <p>راجع الخطط المتاحة وميزاتها قبل الاشتراك.</p>
-          </div>
-
-          <div id="subscriptionStatus" class="inline-status" role="status">جاري تحميل الخطط...</div>
-          <div id="subscriptionPlansList" class="subscription-plans-list"></div>
-
-          <div class="subscription-notice">
-            لن يتم تفعيل عضوية مدفوعة بمجرد الضغط على زر. يجب تأكيد الدفع من مزود دفع موثوق.
-          </div>
-        </section>
-
-        <!-- الملف الشخصي -->
-        <section class="app-view" data-view="profile">
-          <div class="view-heading">
-            <span class="eyebrow">مساحتك الشخصية</span>
-            <h1>الملف الشخصي</h1>
-            <p>حدّث المعلومات التي تريد مشاركتها.</p>
-          </div>
-
-          <form id="profileForm" class="profile-editor">
-            <div class="profile-cover-preview" id="profileCoverPreview">
-              <button id="changeCoverButton" class="outline-button small-button" type="button">تغيير الغلاف</button>
-              <input id="profileCoverInput" class="visually-hidden" type="file" accept="image/*">
-            </div>
-
-            <div class="profile-avatar-editor">
-              <span id="profileAvatarPreview" class="profile-large-avatar avatar-placeholder">M</span>
-              <button id="changeAvatarButton" class="outline-button small-button" type="button">تغيير الصورة</button>
-              <input id="profileAvatarInput" class="visually-hidden" type="file" accept="image/*">
-            </div>
-
-            <label for="profileDisplayName">الاسم الظاهر</label>
-            <input id="profileDisplayName" name="displayName" type="text" maxlength="60" minlength="2" required>
-
-            <label for="profileUsername">اسم المستخدم</label>
-            <input id="profileUsername" name="username" type="text" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]+" required>
-
-            <label for="profileBio">نبذة عنك</label>
-            <textarea id="profileBio" name="bio" rows="4" maxlength="500" placeholder="اكتب نبذة قصيرة عنك..."></textarea>
-
-            <label for="profileWebsite">موقعك الإلكتروني</label>
-            <input id="profileWebsite" name="website" type="url" maxlength="500" placeholder="https://example.com">
-
-            <div class="profile-form-actions">
-              <button class="primary-button" type="submit">حفظ التغييرات</button>
-              <span id="profileStatus" class="inline-status" role="status"></span>
-            </div>
-          </form>
-
-          <div class="profile-content-heading"><h2>منشوراتي</h2></div>
-          <div id="profilePostsList" class="feed-list"></div>
-        </section>
-
-        <!-- الإعدادات -->
-        <section class="app-view" data-view="settings">
-          <div class="view-heading">
-            <span class="eyebrow">تحكم في تجربتك</span>
-            <h1>الإعدادات</h1>
-            <p>إدارة الحساب والمظهر والخصوصية.</p>
-          </div>
-
-          <div class="settings-layout">
-            <section class="settings-card">
-              <h2>المظهر</h2>
-              <p>اختر المظهر المناسب لك.</p>
-              <label for="themeSelect">لون الواجهة</label>
-              <select id="themeSelect">
-                <option value="dark">داكن — بنفسجي وأزرق</option>
-                <option value="midnight">منتصف الليل</option>
-              </select>
-            </section>
-
-            <section class="settings-card">
-              <h2>الخصوصية</h2>
-              <p>إعدادات الحساب التي يدعمها النظام.</p>
-              <label class="settings-switch-row" for="privateProfileToggle">
-                <span><strong>حساب خاص</strong><small>يحتاج هذا الخيار إلى دعم متوافق من قاعدة البيانات.</small></span>
-                <input id="privateProfileToggle" type="checkbox">
-              </label>
-            </section>
-
-            <section class="settings-card">
-              <h2>الجلسة والحساب</h2>
-              <p>إدارة جلسة الدخول الحالية.</p>
-              <button id="signOutButton" class="danger-button" type="button">تسجيل الخروج</button>
-            </section>
-          </div>
-        </section>
-
-        <!-- صفحة نتائج البحث -->
-        <section class="app-view" data-view="search">
-          <div class="view-heading">
-            <span class="eyebrow">نتائج البحث</span>
-            <h1>نتائج <span>البحث</span></h1>
-            <p id="searchQueryLabel">اكتب كلمة للبحث.</p>
-          </div>
-          <div id="searchPageStatus" class="inline-status" role="status"></div>
-          <div id="searchPageResults" class="search-results"></div>
-        </section>
-      </main>
-
-      <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
-        <button class="mobile-nav-item is-active" type="button" data-route="home" aria-label="الرئيسية">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10h-6v-7H9v7H3z"/></svg>
-          <span>الرئيسية</span>
-        </button>
-        <button class="mobile-nav-item" type="button" data-route="explore" aria-label="استكشف">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg>
-          <span>استكشف</span>
-        </button>
-        <button class="mobile-nav-item mobile-create-button" type="button" id="mobileCreatePostButton" aria-label="إنشاء منشور">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        </button>
-        <button class="mobile-nav-item" type="button" data-route="messages" aria-label="الرسائل">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-9 8.5 9.7 9.7 0 0 1-4-.8L3 21l1.5-4.2A8.2 8.2 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5Z"/></svg>
-          <span>الرسائل</span>
-        </button>
-        <button class="mobile-nav-item" type="button" data-route="profile" aria-label="حسابي">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-          <span>حسابي</span>
-        </button>
-      </nav>
-    </div>
-  </div>
-
-  <!-- نافذة إنشاء محادثة -->
-  <dialog id="newConversationDialog" class="app-dialog">
-    <form method="dialog" class="dialog-close-form">
-      <button class="icon-button" aria-label="إغلاق" value="cancel" type="submit">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
-      </button>
-    </form>
-    <div class="dialog-content">
-      <span class="eyebrow">تواصل مباشر</span>
-      <h2>محادثة جديدة</h2>
-      <p>ابحث عن اسم مستخدم لبدء محادثة.</p>
-      <form id="newConversationForm">
-        <label for="newConversationUsername">اسم المستخدم</label>
-        <input id="newConversationUsername" type="text" maxlength="24" minlength="3" pattern="[A-Za-z0-9_]+" placeholder="username" required>
-        <button class="primary-button" type="submit">متابعة</button>
-      </form>
-      <div id="newConversationStatus" class="inline-status" role="status"></div>
-    </div>
-  </dialog>
-
-  <!-- عارض الوسائط -->
-  <dialog id="mediaViewerDialog" class="media-viewer-dialog">
-    <form method="dialog" class="media-viewer-close">
-      <button class="icon-button" type="submit" aria-label="إغلاق عارض الوسائط">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
-      </button>
-    </form>
-    <div id="mediaViewerContent" class="media-viewer-content"></div>
-  </dialog>
-
-  <!-- رسائل وتعليمات عند تعذر تحميل التطبيق -->
-  <noscript>
-    <div class="noscript-message">
-      يحتاج MEKA X إلى تفعيل JavaScript حتى يعمل. فعّل JavaScript في المتصفح ثم أعد تحميل الصفحة.
-    </div>
-  </noscript>
-
-  <!-- المكتبة العامة لـ Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-
-  <!-- ملفات التطبيق: كلها في جذر المستودع -->
-  <script defer src="./config.js"></script>
-  <script defer src="./storage.js"></script>
-  <script defer src="./validators.js"></script>
-  <script defer src="./database.js"></script>
-  <script defer src="./ui.js"></script>
-  <script defer src="./router.js"></script>
-  <script defer src="./auth.js"></script>
-  <script defer src="./google-auth.js"></script>
-  <script defer src="./register.js"></script>
-  <script defer src="./login.js"></script>
-  <script defer src="./onboarding.js"></script>
-  <script defer src="./profiles.js"></script>
-  <script defer src="./media.js"></script>
-  <script defer src="./upload.js"></script>
-  <script defer src="./posts.js"></script>
-  <script defer src="./comments.js"></script>
-  <script defer src="./reactions.js"></script>
-  <script defer src="./stories.js"></script>
-  <script defer src="./conversations.js"></script>
-  <script defer src="./messages.js"></script>
-  <script defer src="./voice-messages.js"></script>
-  <script defer src="./calls.js"></script>
-  <script defer src="./search.js"></script>
-  <script defer src="./notifications.js"></script>
-  <script defer src="./short-videos.js"></script>
-  <script defer src="./video-player.js"></script>
-  <script defer src="./ai-conversations.js"></script>
-  <script defer src="./ai-assistant.js"></script>
-  <script defer src="./subscriptions.js"></script>
-  <script defer src="./payments.js"></script>
-  <script defer src="./privacy.js"></script>
-  <script defer src="./security.js"></script>
-  <script defer src="./settings.js"></script>
-  <script defer src="./language.js"></script>
-  <script defer src="./accessibility.js"></script>
-  <script defer src="./feed.js"></script>
-  <script defer src="./app.js"></script>
-
-  <!-- حماية من بقاء شاشة البداية للأبد -->
-  <script>
-    (() => {
-      const startedAt = Date.now();
-      const MINIMUM_SPLASH_MS = 5000;
-      let appReady = false;
-      let splashRemoved = false;
-
-      function hideSplash() {
-        if (splashRemoved) return;
-
-        const elapsed = Date.now() - startedAt;
-        const remaining = Math.max(0, MINIMUM_SPLASH_MS - elapsed);
-
-        window.setTimeout(() => {
-          if (splashRemoved) return;
-          splashRemoved = true;
-
-          const loader = document.getElementById("appLoader");
-          if (loader) {
-            loader.classList.add("is-hidden");
-            window.setTimeout(() => loader.remove(), 650);
-          }
-
-          document.dispatchEvent(new CustomEvent("meka:splash-hidden"));
-        }, remaining);
-      }
-
-      window.MEKA_SPLASH = {
-        ready() {
-          appReady = true;
-          hideSplash();
-        },
-        fail(message) {
-          const status = document.getElementById("loaderStatus");
-          if (status) {
-            status.textContent = message || "تعذر إكمال التشغيل. تحقق من الاتصال ثم أعد المحاولة.";
-          }
-          hideSplash();
-        }
+      <div id="messages" class="messages">
+        <div class="muted small">اختر محادثة للبدء.</div>
+      </div>
+
+      <div class="composer-wrap">
+        <form id="messageForm" class="composer">
+          <input
+            id="attachmentInput"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/ogg,application/pdf,.doc,.docx,.txt,.zip"
+            multiple
+            hidden
+          >
+
+          <button id="attachBtn" class="icon-btn" type="button" title="إرفاق صور أو ملفات" aria-label="إرفاق صور أو ملفات">＋</button>
+
+          <textarea id="messageInput" rows="1" maxlength="10000" placeholder="اكتب رسالتك..." aria-label="رسالتك"></textarea>
+
+          <button id="sendBtn" class="send-btn" type="submit" aria-label="إرسال">➤</button>
+        </form>
+
+        <div id="attachmentPreview"></div>
+
+        <div class="muted small" style="max-width:950px;margin:7px auto 0">
+          يمكنك إرفاق حتى 5 ملفات، بحد أقصى 15 ميجابايت للملف الواحد.
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot" class="hidden"></div>
+<div id="toast" class="notice hidden" role="status"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://cxksushmcuyomuaywgfw.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_6D7DE4aODAIqhG9Ls3gGfQ_Um-E-7f5";
+
+  const STORAGE_BUCKET = "nova-message-files";
+  const MAX_FILE_SIZE = 15 * 1024 * 1024;
+  const MAX_FILES = 5;
+
+  const ALLOWED_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/avif",
+    "video/mp4",
+    "video/webm",
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/ogg",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+    "application/zip",
+    "application/x-zip-compressed"
+  ]);
+
+  const $ = id => document.getElementById(id);
+
+  let db = null;
+  let currentUser = null;
+  let currentProfile = null;
+  let conversations = [];
+  let activeConversation = null;
+  let messageChannel = null;
+  let listChannel = null;
+  let authMode = "login";
+  let currentFilter = "all";
+  let busy = false;
+  let toastTimer = null;
+  let authListener = null;
+
+  function toast(message) {
+    $("toast").textContent = message;
+    $("toast").classList.remove("hidden");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => $("toast").classList.add("hidden"), 4000);
+  }
+
+  function errorText(error) {
+    const msg = error?.message || String(error || "حدث خطأ غير معروف");
+
+    if (/row-level security|permission denied|not allowed/i.test(msg)) {
+      return "تم رفض العملية بسبب صلاحيات قاعدة البيانات أو التخزين. راجع سياسات RLS.";
+    }
+
+    if (/failed to fetch|network|fetch failed/i.test(msg)) {
+      return "تعذر الاتصال بالخدمة. تأكد من الإنترنت وإعدادات Supabase.";
+    }
+
+    if (/duplicate key/i.test(msg)) {
+      return "هذه البيانات مستخدمة بالفعل.";
+    }
+
+    return msg;
+  }
+
+  function showAuth(message = "") {
+    $("splash").classList.add("hidden");
+    $("app").classList.add("hidden");
+    $("auth").classList.remove("hidden");
+    $("authError").textContent = message;
+  }
+
+  function showApp() {
+    $("splash").classList.add("hidden");
+    $("auth").classList.add("hidden");
+    $("app").classList.remove("hidden");
+  }
+
+  function setAuthBusy(value) {
+    $("authSubmit").disabled = value;
+    $("authSubmit").textContent = value
+      ? "جارٍ التنفيذ..."
+      : authMode === "login" ? "تسجيل الدخول" : "إنشاء الحساب";
+  }
+
+  function initials(name) {
+    return (name || "N").trim().slice(0, 1).toUpperCase() || "N";
+  }
+
+  function avatarContent(element, profile) {
+    element.replaceChildren();
+
+    if (profile?.avatar_url) {
+      const img = document.createElement("img");
+      img.src = profile.avatar_url;
+      img.alt = "";
+      img.onerror = () => {
+        element.textContent = initials(profile.display_name || profile.username);
+      };
+      element.appendChild(img);
+    } else {
+      element.textContent = initials(
+        profile?.display_name || profile?.username || "N"
+      );
+    }
+  }
+
+  function safeTime(value) {
+    if (!value) return "";
+    const d = new Date(value);
+
+    return Number.isNaN(d.getTime())
+      ? ""
+      : d.toLocaleTimeString("ar-EG", {
+          hour:"2-digit",
+          minute:"2-digit"
+        });
+  }
+
+  async function loadProfile() {
+    const {data,error} = await db
+      .from("profiles")
+      .select("id,username,display_name,full_name,avatar_url,avatar_path,bio")
+      .eq("id",currentUser.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    currentProfile = data || {
+      id:currentUser.id,
+      display_name:
+        currentUser.user_metadata?.display_name ||
+        currentUser.email?.split("@")[0] ||
+        "مستخدم NOVA"
+    };
+
+    $("myName").textContent =
+      currentProfile.display_name ||
+      currentProfile.full_name ||
+      currentProfile.username ||
+      "حسابي";
+
+    $("myEmail").textContent = currentUser.email || "";
+    avatarContent($("myAvatar"),currentProfile);
+  }
+
+  async function createMissingProfile(user,displayName) {
+    const {data:existing,error:lookupError} = await db
+      .from("profiles")
+      .select("id")
+      .eq("id",user.id)
+      .maybeSingle();
+
+    if (lookupError) throw lookupError;
+    if (existing) return;
+
+    const base = (user.email || "nova_user")
+      .split("@")[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9_]/g,"")
+      .slice(0,22) || "nova_user";
+
+    const username = (
+      base + "_" + user.id.replace(/-/g,"").slice(0,6)
+    ).slice(0,32);
+
+    const {error} = await db.from("profiles").insert({
+      id:user.id,
+      username,
+      display_name:displayName || base,
+      full_name:displayName || base
+    });
+
+    if (error) throw error;
+  }
+
+  async function startSession(user) {
+    currentUser = user;
+
+    try {
+      await createMissingProfile(
+        user,
+        user.user_metadata?.display_name || user.email?.split("@")[0]
+      );
+    } catch (error) {
+      console.warn("Profile initialization:",error.message);
+    }
+
+    try {
+      await loadProfile();
+    } catch (error) {
+      console.warn("Profile loading:",error.message);
+
+      currentProfile = {
+        id:user.id,
+        display_name:
+          user.user_metadata?.display_name ||
+          user.email?.split("@")[0] ||
+          "حسابي"
       };
 
-      window.addEventListener("load", () => {
-        if (!appReady) hideSplash();
-      }, { once: true });
+      $("myName").textContent = currentProfile.display_name;
+      $("myEmail").textContent = user.email || "";
+      avatarContent($("myAvatar"),currentProfile);
+    }
 
-      window.setTimeout(() => {
-        if (!appReady) {
-          const status = document.getElementById("loaderStatus");
-          if (status) status.textContent = "جاري فتح التطبيق...";
-          hideSplash();
-        }
-      }, 12000);
-    })();
+    showApp();
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const year = document.getElementById("currentYear");
-      if (year) year.textContent = String(new Date().getFullYear());
+    try {
+      await loadConversations();
+    } catch (error) {
+      console.error("Conversation loading:",error);
+      toast("تعذر تحميل المحادثات: " + errorText(error));
+    }
+
+    subscribeToConversationList();
+  }
+
+  function getOtherMember(conversation) {
+    return (conversation.members || []).find(
+      member => member.user_id !== currentUser.id
+    );
+  }
+
+  function conversationTitle(conversation) {
+    if (conversation.kind === "group") {
+      return conversation.title || "مجموعة جديدة";
+    }
+
+    const other = getOtherMember(conversation);
+    const profile = other?.profile;
+
+    return profile?.display_name ||
+      profile?.full_name ||
+      profile?.username ||
+      "محادثة";
+  }
+
+  function conversationAvatar(conversation) {
+    if (conversation.kind === "group") return null;
+    return getOtherMember(conversation)?.profile || null;
+  }
+
+  async function loadConversations() {
+    if (!currentUser) return;
+
+    $("chatList").innerHTML =
+      '<div class="muted small" style="padding:20px">جارٍ تحميل المحادثات...</div>';
+
+    const {data:memberships,error} = await db
+      .from("conversation_members")
+      .select("conversation_id,role,joined_at,last_read_at,muted")
+      .eq("user_id",currentUser.id);
+
+    if (error) throw error;
+
+    const ids = [...new Set(
+      (memberships || []).map(item => item.conversation_id)
+    )];
+
+    if (!ids.length) {
+      conversations = [];
+      renderConversationList();
+      return;
+    }
+
+    const {data:rows,error:convError} = await db
+      .from("conversations")
+      .select("id,kind,title,created_by,created_at,updated_at")
+      .in("id",ids)
+      .order("updated_at",{ascending:false});
+
+    if (convError) throw convError;
+
+    const {data:allMembers,error:memberError} = await db
+      .from("conversation_members")
+      .select("conversation_id,user_id,role,joined_at,last_read_at,muted")
+      .in("conversation_id",ids);
+
+    if (memberError) throw memberError;
+
+    const userIds = [...new Set(
+      (allMembers || []).map(member => member.user_id)
+    )];
+
+    let profiles = [];
+
+    if (userIds.length) {
+      const {data,error:profileError} = await db
+        .from("profiles")
+        .select("id,username,display_name,full_name,avatar_url,avatar_path")
+        .in("id",userIds);
+
+      if (profileError) {
+        console.warn("Profile lookup:",profileError.message);
+      }
+
+      profiles = data || [];
+    }
+
+    const profileMap = new Map(
+      profiles.map(profile => [profile.id,profile])
+    );
+
+    const membersByConversation = new Map();
+
+    for (const member of allMembers || []) {
+      const entry = {
+        ...member,
+        profile:profileMap.get(member.user_id) || null
+      };
+
+      if (!membersByConversation.has(member.conversation_id)) {
+        membersByConversation.set(member.conversation_id,[]);
+      }
+
+      membersByConversation.get(member.conversation_id).push(entry);
+    }
+
+    conversations = (rows || []).map(conversation => ({
+      ...conversation,
+      members:membersByConversation.get(conversation.id) || [],
+      lastMessage:null
+    }));
+
+    await Promise.all(conversations.map(async conversation => {
+      const {data,error:lastError} = await db
+        .from("messages")
+        .select("id,body,sender_id,message_type,created_at,deleted_at")
+        .eq("conversation_id",conversation.id)
+        .is("deleted_at",null)
+        .order("created_at",{ascending:false})
+        .limit(1);
+
+      if (lastError) {
+        console.warn("Last message lookup:",lastError.message);
+        return;
+      }
+
+      conversation.lastMessage = data?.[0] || null;
+    }));
+
+    renderConversationList();
+  }
+
+  function renderConversationList() {
+    const query = $("searchChats").value.trim().toLowerCase();
+
+    const filtered = conversations.filter(conversation => {
+      if (currentFilter === "direct" && conversation.kind === "group") {
+        return false;
+      }
+
+      if (currentFilter === "group" && conversation.kind !== "group") {
+        return false;
+      }
+
+      return conversationTitle(conversation).toLowerCase().includes(query);
     });
-  </script>
+
+    const list = $("chatList");
+    list.replaceChildren();
+
+    if (!filtered.length) {
+      const empty = document.createElement("div");
+      empty.className = "muted small";
+      empty.style.padding = "20px";
+      empty.textContent = query
+        ? "لا توجد نتائج مطابقة."
+        : "لا توجد محادثات بعد. اضغط ＋ لبدء محادثة.";
+
+      list.appendChild(empty);
+      return;
+    }
+
+    for (const conversation of filtered) {
+      const row = document.createElement("div");
+
+      row.className = "chat-row" +
+        (activeConversation?.id === conversation.id ? " active" : "");
+
+      row.tabIndex = 0;
+      row.setAttribute("role","button");
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+
+      if (conversation.kind === "group") {
+        avatar.textContent = "N";
+      } else {
+        avatarContent(avatar,conversationAvatar(conversation));
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "chat-meta";
+
+      const name = document.createElement("div");
+      name.className = "chat-name";
+      name.textContent = conversationTitle(conversation);
+
+      const preview = document.createElement("div");
+      preview.className = "chat-preview";
+
+      const message = conversation.lastMessage;
+
+      preview.textContent = message
+        ? (message.sender_id === currentUser.id ? "أنت: " : "") +
+          (message.body || "مرفق")
+        : "ابدأ المحادثة الآن";
+
+      meta.append(name,preview);
+      row.append(avatar,meta);
+
+      if (message?.created_at) {
+        const time = document.createElement("span");
+        time.className = "muted small";
+        time.textContent = safeTime(message.created_at);
+        row.appendChild(time);
+      }
+
+      row.addEventListener("click",() => {
+        openConversation(conversation.id);
+      });
+
+      row.addEventListener("keydown",event => {
+        if (event.key === "Enter") {
+          openConversation(conversation.id);
+        }
+      });
+
+      list.appendChild(row);
+    }
+  }
+
+  async function openConversation(id) {
+    const conversation = conversations.find(item => item.id === id);
+    if (!conversation) return;
+
+    activeConversation = conversation;
+
+    $("welcome").classList.add("hidden");
+    $("chatScreen").classList.remove("hidden");
+    $("app").classList.add("chat-open");
+
+    $("activeTitle").textContent = conversationTitle(conversation);
+    $("activeSubtitle").textContent =
+      conversation.kind === "group" ? "مجموعة NOVA" : "محادثة خاصة";
+
+    if (conversation.kind === "group") {
+      $("activeAvatar").textContent = "N";
+    } else {
+      avatarContent($("activeAvatar"),conversationAvatar(conversation));
+    }
+
+    renderConversationList();
+
+    await loadMessages();
+    subscribeToMessages();
+
+    $("messageInput").focus();
+  }
+
+  function validateFiles(files) {
+    if (files.length > MAX_FILES) {
+      throw new Error("الحد الأقصى خمسة ملفات في الرسالة الواحدة.");
+    }
+
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error("حجم الملف " + file.name + " أكبر من 15 ميجابايت.");
+      }
+
+      if (!ALLOWED_TYPES.has(file.type)) {
+        throw new Error("نوع الملف غير مدعوم: " + file.name);
+      }
+    }
+  }
+
+  function mediaType(file) {
+    if (file.type.startsWith("image/")) return "image";
+    if (file.type.startsWith("video/")) return "video";
+    if (file.type.startsWith("audio/")) return "audio";
+    return "file";
+  }
+
+  function safeFileName(name) {
+    return name
+      .normalize("NFKC")
+      .replace(/[^\p{L}\p{N}._-]/gu,"_")
+      .slice(-100) || "attachment";
+  }
+
+  function showSelectedFiles(files) {
+    const preview = $("attachmentPreview");
+    preview.replaceChildren();
+
+    if (!files.length) return;
+
+    const list = document.createElement("div");
+    list.className = "attachment-preview";
+
+    for (const file of files) {
+      const card = document.createElement("div");
+      card.className = "attachment-card";
+
+      const icon = document.createElement("span");
+      icon.textContent = file.type.startsWith("image/") ? "▧" : "📎";
+
+      const info = document.createElement("div");
+
+      const name = document.createElement("div");
+      name.textContent = file.name;
+
+      const size = document.createElement("div");
+      size.className = "muted small";
+      size.textContent = (file.size / 1024).toFixed(1) + " كيلوبايت";
+
+      info.append(name,size);
+      card.append(icon,info);
+      list.appendChild(card);
+    }
+
+    preview.appendChild(list);
+  }
+
+  function clearSelectedFiles() {
+    $("attachmentInput").value = "";
+    $("attachmentPreview").replaceChildren();
+  }
+
+  async function uploadMessageAttachments(messageId,files) {
+    const uploadedPaths = [];
+
+    try {
+      for (const file of files) {
+        const path =
+          currentUser.id + "/" +
+          crypto.randomUUID() + "_" +
+          safeFileName(file.name);
+
+        const {error:uploadError} = await db.storage
+          .from(STORAGE_BUCKET)
+          .upload(path,file,{
+            contentType:file.type || "application/octet-stream",
+            upsert:false
+          });
+
+        if (uploadError) throw uploadError;
+
+        uploadedPaths.push(path);
+
+        const {error:metadataError} = await db
+          .from("message_attachments")
+          .insert({
+            message_id:messageId,
+            storage_path:path,
+            media_type:mediaType(file),
+            mime_type:file.type || null,
+            size_bytes:file.size
+          });
+
+        if (metadataError) throw metadataError;
+      }
+
+      return uploadedPaths;
+    } catch (error) {
+      for (const path of uploadedPaths) {
+        const {error:cleanupError} = await db.storage
+          .from(STORAGE_BUCKET)
+          .remove([path]);
+
+        if (cleanupError) {
+          console.warn("Cleanup failed:",cleanupError.message);
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  async function loadMessageAttachments(messages) {
+    const result = new Map();
+    const messageIds = messages.map(message => message.id);
+
+    if (!messageIds.length) return result;
+
+    const {data,error} = await db
+      .from("message_attachments")
+      .select("id,message_id,storage_path,media_type,mime_type,size_bytes,created_at")
+      .in("message_id",messageIds)
+      .order("created_at",{ascending:true});
+
+    if (error) throw error;
+
+    for (const attachment of data || []) {
+      const {data:signed,error:signedError} = await db.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUrl(attachment.storage_path,3600);
+
+      attachment.signedUrl = signedError ? null : signed?.signedUrl || null;
+
+      if (signedError) {
+        console.warn("Signed URL error:",signedError.message);
+      }
+
+      if (!result.has(attachment.message_id)) {
+        result.set(attachment.message_id,[]);
+      }
+
+      result.get(attachment.message_id).push(attachment);
+    }
+
+    return result;
+  }
+
+  function renderAttachmentElement(attachment) {
+    const wrapper = document.createElement("div");
+
+    if (!attachment.signedUrl) {
+      wrapper.className = "attachment-card";
+      wrapper.textContent = "تعذر فتح المرفق.";
+      return wrapper;
+    }
+
+    if (attachment.media_type === "image") {
+      const image = document.createElement("img");
+      image.src = attachment.signedUrl;
+      image.alt = "صورة مرفقة";
+      image.loading = "lazy";
+      image.referrerPolicy = "no-referrer";
+      image.className = "attachment-media";
+      wrapper.appendChild(image);
+      return wrapper;
+    }
+
+    if (attachment.media_type === "video") {
+      const video = document.createElement("video");
+      video.src = attachment.signedUrl;
+      video.controls = true;
+      video.preload = "metadata";
+      video.className = "attachment-media";
+      wrapper.appendChild(video);
+      return wrapper;
+    }
+
+    if (attachment.media_type === "audio") {
+      const audio = document.createElement("audio");
+      audio.src = attachment.signedUrl;
+      audio.controls = true;
+      audio.preload = "metadata";
+      audio.className = "attachment-media";
+      wrapper.appendChild(audio);
+      return wrapper;
+    }
+
+    const card = document.createElement("div");
+    card.className = "attachment-card";
+
+    const icon = document.createElement("span");
+    icon.textContent = "📎";
+
+    const link = document.createElement("a");
+    link.href = attachment.signedUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "فتح أو تنزيل الملف";
+
+    card.append(icon,link);
+    wrapper.appendChild(card);
+
+    return wrapper;
+  }
+
+  async function loadMessages() {
+    if (!activeConversation) return;
+
+    $("messages").innerHTML =
+      '<div class="muted small">جارٍ تحميل الرسائل...</div>';
+
+    const {data,error} = await db
+      .from("messages")
+      .select("id,conversation_id,sender_id,body,message_type,created_at,edited_at,deleted_at")
+      .eq("conversation_id",activeConversation.id)
+      .is("deleted_at",null)
+      .order("created_at",{ascending:true})
+      .limit(300);
+
+    if (error) {
+      $("messages").replaceChildren();
+      toast("تعذر تحميل الرسائل: " + errorText(error));
+      return;
+    }
+
+    let attachments = new Map();
+
+    try {
+      attachments = await loadMessageAttachments(data || []);
+    } catch (attachmentError) {
+      console.warn("Attachment loading:",attachmentError);
+      toast("تم تحميل الرسائل، لكن تعذر تحميل بعض المرفقات.");
+    }
+
+    renderMessages(data || [],attachments);
+    $("messages").scrollTop = $("messages").scrollHeight;
+  }
+
+  function renderMessages(messages,attachmentsByMessage = new Map()) {
+    const box = $("messages");
+    box.replaceChildren();
+
+    if (!messages.length) {
+      const empty = document.createElement("div");
+      empty.className = "date-note";
+      empty.textContent = "هذه بداية المحادثة. ابعت أول رسالة!";
+      box.appendChild(empty);
+      return;
+    }
+
+    for (const message of messages) {
+      const item = document.createElement("article");
+
+      item.className = "message " +
+        (message.sender_id === currentUser.id ? "mine" : "theirs");
+
+      if (
+        activeConversation?.kind === "group" &&
+        message.sender_id !== currentUser.id
+      ) {
+        const member = activeConversation.members.find(
+          entry => entry.user_id === message.sender_id
+        );
+
+        const author = document.createElement("div");
+        author.className = "message-author";
+        author.textContent =
+          member?.profile?.display_name ||
+          member?.profile?.username ||
+          "عضو";
+
+        item.appendChild(author);
+      }
+
+      if (message.body) {
+        const body = document.createElement("div");
+        body.className = "message-body";
+        body.textContent = message.body;
+        item.appendChild(body);
+      }
+
+      const attachments = attachmentsByMessage.get(message.id) || [];
+
+      if (attachments.length) {
+        const attachmentBox = document.createElement("div");
+        attachmentBox.className = "message-attachments";
+
+        for (const attachment of attachments) {
+          attachmentBox.appendChild(
+            renderAttachmentElement(attachment)
+          );
+        }
+
+        item.appendChild(attachmentBox);
+      }
+
+      const time = document.createElement("div");
+      time.className = "message-time";
+      time.textContent =
+        safeTime(message.created_at) +
+        (message.edited_at ? " · معدلة" : "");
+
+      item.appendChild(time);
+      box.appendChild(item);
+    }
+  }
+
+  async function sendMessage(event) {
+    event.preventDefault();
+
+    if (busy || !activeConversation || !currentUser) return;
+
+    const body = $("messageInput").value.trim();
+    const files = Array.from($("attachmentInput").files || []);
+
+    if (!body && !files.length) return;
+
+    try {
+      validateFiles(files);
+    } catch (error) {
+      toast(error.message);
+      return;
+    }
+
+    busy = true;
+    $("sendBtn").disabled = true;
+    $("attachBtn").disabled = true;
+
+    try {
+      const messageType = files.length
+        ? (body ? "text" : mediaType(files[0]))
+        : "text";
+
+      const {data:message,error} = await db
+        .from("messages")
+        .insert({
+          conversation_id:activeConversation.id,
+          sender_id:currentUser.id,
+          body:body || "",
+          message_type:messageType
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      if (files.length) {
+        toast("جارٍ رفع الملفات...");
+        await uploadMessageAttachments(message.id,files);
+      }
+
+      $("messageInput").value = "";
+      $("messageInput").style.height = "46px";
+      clearSelectedFiles();
+
+      await loadMessages();
+      await loadConversations();
+
+    } catch (error) {
+      console.error("Send message:",error);
+      toast("تعذر إرسال الرسالة أو المرفق: " + errorText(error));
+    } finally {
+      busy = false;
+      $("sendBtn").disabled = false;
+      $("attachBtn").disabled = false;
+      $("messageInput").focus();
+    }
+  }
+
+  function subscribeToMessages() {
+    if (messageChannel) {
+      db.removeChannel(messageChannel);
+      messageChannel = null;
+    }
+
+    if (!activeConversation) return;
+
+    const conversationId = activeConversation.id;
+
+    messageChannel = db
+      .channel("nova-messages-" + conversationId)
+      .on("postgres_changes",{
+        event:"*",
+        schema:"public",
+        table:"messages",
+        filter:"conversation_id=eq." + conversationId
+      },async () => {
+        if (activeConversation?.id !== conversationId) return;
+
+        await loadMessages();
+
+        try {
+          await loadConversations();
+        } catch (error) {
+          console.warn("Conversation refresh:",error.message);
+        }
+      })
+      .on("postgres_changes",{
+        event:"*",
+        schema:"public",
+        table:"message_attachments"
+      },async () => {
+        if (activeConversation?.id === conversationId) {
+          await loadMessages();
+        }
+      })
+      .subscribe();
+  }
+
+  function subscribeToConversationList() {
+    if (listChannel) {
+      db.removeChannel(listChannel);
+      listChannel = null;
+    }
+
+    if (!currentUser) return;
+
+    listChannel = db
+      .channel("nova-user-conversations-" + currentUser.id)
+      .on("postgres_changes",{
+        event:"*",
+        schema:"public",
+        table:"conversation_members",
+        filter:"user_id=eq." + currentUser.id
+      },() => {
+        loadConversations().catch(error => toast(errorText(error)));
+      })
+      .subscribe();
+  }
+
+  function openModal(title,fields,submitLabel,onSubmit) {
+    const root = $("modalRoot");
+    root.classList.remove("hidden");
+    root.replaceChildren();
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+
+    const modal = document.createElement("div");
+    modal.className = "modal";
+
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+    modal.appendChild(heading);
+
+    const form = document.createElement("form");
+    const inputs = {};
+
+    for (const field of fields) {
+      const label = document.createElement("label");
+      label.textContent = field.label;
+      label.htmlFor = "modal-" + field.name;
+
+      const input = document.createElement(
+        field.multiline ? "textarea" : "input"
+      );
+
+      input.id = label.htmlFor;
+      input.name = field.name;
+      input.required = !!field.required;
+      input.placeholder = field.placeholder || "";
+
+      if (!field.multiline) {
+        input.type = field.type || "text";
+      }
+
+      inputs[field.name] = input;
+      form.append(label,input);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "btn secondary";
+    cancel.textContent = "إلغاء";
+    cancel.addEventListener("click",closeModal);
+
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.className = "btn";
+    submit.textContent = submitLabel;
+
+    actions.append(cancel,submit);
+    form.appendChild(actions);
+
+    form.addEventListener("submit",async event => {
+      event.preventDefault();
+      submit.disabled = true;
+
+      try {
+        await onSubmit(Object.fromEntries(
+          Object.entries(inputs).map(([key,input]) => [
+            key,input.value.trim()
+          ])
+        ));
+
+        closeModal();
+      } catch (error) {
+        toast(errorText(error));
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    modal.appendChild(form);
+    backdrop.appendChild(modal);
+
+    backdrop.addEventListener("click",event => {
+      if (event.target === backdrop) closeModal();
+    });
+
+    root.appendChild(backdrop);
+
+    setTimeout(() => Object.values(inputs)[0]?.focus(),50);
+  }
+
+  function closeModal() {
+    $("modalRoot").classList.add("hidden");
+    $("modalRoot").replaceChildren();
+  }
+
+  async function createDirectConversation(values) {
+    const username = values.username.replace(/^@/,"").trim();
+
+    if (!username) throw new Error("اكتب اسم المستخدم.");
+
+    const {data:target,error:profileError} = await db
+      .from("profiles")
+      .select("id,username,display_name")
+      .ilike("username",username)
+      .maybeSingle();
+
+    if (profileError) throw profileError;
+    if (!target) throw new Error("لم نعثر على هذا المستخدم.");
+    if (target.id === currentUser.id) {
+      throw new Error("لا يمكنك بدء محادثة مع نفسك.");
+    }
+
+    const {data:mine,error:mineError} = await db
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id",currentUser.id);
+
+    if (mineError) throw mineError;
+
+    const ids = (mine || []).map(item => item.conversation_id);
+
+    if (ids.length) {
+      const {data:theirs,error:theirError} = await db
+        .from("conversation_members")
+        .select("conversation_id")
+        .eq("user_id",target.id)
+        .in("conversation_id",ids);
+
+      if (theirError) throw theirError;
+
+      if (theirs?.length) {
+        const commonIds = theirs.map(item => item.conversation_id);
+
+        const {data:existing,error:existingError} = await db
+          .from("conversations")
+          .select("id,kind")
+          .in("id",commonIds)
+          .eq("kind","direct");
+
+        if (existingError) throw existingError;
+
+        if (existing?.length) {
+          await loadConversations();
+          await openConversation(existing[0].id);
+          toast("تم فتح المحادثة الموجودة.");
+          return;
+        }
+      }
+    }
+
+    const {data:conversation,error:conversationError} = await db
+      .from("conversations")
+      .insert({
+        kind:"direct",
+        created_by:currentUser.id
+      })
+      .select("id,kind,title,created_by,created_at,updated_at")
+      .single();
+
+    if (conversationError) throw conversationError;
+
+    const {error:membersError} = await db
+      .from("conversation_members")
+      .insert([
+        {
+          conversation_id:conversation.id,
+          user_id:currentUser.id,
+          role:"member"
+        },
+        {
+          conversation_id:conversation.id,
+          user_id:target.id,
+          role:"member"
+        }
+      ]);
+
+    if (membersError) {
+      throw new Error(
+        "تم إنشاء سجل المحادثة، لكن تعذرت إضافة الأعضاء. " +
+        errorText(membersError)
+      );
+    }
+
+    await loadConversations();
+    await openConversation(conversation.id);
+    toast("تم إنشاء المحادثة.");
+  }
+
+  async function updateProfile(values) {
+    const displayName = values.display_name.trim();
+    const bio = values.bio.trim();
+
+    if (!displayName) throw new Error("اكتب الاسم الظاهر.");
+
+    const {error} = await db
+      .from("profiles")
+      .update({
+        display_name:displayName,
+        full_name:displayName,
+        bio
+      })
+      .eq("id",currentUser.id);
+
+    if (error) throw error;
+
+    await loadProfile();
+    await loadConversations();
+    toast("تم تحديث الملف الشخصي.");
+  }
+
+  function setupEvents() {
+    $("toggleAuth").addEventListener("click",() => {
+      authMode = authMode === "login" ? "signup" : "login";
+
+      $("authTitle").textContent =
+        authMode === "login" ? "أهلًا بعودتك" : "انضم إلى نوفا";
+
+      $("authIntro").textContent =
+        authMode === "login"
+          ? "سجّل الدخول للمتابعة إلى نوفا."
+          : "أنشئ حسابك وابدأ التواصل.";
+
+      $("nameField").classList.toggle(
+        "hidden",
+        authMode !== "signup"
+      );
+
+      $("toggleAuth").textContent =
+        authMode === "login" ? "حساب جديد" : "لدي حساب";
+
+      $("password").autocomplete =
+        authMode === "login" ? "current-password" : "new-password";
+
+      $("authError").textContent = "";
+      setAuthBusy(false);
+    });
+
+    $("authForm").addEventListener("submit",async event => {
+      event.preventDefault();
+
+      if (busy) return;
+
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      const displayName = $("displayName").value.trim();
+
+      busy = true;
+      setAuthBusy(true);
+      $("authError").textContent = "";
+
+      try {
+        if (authMode === "signup") {
+          const {data,error} = await db.auth.signUp({
+            email,
+            password,
+            options:{
+              data:{
+                display_name:displayName || email.split("@")[0]
+              }
+            }
+          });
+
+          if (error) throw error;
+
+          if (data.user && data.session) {
+            await startSession(data.user);
+          } else {
+            $("authError").textContent =
+              "تم إنشاء طلب الحساب. راجع بريدك لتأكيد الحساب إذا كان تأكيد البريد مفعّلًا، ثم سجّل الدخول.";
+          }
+        } else {
+          const {data,error} = await db.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) throw error;
+          if (data.user) await startSession(data.user);
+        }
+      } catch (error) {
+        $("authError").textContent = errorText(error);
+      } finally {
+        busy = false;
+        setAuthBusy(false);
+      }
+    });
+
+    $("logoutBtn").addEventListener("click",async () => {
+      const {error} = await db.auth.signOut();
+
+      if (error) {
+        toast(errorText(error));
+        return;
+      }
+
+      cleanupSession();
+      showAuth();
+    });
+
+    const openNewChat = () => openModal(
+      "بدء محادثة جديدة",
+      [{
+        name:"username",
+        label:"اسم المستخدم",
+        placeholder:"مثال: ahmed123",
+        required:true
+      }],
+      "بدء المحادثة",
+      createDirectConversation
+    );
+
+    $("newChatBtn").addEventListener("click",openNewChat);
+    $("welcomeNewChat").addEventListener("click",openNewChat);
+
+    $("searchChats").addEventListener("input",renderConversationList);
+
+    document.querySelectorAll(".side-tabs button").forEach(button => {
+      button.addEventListener("click",() => {
+        currentFilter = button.dataset.filter;
+
+        document.querySelectorAll(".side-tabs button").forEach(item => {
+          item.classList.toggle("active",item === button);
+        });
+
+        renderConversationList();
+      });
+    });
+
+    $("messageForm").addEventListener("submit",sendMessage);
+
+    $("attachBtn").addEventListener("click",() => {
+      if (!activeConversation) {
+        toast("افتح محادثة أولًا.");
+        return;
+      }
+
+      $("attachmentInput").click();
+    });
+
+    $("attachmentInput").addEventListener("change",() => {
+      const files = Array.from($("attachmentInput").files || []);
+
+      try {
+        validateFiles(files);
+        showSelectedFiles(files);
+      } catch (error) {
+        clearSelectedFiles();
+        toast(error.message);
+      }
+    });
+
+    $("messageInput").addEventListener("input",event => {
+      event.target.style.height = "46px";
+      event.target.style.height =
+        Math.min(event.target.scrollHeight,130) + "px";
+    });
+
+    $("messageInput").addEventListener("keydown",event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        $("messageForm").requestSubmit();
+      }
+    });
+
+    $("refreshMessages").addEventListener("click",async () => {
+      await loadMessages();
+      toast("تم تحديث الرسائل.");
+    });
+
+    $("backBtn").addEventListener("click",() => {
+      $("app").classList.remove("chat-open");
+    });
+
+    $("profileBtn").addEventListener("click",() => openModal(
+      "تعديل الملف الشخصي",
+      [
+        {
+          name:"display_name",
+          label:"الاسم الظاهر",
+          placeholder:"اسمك",
+          required:true
+        },
+        {
+          name:"bio",
+          label:"نبذة عنك",
+          placeholder:"اكتب نبذة قصيرة",
+          multiline:true
+        }
+      ],
+      "حفظ التغييرات",
+      updateProfile
+    ));
+  }
+
+  function cleanupSession() {
+    if (messageChannel) db.removeChannel(messageChannel);
+    if (listChannel) db.removeChannel(listChannel);
+
+    messageChannel = null;
+    listChannel = null;
+    currentUser = null;
+    currentProfile = null;
+    conversations = [];
+    activeConversation = null;
+
+    $("app").classList.remove("chat-open");
+    $("chatScreen").classList.add("hidden");
+    $("welcome").classList.remove("hidden");
+    $("chatList").replaceChildren();
+    $("messages").replaceChildren();
+    clearSelectedFiles();
+  }
+
+  async function init() {
+    const validConfig =
+      SUPABASE_URL.startsWith("https://") &&
+      SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_") &&
+      window.supabase;
+
+    if (!validConfig) {
+      showAuth("تعذر تهيئة Supabase. راجع إعدادات الاتصال.");
+      return;
+    }
+
+    db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    setupEvents();
+
+    try {
+      const {data,error} = await db.auth.getSession();
+
+      if (error) throw error;
+
+      if (data.session?.user) {
+        await startSession(data.session.user);
+      } else {
+        showAuth();
+      }
+
+      const {data:listener} = db.auth.onAuthStateChange(
+        (event,session) => {
+          if (event === "SIGNED_OUT") {
+            cleanupSession();
+            showAuth();
+          }
+        }
+      );
+
+      authListener = listener;
+    } catch (error) {
+      console.error("NOVA initialization:",error);
+      showAuth("تعذر الاتصال: " + errorText(error));
+    }
+  }
+
+  init();
+})();
+</script>
 </body>
-  </html>
+            </html>
