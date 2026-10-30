@@ -1,319 +1,613 @@
-/* ==========================================================
-   MEKA X — CENTRAL CONFIGURATION
-   File: config.js
-   Purpose: App settings and public service configuration
-   ========================================================== */
+/* =========================================================
+   MEKA CHAT — DATABASE CONFIGURATION
+   Connected to existing Supabase project.
+   No new database will be created.
+========================================================= */
 
-(function () {
-  "use strict";
+"use strict";
 
-  if (window.MEKA_CONFIG?.__initialized) {
-    console.warn("[MEKA X] Configuration already initialized.");
-    return;
-  }
-
-  const DEFAULT_CONFIG = {
-    APP_NAME: "MEKA X",
-    APP_NAME_AR: "ميكا إكس",
-    APP_VERSION: "1.0.0",
-    APP_DESCRIPTION: "منصتك الاجتماعية، بطريقتك.",
-    APP_LANGUAGE: "ar",
-    APP_DIRECTION: "rtl",
-
-    // Change these only when the corresponding pages exist.
-    AUTH_REDIRECT_AFTER_LOGIN: "",
-    AUTH_REDIRECT_AFTER_LOGOUT: "",
-
-    // Supabase public project settings.
-    // Set these values after configuring your Supabase project.
-    SUPABASE_URL: "",
-    SUPABASE_ANON_KEY: "",
-
-    // UI preferences.
-    DEFAULT_THEME: "dark",
-    ENABLE_ANIMATIONS: true,
-    ENABLE_NOTIFICATIONS: true,
-
-    // Local storage namespace.
-    STORAGE_PREFIX: "meka_x_",
-
-    // Public feature switches.
-    FEATURES: {
-      AUTHENTICATION: true,
-      GOOGLE_LOGIN: true,
-      LOCAL_STORAGE: true,
-      DARK_THEME: true,
-      LIGHT_THEME: true,
-      SEARCH: true,
-      NOTIFICATIONS: true
+(() => {
+  const MEKA_CONFIG = {
+    APP: {
+      name: "MEKA CHAT",
+      nameAr: "ميكا شات",
+      version: "1.0.0",
+      direction: "rtl",
+      defaultLanguage: "ar",
+      defaultTheme: "dark",
+      splashDuration: 5000
     },
 
-    // Never place secret server keys in this file.
-    __initialized: true
+    SUPABASE: {
+      url: "https://cxksushmcuyomuaywgfw.supabase.co",
+
+      publishableKey:
+        "sb_publishable_6D7DE4aODAIqhG9Ls3gGfQ_Um-E-7f5",
+
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "meka-chat-auth"
+      }
+    },
+
+    DATABASE: {
+      schema: "public",
+
+      tables: {
+        profiles: "profiles",
+        userSettings: "user_settings",
+        userFollows: "user_follows",
+
+        posts: "posts",
+        postMedia: "post_media",
+        postLikes: "post_likes",
+        comments: "comments",
+
+        stories: "stories",
+        storyViews: "story_views",
+        storyAudiences: "story_audiences",
+
+        conversations: "conversations",
+        conversationMembers: "conversation_members",
+        messages: "messages",
+        messageAttachments: "message_attachments",
+        messageReactions: "message_reactions",
+        messagePins: "message_pins",
+        starredMessages: "starred_messages",
+        messageReceipts: "message_receipts",
+        conversationSettings: "conversation_settings",
+
+        calls: "calls",
+        callParticipants: "call_participants",
+
+        communities: "communities",
+        communityMembers: "community_members",
+
+        notifications: "notifications",
+        blocks: "blocks",
+        reports: "reports",
+
+        games: "games",
+        gameRooms: "game_rooms",
+        gameRoomMembers: "game_room_members",
+
+        userPresence: "user_presence",
+
+        aiConversations: "ai_conversations",
+        aiMessages: "ai_messages",
+
+        subscriptionPlans: "subscription_plans",
+        userSubscriptions: "user_subscriptions",
+
+        shortVideos: "short_videos",
+        shortVideoLikes: "short_video_likes",
+        shortVideoViews: "short_video_views",
+
+        savedPosts: "saved_posts",
+        savedShortVideos: "saved_short_videos",
+
+        friendRequests: "friend_requests",
+
+        polls: "polls",
+        pollOptions: "poll_options",
+        pollVotes: "poll_votes",
+
+        userDevices: "user_devices",
+        pushSubscriptions: "push_subscriptions"
+      }
+    },
+
+    STORAGE: {
+      buckets: {
+        avatars: "nova-avatars",
+        covers: "nova-covers",
+        messages: "nova-message-files",
+        posts: "nova-post-media",
+        stories: "nova-stories"
+      },
+
+      limits: {
+        avatar: 5 * 1024 * 1024,
+        cover: 10 * 1024 * 1024,
+        message: 100 * 1024 * 1024,
+        post: 100 * 1024 * 1024,
+        story: 100 * 1024 * 1024
+      },
+
+      allowedImages: [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+      ],
+
+      allowedMedia: [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/mp4",
+        "video/webm",
+        "audio/mpeg",
+        "audio/mp4",
+        "application/pdf"
+      ]
+    },
+
+    REALTIME: {
+      enabled: true,
+
+      channels: {
+        messages: "meka-messages",
+        presence: "meka-presence",
+        notifications: "meka-notifications",
+        calls: "meka-calls",
+        stories: "meka-stories",
+        social: "meka-social"
+      }
+    },
+
+    LANGUAGES: {
+      default: "ar",
+
+      supported: {
+        ar: { name: "العربية", direction: "rtl" },
+        en: { name: "English", direction: "ltr" },
+        fr: { name: "Français", direction: "ltr" },
+        es: { name: "Español", direction: "ltr" },
+        de: { name: "Deutsch", direction: "ltr" },
+        it: { name: "Italiano", direction: "ltr" },
+        pt: { name: "Português", direction: "ltr" },
+        ru: { name: "Русский", direction: "ltr" },
+        tr: { name: "Türkçe", direction: "ltr" },
+        zh: { name: "中文", direction: "ltr" },
+        ja: { name: "日本語", direction: "ltr" },
+        ko: { name: "한국어", direction: "ltr" },
+        hi: { name: "हिन्दी", direction: "ltr" },
+        ur: { name: "اردو", direction: "rtl" },
+        fa: { name: "فارسی", direction: "rtl" },
+        nl: { name: "Nederlands", direction: "ltr" },
+        sv: { name: "Svenska", direction: "ltr" },
+        no: { name: "Norsk", direction: "ltr" },
+        da: { name: "Dansk", direction: "ltr" },
+        fi: { name: "Suomi", direction: "ltr" },
+        pl: { name: "Polski", direction: "ltr" },
+        uk: { name: "Українська", direction: "ltr" },
+        el: { name: "Ελληνικά", direction: "ltr" },
+        he: { name: "עברית", direction: "rtl" },
+        id: { name: "Bahasa Indonesia", direction: "ltr" },
+        ms: { name: "Bahasa Melayu", direction: "ltr" },
+        bn: { name: "বাংলা", direction: "ltr" }
+      }
+    },
+
+    CALLS: {
+      enabled: true,
+      provider: "webrtc",
+
+      configuration: {
+        iceServers: [
+          {
+            urls: "stun:stun.l.google.com:19302"
+          },
+          {
+            urls: "stun:stun1.l.google.com:19302"
+          }
+        ]
+      }
+    },
+
+    STORIES: {
+      durationHours: 24,
+      maxTextLength: 700,
+      maxVideoSize: 100 * 1024 * 1024
+    },
+
+    MESSAGING: {
+      maxMessageLength: 10000,
+      maxAttachments: 10,
+      typingTimeout: 3000,
+      realtimeEnabled: true
+    },
+
+    SOCIAL: {
+      maxPostLength: 10000,
+      maxCommentLength: 5000,
+      shortVideoMaxSize: 100 * 1024 * 1024
+    },
+
+    SECURITY: {
+      useRLS: true,
+      neverExposeServiceRole: true,
+      validateUploads: true,
+      requireAuthenticatedUser: true
+    },
+
+    FEATURES: {
+      authentication: true,
+      googleLogin: true,
+      directMessages: true,
+      groupChats: true,
+      stories: true,
+      posts: true,
+      shortVideos: true,
+      communities: true,
+      channels: true,
+      voiceCalls: true,
+      videoCalls: true,
+      polls: true,
+      notifications: true,
+      games: true,
+      aiConversations: true,
+      subscriptions: true,
+      realtime: true,
+      fileUploads: true,
+      multiLanguage: true
+    }
   };
 
-  const existing = window.MEKA_CONFIG || {};
+  /* =========================================
+     GLOBAL EXPORT
+  ========================================= */
 
-  const mergedFeatures = {
-    ...DEFAULT_CONFIG.FEATURES,
-    ...(existing.FEATURES || {})
-  };
+  window.MEKA_CONFIG = MEKA_CONFIG;
 
-  const config = {
-    ...DEFAULT_CONFIG,
-    ...existing,
-    FEATURES: mergedFeatures,
-    __initialized: true
-  };
+  /* =========================================
+     SUPABASE CLIENT
+  ========================================= */
 
-  /*
-   * Validate the public Supabase configuration.
-   * The app can still load without Supabase.
-   */
-  function validateSupabaseConfig() {
-    const url = String(config.SUPABASE_URL || "").trim();
-    const key = String(config.SUPABASE_ANON_KEY || "").trim();
+  window.mekaSupabase = null;
+  window.mekaDatabaseReady = false;
 
-    if (!url && !key) {
-      return {
-        configured: false,
-        valid: false,
-        message: "Supabase is not configured yet."
-      };
+  window.mekaInitializeSupabase = function () {
+    if (window.mekaSupabase) {
+      return window.mekaSupabase;
     }
 
-    if (!url || !key) {
-      return {
-        configured: true,
-        valid: false,
-        message: "Supabase URL or public key is missing."
-      };
-    }
+    if (!window.supabase ||
+        typeof window.supabase.createClient !== "function") {
+      console.error(
+        "MEKA CHAT: Supabase SDK is not loaded."
+      );
 
-    let parsedUrl;
+      return null;
+    }
 
     try {
-      parsedUrl = new URL(url);
-    } catch {
+      window.mekaSupabase =
+        window.supabase.createClient(
+          MEKA_CONFIG.SUPABASE.url,
+          MEKA_CONFIG.SUPABASE.publishableKey,
+          {
+            auth: MEKA_CONFIG.SUPABASE.auth,
+
+            realtime: {
+              params: {
+                eventsPerSecond: 10
+              }
+            },
+
+            global: {
+              headers: {
+                "x-application-name": "MEKA-CHAT"
+              }
+            }
+          }
+        );
+
+      window.mekaDatabaseReady = true;
+
+      console.info(
+        "MEKA CHAT: Database client initialized."
+      );
+
+      window.dispatchEvent(
+        new CustomEvent("meka:database-ready")
+      );
+
+      return window.mekaSupabase;
+
+    } catch (error) {
+      console.error(
+        "MEKA CHAT: Database initialization failed.",
+        error
+      );
+
+      window.mekaDatabaseReady = false;
+
+      return null;
+    }
+  };
+
+  /* =========================================
+     TABLE HELPERS
+  ========================================= */
+
+  window.mekaTable = function (tableKey) {
+    const tableName =
+      MEKA_CONFIG.DATABASE.tables[tableKey];
+
+    if (!tableName) {
+      throw new Error(
+        "Unknown MEKA database table: " + tableKey
+      );
+    }
+
+    if (!window.mekaSupabase) {
+      throw new Error(
+        "MEKA database is not initialized."
+      );
+    }
+
+    return window.mekaSupabase
+      .from(tableName);
+  };
+
+  window.mekaGetTableName = function (tableKey) {
+    return MEKA_CONFIG.DATABASE.tables[tableKey] || null;
+  };
+
+  /* =========================================
+     STORAGE HELPERS
+  ========================================= */
+
+  window.mekaGetBucketName = function (bucketKey) {
+    return MEKA_CONFIG.STORAGE.buckets[bucketKey] || null;
+  };
+
+  window.mekaStorage = function (bucketKey) {
+    const bucketName =
+      window.mekaGetBucketName(bucketKey);
+
+    if (!bucketName || !window.mekaSupabase) {
+      throw new Error(
+        "MEKA Storage bucket is unavailable: " + bucketKey
+      );
+    }
+
+    return window.mekaSupabase
+      .storage
+      .from(bucketName);
+  };
+
+  /* =========================================
+     LANGUAGE HELPERS
+  ========================================= */
+
+  window.mekaGetLanguage = function () {
+    const saved =
+      localStorage.getItem("meka-language");
+
+    if (
+      saved &&
+      MEKA_CONFIG.LANGUAGES.supported[saved]
+    ) {
+      return saved;
+    }
+
+    return MEKA_CONFIG.LANGUAGES.default;
+  };
+
+  window.mekaGetDirection = function (language) {
+    const item =
+      MEKA_CONFIG.LANGUAGES.supported[language];
+
+    return item ? item.direction : "rtl";
+  };
+
+  window.mekaSetLanguage = function (language) {
+    if (!MEKA_CONFIG.LANGUAGES.supported[language]) {
+      return false;
+    }
+
+    localStorage.setItem(
+      "meka-language",
+      language
+    );
+
+    document.documentElement.lang = language;
+
+    document.documentElement.dir =
+      window.mekaGetDirection(language);
+
+    window.dispatchEvent(
+      new CustomEvent("meka:language-changed", {
+        detail: { language }
+      })
+    );
+
+    return true;
+  };
+
+  /* =========================================
+     FEATURE HELPERS
+  ========================================= */
+
+  window.mekaIsFeatureEnabled = function (name) {
+    return MEKA_CONFIG.FEATURES[name] === true;
+  };
+
+  /* =========================================
+     FILE VALIDATION
+  ========================================= */
+
+  window.mekaFormatFileSize = function (bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) {
+      return "0 B";
+    }
+
+    if (bytes < 1024) {
+      return bytes + " B";
+    }
+
+    if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(1) + " KB";
+    }
+
+    if (bytes < 1024 * 1024 * 1024) {
+      return (
+        bytes / (1024 * 1024)
+      ).toFixed(1) + " MB";
+    }
+
+    return (
+      bytes / (1024 * 1024 * 1024)
+    ).toFixed(1) + " GB";
+  };
+
+  window.mekaValidateFile = function (
+    file,
+    category = "message"
+  ) {
+    if (!(file instanceof File)) {
       return {
-        configured: true,
         valid: false,
-        message: "Supabase URL is invalid."
+        error: "الملف غير صالح."
       };
+    }
+
+    const limits =
+      MEKA_CONFIG.STORAGE.limits;
+
+    const maxSize =
+      limits[category] || limits.message;
+
+    if (file.size > maxSize) {
+      return {
+        valid: false,
+        error:
+          "حجم الملف أكبر من الحد المسموح: " +
+          window.mekaFormatFileSize(maxSize)
+      };
+    }
+
+    let allowedTypes =
+      MEKA_CONFIG.STORAGE.allowedMedia;
+
+    if (category === "avatar" || category === "cover") {
+      allowedTypes =
+        MEKA_CONFIG.STORAGE.allowedImages;
     }
 
     if (
-      parsedUrl.protocol !== "https:" &&
-      parsedUrl.hostname !== "localhost"
+      file.type &&
+      !allowedTypes.includes(file.type)
     ) {
       return {
-        configured: true,
         valid: false,
-        message: "Supabase must use HTTPS."
+        error: "نوع الملف غير مسموح."
       };
     }
 
     return {
-      configured: true,
       valid: true,
-      message: "Supabase configuration looks valid."
+      error: null
     };
-  }
-
-  /*
-   * Return a safe snapshot without exposing credentials.
-   */
-  function getPublicSettings() {
-    const validation = validateSupabaseConfig();
-
-    return Object.freeze({
-      appName: config.APP_NAME,
-      appNameAr: config.APP_NAME_AR,
-      version: config.APP_VERSION,
-      language: config.APP_LANGUAGE,
-      direction: config.APP_DIRECTION,
-      defaultTheme: config.DEFAULT_THEME,
-      animationsEnabled: Boolean(config.ENABLE_ANIMATIONS),
-      notificationsEnabled: Boolean(config.ENABLE_NOTIFICATIONS),
-      supabaseConfigured: validation.valid,
-      features: Object.freeze({ ...config.FEATURES })
-    });
-  }
-
-  /*
-   * Check whether a feature is enabled.
-   */
-  function isFeatureEnabled(name) {
-    if (!name) return false;
-
-    return config.FEATURES[
-      String(name).trim().toUpperCase()
-    ] === true;
-  }
-
-  /*
-   * Allow safe runtime UI preference changes.
-   * Connection credentials cannot be changed here.
-   */
-  function updatePreferences(preferences = {}) {
-    const allowed = [
-      "DEFAULT_THEME",
-      "ENABLE_ANIMATIONS",
-      "ENABLE_NOTIFICATIONS"
-    ];
-
-    allowed.forEach((key) => {
-      if (!Object.prototype.hasOwnProperty.call(preferences, key)) {
-        return;
-      }
-
-      if (key === "DEFAULT_THEME") {
-        const theme = String(preferences[key]).toLowerCase();
-
-        if (theme === "dark" || theme === "light") {
-          config.DEFAULT_THEME = theme;
-        }
-
-        return;
-      }
-
-      if (typeof preferences[key] === "boolean") {
-        config[key] = preferences[key];
-      }
-    });
-
-    document.documentElement.dataset.theme =
-      config.DEFAULT_THEME;
-
-    document.documentElement.lang =
-      config.APP_LANGUAGE;
-
-    document.documentElement.dir =
-      config.APP_DIRECTION;
-
-    window.dispatchEvent(
-      new CustomEvent("meka:config-updated", {
-        detail: {
-          settings: getPublicSettings()
-        }
-      })
-    );
-
-    return getPublicSettings();
-  }
-
-  /*
-   * Read a feature-safe configuration snapshot.
-   */
-  function getSupabaseSettings() {
-    const validation = validateSupabaseConfig();
-
-    if (!validation.valid) {
-      return {
-        configured: false,
-        url: "",
-        anonKey: "",
-        message: validation.message
-      };
-    }
-
-    return {
-      configured: true,
-      url: config.SUPABASE_URL,
-      anonKey: config.SUPABASE_ANON_KEY,
-      message: validation.message
-    };
-  }
-
-  /*
-   * Initialize basic document settings.
-   */
-  function initializeDocument() {
-    if (!document.documentElement) return;
-
-    document.documentElement.lang =
-      config.APP_LANGUAGE;
-
-    document.documentElement.dir =
-      config.APP_DIRECTION;
-
-    document.documentElement.dataset.theme =
-      config.DEFAULT_THEME;
-
-    const themeColor = document.querySelector(
-      'meta[name="theme-color"]'
-    );
-
-    if (themeColor) {
-      themeColor.content =
-        config.DEFAULT_THEME === "dark"
-          ? "#0b0b18"
-          : "#f5f6ff";
-    }
-
-    if (!document.title || document.title === "Document") {
-      document.title =
-        config.APP_NAME + " — " + config.APP_NAME_AR;
-    }
-  }
-
-  /*
-   * Keep credentials out of console output.
-   */
-  function reportStatus() {
-    const validation = validateSupabaseConfig();
-
-    const status = {
-      app: config.APP_NAME,
-      version: config.APP_VERSION,
-      supabaseConfigured: validation.valid,
-      message: validation.message
-    };
-
-    console.info("[MEKA X] Configuration loaded.", status);
-
-    window.dispatchEvent(
-      new CustomEvent("meka:config-ready", {
-        detail: {
-          settings: getPublicSettings(),
-          supabase: {
-            configured: validation.valid,
-            message: validation.message
-          }
-        }
-      })
-    );
-
-    return status;
-  }
-
-  /*
-   * Expose the configuration API.
-   */
-  const api = {
-    getPublicSettings,
-    getSupabaseSettings,
-    validateSupabaseConfig,
-    isFeatureEnabled,
-    updatePreferences,
-    reportStatus
   };
 
-  Object.defineProperty(window, "MEKA_CONFIG", {
-    value: config,
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
+  /* =========================================
+     AUTH HELPERS
+  ========================================= */
 
-  Object.defineProperty(window, "MekaConfig", {
-    value: Object.freeze(api),
-    writable: false,
-    configurable: false,
-    enumerable: true
-  });
+  window.mekaGetCurrentUser = async function () {
+    if (!window.mekaSupabase) {
+      return null;
+    }
 
-  initializeDocument();
-  reportStatus();
+    const {
+      data,
+      error
+    } = await window.mekaSupabase.auth.getUser();
+
+    if (error || !data.user) {
+      return null;
+    }
+
+    return data.user;
+  };
+
+  window.mekaGetCurrentSession = async function () {
+    if (!window.mekaSupabase) {
+      return null;
+    }
+
+    const {
+      data,
+      error
+    } = await window.mekaSupabase.auth.getSession();
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return data.session;
+  };
+
+  /* =========================================
+     DATABASE STATUS
+  ========================================= */
+
+  window.mekaCheckDatabase = async function () {
+    const client =
+      window.mekaInitializeSupabase();
+
+    if (!client) {
+      return {
+        connected: false,
+        message: "Supabase SDK is unavailable."
+      };
+    }
+
+    try {
+      const {
+        error
+      } = await client
+        .from("profiles")
+        .select("id")
+        .limit(1);
+
+      if (error) {
+        console.error(
+          "MEKA database check:",
+          error
+        );
+
+        return {
+          connected: false,
+          message: error.message
+        };
+      }
+
+      return {
+        connected: true,
+        message: "Database is reachable."
+      };
+
+    } catch (error) {
+      return {
+        connected: false,
+        message: error.message
+      };
+    }
+  };
+
+  /* =========================================
+     STARTUP
+  ========================================= */
+
+  document.documentElement.lang =
+    window.mekaGetLanguage();
+
+  document.documentElement.dir =
+    window.mekaGetDirection(
+      window.mekaGetLanguage()
+    );
+
+  window.mekaInitializeSupabase();
+
+  console.info(
+    "MEKA CHAT configuration loaded."
+  );
 
 })();
