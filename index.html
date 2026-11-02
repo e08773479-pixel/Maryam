@@ -1,800 +1,426 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#071510">
-  <meta name="description" content="MEKA CHAT — منصة متكاملة للمراسلة والتواصل والمجتمعات والمشاركة.">
-  <meta name="color-scheme" content="dark">
-  <meta name="application-name" content="MEKA CHAT">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <title>MEKA CHAT — ميكا شات</title>
+    <meta name="theme-color" content="#07131f">
+    <meta name="description" content="MEKA CHAT - تواصل بلا حدود">
 
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>MEKA CHAT | ميكا شات</title>
 
-  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-  <link rel="manifest" href="manifest.json">
+    <!-- أيقونة التطبيق -->
+    <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='27' fill='%230a9d85'/%3E%3Cpath d='M22 29Q22 20 32 20H68Q78 20 78 30V60Q78 70 68 70H49L31 84V70H32Q22 70 22 60Z' fill='white'/%3E%3Cpath d='M35 42L45 52L65 35' stroke='%230a9d85' stroke-width='6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css">
+
+    <!--
+      مؤقت شاشة البداية مستقل داخل index.html
+      لا يعتمد على app.js أو أي ملف خارجي.
+    -->
+    <script>
+        (function () {
+            const startTime = Date.now();
+
+            function finishSplash() {
+                const splash = document.getElementById("splash-screen");
+                const application = document.getElementById("app-shell");
+
+                if (!splash || !application) return;
+
+                splash.classList.add("splash-hidden");
+                application.classList.add("app-visible");
+
+                document.body.classList.add("app-started");
+
+                setTimeout(() => {
+                    splash.remove();
+                }, 700);
+            }
+
+            const remainingTime = Math.max(
+                0,
+                5000 - (Date.now() - startTime)
+            );
+
+            window.addEventListener("DOMContentLoaded", function () {
+                setTimeout(finishSplash, remainingTime);
+            }, { once: true });
+        })();
+    </script>
 </head>
 
 <body>
 
-<div id="app">
+    <!-- =================================
+         شاشة البداية MEKA SPLASH SCREEN
+    ================================== -->
 
-  <!-- BRAND ICON -->
-  <svg id="meka-brand-symbol" xmlns="http://www.w3.org/2000/svg" hidden>
-    <symbol id="meka-symbol" viewBox="0 0 100 100">
-      <path d="M18 22C18 14 25 8 33 8H67C75 8 82 14 82 22V65C82 73 75 80 67 80H43L23 94V80C20 77 18 72 18 65Z" fill="currentColor"/>
-      <path d="M34 36V57M50 36V57M66 36V57" stroke="white" stroke-width="7" stroke-linecap="round"/>
-    </symbol>
-  </svg>
+    <section id="splash-screen" class="splash-screen">
 
-  <!-- SPLASH SCREEN -->
-  <section id="splash-screen" class="screen splash-screen">
-    <div class="splash-content">
-      <div class="brand-logo">
-        <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-      </div>
-      <h1>MEKA <span>CHAT</span></h1>
-      <p>كل لحظة تجمعنا</p>
-      <div class="loading-indicator">
-        <span></span><span></span><span></span>
-      </div>
-      <p id="splash-status">جارٍ تجهيز تجربتك...</p>
-    </div>
-    <footer>MEKA CHAT · تواصل بلا حدود</footer>
-  </section>
-
-  <!-- AUTHENTICATION -->
-  <section id="auth-screen" class="screen auth-screen hidden">
-    <div class="auth-background"></div>
-
-    <div class="auth-container">
-      <div class="auth-brand">
-        <div class="brand-logo">
-          <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-        </div>
-        <h1>MEKA CHAT</h1>
-        <p>عالمك، أصدقاؤك، وكل لحظاتك في مكان واحد.</p>
-      </div>
-
-      <div class="auth-card">
-
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-auth-tab="login">تسجيل الدخول</button>
-          <button class="auth-tab" data-auth-tab="register">إنشاء حساب</button>
+        <div class="splash-background">
+            <div class="glow glow-one"></div>
+            <div class="glow glow-two"></div>
+            <div class="glow glow-three"></div>
         </div>
 
-        <form id="login-form" class="auth-form">
-          <h2>مرحبًا بعودتك</h2>
-          <p>سجل دخولك لمتابعة محادثاتك.</p>
+        <div class="splash-content">
 
-          <label for="login-email">البريد الإلكتروني</label>
-          <input id="login-email" name="email" type="email" autocomplete="email" required>
+            <div class="brand-icon-wrap">
 
-          <label for="login-password">كلمة المرور</label>
-          <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                <div class="icon-orbit orbit-one"></div>
+                <div class="icon-orbit orbit-two"></div>
 
-          <button type="button" class="text-button" data-action="forgot-password">نسيت كلمة المرور؟</button>
+                <div class="brand-icon">
 
-          <button class="button button-primary button-full" type="submit">
-            تسجيل الدخول
-          </button>
+                    <svg viewBox="0 0 100 100"
+                         xmlns="http://www.w3.org/2000/svg"
+                         role="img"
+                         aria-label="MEKA Logo">
 
-          <button class="button button-google button-full" id="google-signin-btn" type="button">
-            المتابعة باستخدام Google
-          </button>
-        </form>
+                        <defs>
+                            <linearGradient id="mekaGradient"
+                                x1="0%" y1="0%" x2="100%" y2="100%">
 
-        <form id="register-form" class="auth-form hidden">
-          <h2>أنشئ حسابك</h2>
-          <p>ابدأ رحلتك الجديدة مع MEKA.</p>
+                                <stop offset="0%" stop-color="#42e8c4"/>
+                                <stop offset="100%" stop-color="#079b83"/>
 
-          <label for="register-name">الاسم الظاهر</label>
-          <input id="register-name" name="display_name" type="text" minlength="2" maxlength="60" required>
+                            </linearGradient>
 
-          <label for="register-email">البريد الإلكتروني</label>
-          <input id="register-email" name="email" type="email" autocomplete="email" required>
+                            <filter id="logoShadow">
+                                <feGaussianBlur stdDeviation="2"/>
+                            </filter>
+                        </defs>
 
-          <label for="register-password">كلمة المرور</label>
-          <input id="register-password" name="password" type="password" minlength="8" autocomplete="new-password" required>
+                        <path
+                            d="M17 29
+                               Q17 17 30 17
+                               H70
+                               Q83 17 83 30
+                               V60
+                               Q83 73 70 73
+                               H48
+                               L27 89
+                               V73
+                               Q17 73 17 60Z"
+                            fill="url(#mekaGradient)"
+                        />
 
-          <label for="register-password-confirm">تأكيد كلمة المرور</label>
-          <input id="register-password-confirm" name="password_confirm" type="password" minlength="8" autocomplete="new-password" required>
+                        <path
+                            d="M32 45
+                               L44 57
+                               L68 34"
+                            stroke="#ffffff"
+                            stroke-width="7"
+                            fill="none"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
 
-          <label class="checkbox-row">
-            <input type="checkbox" id="accept-terms" required>
-            <span>أوافق على شروط الاستخدام وسياسة الخصوصية.</span>
-          </label>
+                        <circle cx="74" cy="24" r="5"
+                                fill="#ffffff" opacity=".9"/>
 
-          <button class="button button-primary button-full" type="submit">
-            إنشاء الحساب
-          </button>
-        </form>
+                    </svg>
 
-        <form id="reset-password-form" class="auth-form hidden">
-          <h2>استعادة كلمة المرور</h2>
-          <p>أدخل بريدك الإلكتروني لإرسال رابط الاستعادة.</p>
-          <label for="reset-email">البريد الإلكتروني</label>
-          <input id="reset-email" type="email" required>
-          <button class="button button-primary button-full" type="submit">إرسال رابط الاستعادة</button>
-          <button class="text-button" type="button" data-action="back-to-login">العودة للدخول</button>
-        </form>
+                </div>
 
-        <p id="auth-status" class="form-status" role="status"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROFILE SETUP -->
-  <section id="profile-setup-screen" class="screen hidden">
-    <div class="setup-container">
-      <div class="brand-logo">
-        <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-      </div>
-
-      <h1>جهز ملفك الشخصي</h1>
-      <p>أكمل بياناتك علشان تبدأ استخدام MEKA CHAT.</p>
-
-      <form id="profile-setup-form">
-        <label for="setup-avatar-input">الصورة الشخصية</label>
-        <input id="setup-avatar-input" type="file" accept="image/png,image/jpeg,image/webp">
-        <img id="setup-avatar-preview" alt="معاينة الصورة الشخصية" class="avatar-preview">
-
-        <label for="setup-cover-input">صورة الغلاف</label>
-        <input id="setup-cover-input" type="file" accept="image/png,image/jpeg,image/webp">
-
-        <label for="setup-display-name">الاسم الظاهر</label>
-        <input id="setup-display-name" type="text" maxlength="60" required>
-
-        <label for="setup-username">اسم المستخدم</label>
-        <input id="setup-username" type="text" minlength="3" maxlength="24" required>
-
-        <label for="setup-bio">نبذة شخصية</label>
-        <textarea id="setup-bio" maxlength="300"></textarea>
-
-        <button class="button button-primary button-full" type="submit">
-          حفظ الملف الشخصي
-        </button>
-
-        <p id="profile-setup-status" class="form-status"></p>
-      </form>
-    </div>
-  </section>
-
-  <!-- MAIN APPLICATION -->
-  <section id="main-screen" class="screen main-screen hidden">
-
-    <div class="application-layout">
-
-      <!-- SIDEBAR -->
-      <aside id="app-sidebar" class="app-sidebar">
-
-        <header class="sidebar-header">
-          <button class="brand-button" data-action="go-home">
-            <span class="brand-logo small">
-              <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-            </span>
-            <span>MEKA CHAT</span>
-          </button>
-
-          <div class="header-actions">
-            <button class="icon-button" data-action="new-chat" aria-label="محادثة جديدة">＋</button>
-            <button class="icon-button" data-action="open-main-menu" aria-label="القائمة">⋯</button>
-          </div>
-        </header>
-
-        <!-- GLOBAL SEARCH -->
-        <div class="sidebar-search">
-          <span>⌕</span>
-          <input id="global-search-input" type="search" placeholder="ابحث في MEKA...">
-          <button id="clear-search-btn" class="hidden" type="button">×</button>
-        </div>
-
-        <!-- MAIN NAVIGATION -->
-        <nav class="sidebar-navigation">
-
-          <button class="navigation-item active" data-section="chats">
-            <span>◫</span><span>المحادثات</span><span id="unread-count" class="badge hidden">0</span>
-          </button>
-
-          <button class="navigation-item" data-section="friends">
-            <span>♙</span><span>الأصدقاء</span>
-          </button>
-
-          <button class="navigation-item" data-section="status">
-            <span>◉</span><span>الحالات</span>
-          </button>
-
-          <button class="navigation-item" data-section="calls">
-            <span>☎</span><span>المكالمات</span>
-          </button>
-
-          <button class="navigation-item" data-section="communities">
-            <span>♧</span><span>المجتمعات</span>
-          </button>
-
-          <button class="navigation-item" data-section="channels">
-            <span>▤</span><span>القنوات</span>
-          </button>
-
-          <button class="navigation-item" data-section="feed">
-            <span>▦</span><span>المنشورات</span>
-          </button>
-
-          <button class="navigation-item" data-section="shorts">
-            <span>▷</span><span>الفيديوهات القصيرة</span>
-          </button>
-
-          <button class="navigation-item" data-section="saved">
-            <span>♢</span><span>المحفوظات</span>
-          </button>
-
-          <button class="navigation-item" data-section="games">
-            <span>◇</span><span>الألعاب</span>
-          </button>
-
-        </nav>
-
-        <!-- DYNAMIC SIDEBAR CONTENT -->
-        <div class="sidebar-content">
-
-          <section id="chats-section" class="sidebar-section" data-section-panel="chats">
-            <div class="section-heading">
-              <h2>محادثاتك</h2>
-              <button data-action="new-chat">＋</button>
             </div>
 
-            <div class="chat-filters">
-              <button class="filter-chip active" data-chat-filter="all">الكل</button>
-              <button class="filter-chip" data-chat-filter="unread">غير مقروءة</button>
-              <button class="filter-chip" data-chat-filter="favorites">المفضلة</button>
-              <button class="filter-chip" data-chat-filter="groups">المجموعات</button>
-              <button class="filter-chip" data-chat-filter="archived">المؤرشفة</button>
+            <div class="splash-brand">
+                <h1>MEKA<span>CHAT</span></h1>
+                <p>عالمك... أقرب إليك</p>
             </div>
 
-            <div id="chat-list" class="chat-list"></div>
-          </section>
+            <div class="splash-loader">
+                <div class="loader-track">
+                    <div class="loader-progress"></div>
+                </div>
 
-          <section id="friends-section" class="sidebar-section hidden" data-section-panel="friends">
-            <h2>الأصدقاء</h2>
-            <div class="search-box">
-              <input id="friend-search-input" type="search" placeholder="ابحث بالاسم أو الكود">
-              <button id="friend-search-btn">بحث</button>
+                <span>جاري تجهيز عالمك</span>
             </div>
-            <div id="friend-search-results"></div>
-            <div id="friend-requests-list"></div>
-          </section>
-
-          <section id="status-section" class="sidebar-section hidden" data-section-panel="status">
-            <div class="section-heading">
-              <h2>الحالات</h2>
-              <button data-action="create-status">＋</button>
-            </div>
-            <div id="my-status-container"></div>
-            <div id="stories-list"></div>
-          </section>
-
-          <section id="calls-section" class="sidebar-section hidden" data-section-panel="calls">
-            <h2>المكالمات</h2>
-            <div id="call-history-list"></div>
-          </section>
-
-          <section id="communities-section" class="sidebar-section hidden" data-section-panel="communities">
-            <h2>المجتمعات والمجموعات</h2>
-            <button class="button button-primary" data-action="create-community">إنشاء مجتمع</button>
-            <div id="communities-list"></div>
-          </section>
-
-          <section id="channels-section" class="sidebar-section hidden" data-section-panel="channels">
-            <h2>القنوات</h2>
-            <button class="button button-primary" data-action="create-channel">إنشاء قناة</button>
-            <div id="channels-list"></div>
-          </section>
-
-          <section id="feed-section" class="sidebar-section hidden" data-section-panel="feed">
-            <h2>المنشورات</h2>
-            <div id="feed-sidebar-list"></div>
-          </section>
-
-          <section id="shorts-section" class="sidebar-section hidden" data-section-panel="shorts">
-            <h2>الفيديوهات القصيرة</h2>
-            <div id="shorts-sidebar-list"></div>
-          </section>
-
-          <section id="saved-section" class="sidebar-section hidden" data-section-panel="saved">
-            <h2>المحفوظات</h2>
-            <div id="saved-items-list"></div>
-          </section>
-
-          <section id="games-section" class="sidebar-section hidden" data-section-panel="games">
-            <h2>الألعاب</h2>
-            <div id="games-list"></div>
-          </section>
 
         </div>
 
-        <!-- USER PROFILE FOOTER -->
-        <footer class="sidebar-profile">
-          <button class="profile-summary" data-action="open-profile">
-            <img id="sidebar-user-avatar" src="assets/default-avatar.svg" alt="">
-            <span>
-              <strong id="sidebar-user-name">حسابي</strong>
-              <small id="sidebar-user-code">MK-000000</small>
-            </span>
-          </button>
-          <button class="icon-button" data-action="open-settings" aria-label="الإعدادات">⚙</button>
-        </footer>
+        <div class="splash-footer">
+            MADE FOR CONNECTION
+        </div>
 
-      </aside>
+    </section>
 
-      <!-- MAIN CONTENT -->
-      <main id="main-content" class="main-content">
 
-        <!-- HOME / WELCOME -->
-        <section id="home-view" class="content-view">
-          <div class="welcome-view">
-            <div class="welcome-brand">
-              <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-            </div>
-            <h1>أهلًا بك في MEKA CHAT</h1>
-            <p>ابدأ محادثة أو اكتشف المجتمعات وشارك لحظاتك.</p>
-            <button class="button button-primary" data-action="new-chat">ابدأ محادثة</button>
-          </div>
-        </section>
+    <!-- =================================
+         التطبيق الرئيسي
+    ================================== -->
 
-        <!-- CHAT VIEW -->
-        <section id="chat-view" class="content-view hidden">
+    <main id="app-shell" class="app-shell">
 
-          <header class="chat-header">
-            <button class="icon-button mobile-back-button" data-action="close-chat">←</button>
+        <!-- الشريط الجانبي -->
 
-            <button class="chat-user-info" data-action="open-chat-details">
-              <img id="chat-avatar" src="assets/default-avatar.svg" alt="">
-              <span>
-                <strong id="chat-title">المحادثة</strong>
-                <small id="chat-presence"> </small>
-              </span>
-            </button>
+        <aside class="sidebar">
 
-            <div class="chat-header-actions">
-              <button class="icon-button" data-action="search-in-chat" aria-label="البحث">⌕</button>
-              <button class="icon-button" data-action="start-audio-call" aria-label="مكالمة صوتية">☎</button>
-              <button class="icon-button" data-action="start-video-call" aria-label="مكالمة فيديو">▣</button>
-              <button class="icon-button" data-action="open-chat-menu" aria-label="المزيد">⋯</button>
-            </div>
-          </header>
+            <div class="sidebar-brand">
 
-          <div id="chat-pinned-messages" class="pinned-messages hidden"></div>
+                <div class="mini-logo">
+                    <svg viewBox="0 0 100 100" aria-hidden="true">
+                        <path
+                            d="M17 29Q17 17 30 17H70Q83 17 83 30V60Q83 73 70 73H48L27 89V73Q17 73 17 60Z"
+                            fill="#14b89a"/>
 
-          <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+                        <path
+                            d="M32 45L44 57L68 34"
+                            stroke="white"
+                            stroke-width="7"
+                            fill="none"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"/>
+                    </svg>
+                </div>
 
-          <div id="typing-indicator" class="typing-indicator hidden"></div>
+                <div>
+                    <strong>MEKA</strong>
+                    <span>CHAT</span>
+                </div>
 
-          <div id="reply-preview" class="reply-preview hidden">
-            <div>
-              <strong id="reply-author"></strong>
-              <p id="reply-text"></p>
-            </div>
-            <button data-action="cancel-reply">×</button>
-          </div>
-
-          <div id="attachment-preview" class="attachment-preview hidden"></div>
-
-          <form id="message-form" class="message-composer">
-
-            <div class="composer-tools">
-              <button type="button" data-action="attach-file" aria-label="إرفاق ملف">＋</button>
-              <button type="button" data-action="open-emoji" aria-label="الرموز">☺</button>
-              <button type="button" data-action="record-voice" aria-label="رسالة صوتية">🎙</button>
             </div>
 
-            <textarea id="message-input" rows="1" maxlength="10000" placeholder="اكتب رسالتك..."></textarea>
+            <div class="sidebar-user">
 
-            <input id="message-file-input" type="file" hidden multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.zip">
+                <div class="user-avatar">
+                    <span>م</span>
+                    <i></i>
+                </div>
 
-            <button type="button" data-action="open-message-poll" aria-label="إنشاء استطلاع">▥</button>
+                <div class="user-info">
+                    <strong>مرحبًا بك</strong>
+                    <small>في عالم ميكا</small>
+                </div>
 
-            <button type="submit" id="send-message-btn" class="send-button" aria-label="إرسال">➤</button>
+                <button class="icon-button" id="theme-button"
+                        aria-label="تغيير المظهر">
+                    ◐
+                </button>
 
-          </form>
-
-        </section>
-
-        <!-- GLOBAL SEARCH -->
-        <section id="search-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>البحث</h2>
-            <button class="icon-button" data-action="close-content-view">×</button>
-          </header>
-
-          <div class="search-page">
-            <input id="search-page-input" type="search" placeholder="ابحث عن أشخاص أو رسائل أو محتوى">
-            <button id="search-page-submit" class="button button-primary">بحث</button>
-
-            <div class="search-type-tabs">
-              <button class="active" data-search-type="people">الأشخاص</button>
-              <button data-search-type="messages">الرسائل</button>
-              <button data-search-type="media">الوسائط</button>
-              <button data-search-type="posts">المنشورات</button>
-              <button data-search-type="groups">المجموعات</button>
             </div>
 
-            <div id="search-page-results"></div>
-          </div>
-        </section>
+            <div class="sidebar-section-title">
+                القائمة الرئيسية
+            </div>
 
-        <!-- SOCIAL FEED -->
-        <section id="feed-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>آخر المنشورات</h2>
-          </header>
+            <nav class="main-navigation">
 
-          <form id="create-post-form">
-            <textarea id="post-content" maxlength="5000" placeholder="بم تفكر؟"></textarea>
-            <input id="post-media-input" type="file" accept="image/*,video/*" multiple>
-            <select id="post-visibility">
-              <option value="public">عام</option>
-              <option value="friends">الأصدقاء</option>
-              <option value="private">أنا فقط</option>
-            </select>
-            <button class="button button-primary" type="submit">نشر</button>
-          </form>
+                <button class="nav-item active" data-page="chats">
+                    <span class="nav-icon">▤</span>
+                    <span>المحادثات</span>
+                    <span class="nav-count">0</span>
+                </button>
 
-          <div id="feed-posts"></div>
-        </section>
+                <button class="nav-item" data-page="status">
+                    <span class="nav-icon">◉</span>
+                    <span>الحالات</span>
+                </button>
 
-        <!-- SHORT VIDEOS -->
-        <section id="shorts-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>الفيديوهات القصيرة</h2>
-            <button data-action="upload-short">＋ إضافة فيديو</button>
-          </header>
-          <div id="shorts-container"></div>
-        </section>
+                <button class="nav-item" data-page="calls">
+                    <span class="nav-icon">♧</span>
+                    <span>المكالمات</span>
+                </button>
 
-        <!-- FRIENDS VIEW -->
-        <section id="friends-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>الأصدقاء والطلبات</h2>
-          </header>
-          <div id="friends-content"></div>
-        </section>
+                <button class="nav-item" data-page="contacts">
+                    <span class="nav-icon">♙</span>
+                    <span>جهات الاتصال</span>
+                </button>
 
-        <!-- COMMUNITIES VIEW -->
-        <section id="communities-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>المجتمعات</h2>
-            <button class="button button-primary" data-action="create-community">إنشاء مجتمع</button>
-          </header>
-          <div id="communities-content"></div>
-        </section>
-
-        <!-- CHANNELS VIEW -->
-        <section id="channels-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>القنوات</h2>
-            <button class="button button-primary" data-action="create-channel">إنشاء قناة</button>
-          </header>
-          <div id="channels-content"></div>
-        </section>
-
-        <!-- CALLS VIEW -->
-        <section id="calls-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>المكالمات</h2>
-          </header>
-          <div id="calls-content"></div>
-        </section>
-
-        <!-- PROFILE VIEW -->
-        <section id="profile-view" class="content-view hidden">
-          <header class="content-view-header">
-            <h2>الملف الشخصي</h2>
-            <button data-action="edit-profile">تعديل</button>
-          </header>
-
-          <div class="profile-cover">
-            <img id="profile-cover-image" alt="">
-          </div>
-
-          <div class="profile-information">
-            <img id="profile-avatar" src="assets/default-avatar.svg" alt="">
-            <h2 id="profile-display-name"></h2>
-            <p id="profile-username"></p>
-            <p id="profile-user-code"></p>
-            <p id="profile-bio"></p>
-          </div>
-
-          <div class="profile-tabs">
-            <button data-profile-tab="posts">المنشورات</button>
-            <button data-profile-tab="media">الوسائط</button>
-            <button data-profile-tab="friends">الأصدقاء</button>
-            <button data-profile-tab="about">حول</button>
-          </div>
-
-          <div id="profile-tab-content"></div>
-        </section>
-
-        <!-- SAVED VIEW -->
-        <section id="saved-view" class="content-view hidden">
-          <header class="content-view-header"><h2>المحفوظات</h2></header>
-          <div id="saved-content"></div>
-        </section>
-
-        <!-- SETTINGS -->
-        <section id="settings-view" class="content-view hidden">
-
-          <header class="content-view-header">
-            <h2>الإعدادات</h2>
-            <button class="icon-button" data-action="close-content-view">×</button>
-          </header>
-
-          <div class="settings-layout">
-
-            <nav class="settings-navigation">
-              <button class="active" data-settings-tab="account">الحساب</button>
-              <button data-settings-tab="privacy">الخصوصية</button>
-              <button data-settings-tab="security">الأمان</button>
-              <button data-settings-tab="notifications">الإشعارات</button>
-              <button data-settings-tab="appearance">المظهر</button>
-              <button data-settings-tab="language">اللغة</button>
-              <button data-settings-tab="storage">التخزين والبيانات</button>
-              <button data-settings-tab="blocked">المحظورون</button>
-              <button data-settings-tab="subscription">الاشتراكات</button>
-              <button data-settings-tab="help">المساعدة والدعم</button>
             </nav>
 
-            <div class="settings-content">
+            <div class="sidebar-bottom">
 
-              <section class="settings-panel" data-settings-panel="account">
-                <h3>الحساب</h3>
-                <div id="account-settings-content"></div>
-              </section>
+                <button class="nav-item" data-page="settings">
+                    <span class="nav-icon">⚙</span>
+                    <span>الإعدادات</span>
+                </button>
 
-              <section class="settings-panel hidden" data-settings-panel="privacy">
-                <h3>الخصوصية</h3>
-                <label>آخر ظهور
-                  <select data-setting="last_seen_visibility">
-                    <option value="everyone">الجميع</option>
-                    <option value="friends">الأصدقاء</option>
-                    <option value="nobody">لا أحد</option>
-                  </select>
-                </label>
-                <label>الصورة الشخصية
-                  <select data-setting="avatar_visibility">
-                    <option value="everyone">الجميع</option>
-                    <option value="friends">الأصدقاء</option>
-                    <option value="nobody">لا أحد</option>
-                  </select>
-                </label>
-                <label>الحالة
-                  <select data-setting="story_visibility">
-                    <option value="everyone">الجميع</option>
-                    <option value="friends">الأصدقاء</option>
-                    <option value="custom">مخصص</option>
-                  </select>
-                </label>
-                <label>إيصالات القراءة
-                  <input type="checkbox" data-setting="read_receipts" checked>
-                </label>
-                <label>مؤشر الكتابة
-                  <input type="checkbox" data-setting="typing_indicators" checked>
-                </label>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="security">
-                <h3>الأمان</h3>
-                <div id="security-settings-content"></div>
-                <button class="button button-secondary" data-action="change-password">تغيير كلمة المرور</button>
-                <button class="button button-secondary" data-action="manage-sessions">الأجهزة والجلسات</button>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="notifications">
-                <h3>الإشعارات</h3>
-                <label>إشعارات التطبيق
-                  <input type="checkbox" data-setting="notifications_enabled" checked>
-                </label>
-                <label>معاينة الرسائل
-                  <input type="checkbox" data-setting="notification_previews" checked>
-                </label>
-                <label>إشعارات المجموعات
-                  <input type="checkbox" data-setting="group_notifications" checked>
-                </label>
-                <button class="button button-primary" data-action="enable-notifications">تفعيل إشعارات الجهاز</button>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="appearance">
-                <h3>المظهر</h3>
-                <div class="appearance-options">
-                  <button data-theme-choice="dark">داكن</button>
-                  <button data-theme-choice="light">فاتح</button>
-                  <button data-theme-choice="system">حسب الجهاز</button>
+                <div class="sidebar-version">
+                    MEKA CHAT · VERSION 1.0
                 </div>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="language">
-                <h3>اللغة</h3>
-                <select id="app-language" data-setting="language">
-                  <option value="ar">العربية</option>
-                  <option value="en">English</option>
-                  <option value="fr">Français</option>
-                  <option value="es">Español</option>
-                  <option value="de">Deutsch</option>
-                  <option value="it">Italiano</option>
-                  <option value="pt">Português</option>
-                  <option value="ru">Русский</option>
-                  <option value="tr">Türkçe</option>
-                  <option value="zh">中文</option>
-                  <option value="ja">日本語</option>
-                  <option value="ko">한국어</option>
-                  <option value="hi">हिन्दी</option>
-                  <option value="ur">اردو</option>
-                  <option value="fa">فارسی</option>
-                  <option value="id">Bahasa Indonesia</option>
-                  <option value="ms">Bahasa Melayu</option>
-                  <option value="nl">Nederlands</option>
-                  <option value="sv">Svenska</option>
-                  <option value="no">Norsk</option>
-                  <option value="da">Dansk</option>
-                  <option value="fi">Suomi</option>
-                  <option value="pl">Polski</option>
-                  <option value="uk">Українська</option>
-                  <option value="el">Ελληνικά</option>
-                  <option value="he">עברית</option>
-                  <option value="th">ไทย</option>
-                </select>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="storage">
-                <h3>التخزين والبيانات</h3>
-                <div id="storage-settings-content"></div>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="blocked">
-                <h3>الحسابات المحظورة</h3>
-                <div id="blocked-users-list"></div>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="subscription">
-                <h3>MEKA PLUS</h3>
-                <div id="subscription-content"></div>
-                <button class="button button-primary" data-action="open-subscription">عرض الخطط</button>
-              </section>
-
-              <section class="settings-panel hidden" data-settings-panel="help">
-                <h3>المساعدة والدعم</h3>
-                <button data-action="show-terms">شروط الاستخدام</button>
-                <button data-action="show-privacy-policy">سياسة الخصوصية</button>
-                <button data-action="report-problem">الإبلاغ عن مشكلة</button>
-              </section>
 
             </div>
-          </div>
+
+        </aside>
+
+
+        <!-- منطقة المحتوى -->
+
+        <section class="main-content">
+
+            <header class="top-header">
+
+                <div>
+                    <div class="header-eyebrow">
+                        YOUR PERSONAL SPACE
+                    </div>
+
+                    <h2 id="page-title">المحادثات</h2>
+                </div>
+
+                <div class="header-actions">
+
+                    <button class="header-icon" id="search-button"
+                            aria-label="بحث">
+                        ⌕
+                    </button>
+
+                    <button class="new-chat-button" id="new-chat-button">
+                        <span>＋</span>
+                        محادثة جديدة
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <div class="content-layout">
+
+                <!-- قائمة المحادثات -->
+
+                <section class="chat-list-panel">
+
+                    <div class="chat-list-heading">
+
+                        <div>
+                            <h3>رسائلك</h3>
+                            <p>كل محادثاتك في مكان واحد</p>
+                        </div>
+
+                        <button class="small-icon-button"
+                                aria-label="خيارات المحادثات">
+                            ⋯
+                        </button>
+
+                    </div>
+
+                    <div class="chat-search">
+                        <span>⌕</span>
+                        <input
+                            type="search"
+                            placeholder="ابحث عن محادثة..."
+                            id="chat-search-input"
+                            aria-label="البحث عن محادثة">
+                    </div>
+
+                    <div class="chat-filters">
+                        <button class="filter-chip selected">الكل</button>
+                        <button class="filter-chip">غير مقروءة</button>
+                        <button class="filter-chip">المفضلة</button>
+                    </div>
+
+                    <div class="empty-chat-list">
+
+                        <div class="empty-chat-icon">
+                            <span>✉</span>
+                        </div>
+
+                        <h3>مساحة جديدة للتواصل</h3>
+
+                        <p>
+                            ستظهر محادثاتك هنا عندما تبدأ التواصل مع أصدقائك.
+                        </p>
+
+                        <button id="start-chat-button">
+                            ابدأ محادثة
+                            <span>←</span>
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <!-- مساحة المحادثة -->
+
+                <section class="conversation-panel">
+
+                    <div class="conversation-decoration decoration-one"></div>
+                    <div class="conversation-decoration decoration-two"></div>
+
+                    <div class="welcome-area">
+
+                        <div class="welcome-logo">
+                            <svg viewBox="0 0 100 100" aria-hidden="true">
+
+                                <path
+                                    d="M17 29Q17 17 30 17H70Q83 17 83 30V60Q83 73 70 73H48L27 89V73Q17 73 17 60Z"
+                                    fill="url(#welcomeGradient)"/>
+
+                                <defs>
+                                    <linearGradient id="welcomeGradient"
+                                        x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#42e8c4"/>
+                                        <stop offset="100%" stop-color="#079b83"/>
+                                    </linearGradient>
+                                </defs>
+
+                                <path
+                                    d="M32 45L44 57L68 34"
+                                    stroke="white"
+                                    stroke-width="7"
+                                    fill="none"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+
+                            </svg>
+                        </div>
+
+                        <span class="welcome-label">
+                            WELCOME TO MEKA
+                        </span>
+
+                        <h1>
+                            التواصل أصبح
+                            <span>أقرب</span>
+                        </h1>
+
+                        <p>
+                            ابدأ رحلتك مع MEKA CHAT.
+                            عالم يجمع رسائلك وأصدقاءك ولحظاتك في مكان واحد.
+                        </p>
+
+                        <div class="welcome-features">
+
+                            <div class="feature-pill">
+                                <span>✦</span>
+                                تواصل بسهولة
+                            </div>
+
+                            <div class="feature-pill">
+                                <span>◉</span>
+                                ابقَ قريبًا
+                            </div>
+
+                            <div class="feature-pill">
+                                <span>⌁</span>
+                                عالمك الخاص
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="conversation-footer">
+                        MEKA CHAT · CONNECT YOUR WORLD
+                    </div>
+
+                </section>
+
+            </div>
+
         </section>
 
-        <!-- MEDIA VIEWER -->
-        <section id="media-viewer" class="media-viewer hidden">
-          <header>
-            <button data-action="close-media-viewer">×</button>
-            <span id="media-viewer-title">عرض الوسائط</span>
-            <button data-action="download-current-media">تنزيل</button>
-          </header>
-          <div id="media-viewer-content"></div>
-        </section>
+    </main>
 
-      </main>
 
-      <!-- DETAILS PANEL -->
-      <aside id="details-panel" class="details-panel hidden">
-        <header>
-          <h2 id="details-panel-title">التفاصيل</h2>
-          <button data-action="close-details-panel">×</button>
-        </header>
-        <div id="details-panel-content"></div>
-      </aside>
-
-    </div>
-
-    <!-- MOBILE NAVIGATION -->
-    <nav id="mobile-navigation" class="mobile-navigation">
-      <button class="active" data-section="chats"><span>◫</span><small>الدردشات</small></button>
-      <button data-section="friends"><span>♙</span><small>الأصدقاء</small></button>
-      <button data-section="feed"><span>▦</span><small>المنشورات</small></button>
-      <button data-section="status"><span>◉</span><small>الحالات</small></button>
-      <button data-action="open-profile"><span>○</span><small>حسابي</small></button>
-    </nav>
-
-  </section>
-
-  <!-- GLOBAL MODAL -->
-  <div id="modal-overlay" class="modal-overlay hidden">
-    <section id="global-modal" class="global-modal" role="dialog" aria-modal="true">
-      <header class="modal-header">
-        <h2 id="modal-title">MEKA CHAT</h2>
-        <button data-action="close-modal" aria-label="إغلاق">×</button>
-      </header>
-      <div id="modal-content" class="modal-content"></div>
-      <footer id="modal-footer" class="modal-footer"></footer>
-    </section>
-  </div>
-
-  <!-- TOASTS -->
-  <div id="toast-container" class="toast-container" aria-live="polite"></div>
-
-  <!-- GLOBAL LOADING -->
-  <div id="global-loading" class="global-loading hidden">
-    <div class="global-loading-card">
-      <div class="brand-logo">
-        <svg viewBox="0 0 100 100"><use href="#meka-symbol"/></svg>
-      </div>
-      <div class="loading-indicator"><span></span><span></span><span></span></div>
-      <p id="global-loading-message">جارٍ تنفيذ العملية...</p>
-    </div>
-  </div>
-
-  <!-- CALL INTERFACE -->
-  <div id="call-overlay" class="call-overlay hidden">
-
-    <div class="call-background"></div>
-
-    <div class="call-content">
-      <button class="icon-button" data-action="minimize-call">−</button>
-
-      <img id="call-user-avatar" src="assets/default-avatar.svg" alt="">
-
-      <h2 id="call-user-name">المكالمة</h2>
-      <p id="call-status">جارٍ الاتصال...</p>
-      <p id="call-duration" class="hidden">00:00</p>
-
-      <video id="remote-video" autoplay playsinline></video>
-      <video id="local-video" autoplay muted playsinline></video>
-
-      <div class="call-controls">
-        <button data-action="toggle-microphone">الميكروفون</button>
-        <button data-action="toggle-camera">الكاميرا</button>
-        <button data-action="switch-camera">تبديل الكاميرا</button>
-        <button data-action="share-screen">مشاركة الشاشة</button>
-        <button data-action="end-call" class="call-end-button">إنهاء المكالمة</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- STORY VIEWER -->
-  <div id="story-viewer" class="story-viewer hidden">
-    <div class="story-progress-container" id="story-progress-container"></div>
-    <header class="story-header">
-      <img id="story-owner-avatar" src="assets/default-avatar.svg" alt="">
-      <span id="story-owner-name"></span>
-      <time id="story-created-at"></time>
-      <button data-action="close-story-viewer">×</button>
-    </header>
-    <div id="story-viewer-content"></div>
-    <footer class="story-footer">
-      <input id="story-reply-input" type="text" placeholder="الرد على الحالة...">
-      <button data-action="send-story-reply">إرسال</button>
-      <button data-action="story-react">♥</button>
-    </footer>
-  </div>
-
-  <!-- CONTEXT MENU -->
-  <div id="context-menu" class="context-menu hidden"></div>
-
-  <!-- EMOJI PICKER -->
-  <div id="emoji-picker" class="emoji-picker hidden">
-    <input id="emoji-search" type="search" placeholder="ابحث عن رمز">
-    <div id="emoji-list"></div>
-  </div>
-
-</div>
-
-<script type="module" src="core.js"></script>
+    <!-- JavaScript الخاص بالتطبيق -->
+    <script src="app.js" defer></script>
 
 </body>
-  </html>
+</html>
